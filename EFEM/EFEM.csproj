@@ -1,0 +1,2078 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{998CA191-899B-4AB6-B17A-76EE56EFFC22}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FrameOfSystem3</RootNamespace>
+    <AssemblyName>EFEM</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <PublishUrl>게시\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+  <Target Name="ShowDefinedConstants" AfterTargets="Build">
+    <Message Importance="High" Text="=========================================================" />
+    <Message Importance="High" Text="Defined constants: $(DefineConstants)" />
+    <Message Importance="High" Text="=========================================================" />
+  </Target>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '500W|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\500W\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '500W|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\..\..\PWA-500W\Source\PROGRAM\Release\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PWA500W</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WarningLevel>1</WarningLevel>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '500W|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\500W\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Account, Version=1.0.7611.16836, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Account.dll</HintPath>
+    </Reference>
+    <Reference Include="AJINSDK">
+      <HintPath>..\..\..\_Dll64\AJINSDK.dll</HintPath>
+    </Reference>
+    <Reference Include="Alarm, Version=1.0.7597.25582, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Alarm.dll</HintPath>
+      <Aliases>global, AlarmInstance</Aliases>
+    </Reference>
+    <Reference Include="AnalogIO, Version=1.0.7618.20790, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\AnalogIO.dll</HintPath>
+    </Reference>
+    <Reference Include="AnalogIOController, Version=1.0.7615.19627, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\AnalogIOController.dll</HintPath>
+    </Reference>
+    <Reference Include="ArrayManager, Version=1.0.7620.21749, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\ArrayManager.dll</HintPath>
+    </Reference>
+    <Reference Include="COMIZOASDK">
+      <HintPath>..\..\..\_Dll64\COMIZOASDK.dll</HintPath>
+    </Reference>
+    <Reference Include="ConfigItemManager, Version=1.0.7597.25361, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\ConfigItemManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Cylinder, Version=1.0.7621.20539, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Cylinder.dll</HintPath>
+      <Aliases>global, CylinderInstance</Aliases>
+    </Reference>
+    <Reference Include="DesignPattern, Version=1.0.7597.25391, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\DesignPattern.dll</HintPath>
+    </Reference>
+    <Reference Include="DigitalIO, Version=1.0.7620.21763, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\DigitalIO.dll</HintPath>
+    </Reference>
+    <Reference Include="DigitalIOController, Version=1.0.7615.19793, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\DigitalIOController.dll</HintPath>
+    </Reference>
+    <Reference Include="EquipmentState, Version=1.0.7597.25424, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\EquipmentState.dll</HintPath>
+    </Reference>
+    <Reference Include="FileBorn, Version=1.0.7622.31293, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\FileBorn.dll</HintPath>
+    </Reference>
+    <Reference Include="FileComposite, Version=1.0.7597.25801, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\FileComposite.dll</HintPath>
+    </Reference>
+    <Reference Include="FileIOManager, Version=1.0.7605.26478, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\FileIOManager.dll</HintPath>
+    </Reference>
+    <Reference Include="INIParser, Version=1.0.7597.30568, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\INIParser.dll</HintPath>
+    </Reference>
+    <Reference Include="Interlock, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\Interlock.dll</HintPath>
+    </Reference>
+    <Reference Include="Interrupt, Version=1.0.7621.17776, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Interrupt.dll</HintPath>
+    </Reference>
+    <Reference Include="JogManager, Version=1.0.7597.25890, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\JogManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Language, Version=1.0.7597.25922, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Language.dll</HintPath>
+    </Reference>
+    <Reference Include="Motion, Version=1.0.7621.16316, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Motion.dll</HintPath>
+      <Aliases>global, MotionInstance</Aliases>
+    </Reference>
+    <Reference Include="MotionController, Version=1.0.7620.30019, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\MotionController.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RecipeManager, Version=1.0.7597.25992, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\RecipeManager.dll</HintPath>
+    </Reference>
+    <Reference Include="RegisteredInstances, Version=1.0.7597.26282, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\RegisteredInstances.dll</HintPath>
+      <Aliases>global, RegisteredInstance</Aliases>
+    </Reference>
+    <Reference Include="RSASDK, Version=1.0.7618.31079, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\RSASDK.dll</HintPath>
+    </Reference>
+    <Reference Include="RunningMain, Version=1.0.7604.23041, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\RunningMain.dll</HintPath>
+    </Reference>
+    <Reference Include="RunningTask, Version=1.0.7604.25562, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\RunningTask.dll</HintPath>
+    </Reference>
+    <Reference Include="Serial, Version=1.0.7621.23167, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Serial.dll</HintPath>
+    </Reference>
+    <Reference Include="Socket, Version=1.0.7621.28852, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Socket.dll</HintPath>
+    </Reference>
+    <Reference Include="Sys3Controls, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\Sys3Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="TaskAction, Version=1.0.7623.18302, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\TaskAction.dll</HintPath>
+    </Reference>
+    <Reference Include="TaskActionState, Version=1.0.7597.26098, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\TaskActionState.dll</HintPath>
+    </Reference>
+    <Reference Include="TaskDevice, Version=1.0.7619.19650, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\TaskDevice.dll</HintPath>
+    </Reference>
+    <Reference Include="TaskState, Version=1.0.7597.25518, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\TaskState.dll</HintPath>
+    </Reference>
+    <Reference Include="ThreadTimer, Version=1.0.7608.22522, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\ThreadTimer.dll</HintPath>
+    </Reference>
+    <Reference Include="TickCounter, Version=1.0.7597.30988, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\TickCounter.dll</HintPath>
+    </Reference>
+    <Reference Include="Trigger, Version=1.0.7621.17818, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\_Dll64\Trigger.dll</HintPath>
+    </Reference>
+    <Reference Include="UserControlForMainView, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Dll\UserControlForMainView.dll</HintPath>
+    </Reference>
+    <Reference Include="Vision_, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\Vision.dll</HintPath>
+    </Reference>
+    <Reference Include="WCF, Version=2.0.0.2, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\WCF.dll</HintPath>
+    </Reference>
+    <Reference Include="WCFManager, Version=1.0.0.1, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\WCFManager.dll</HintPath>
+    </Reference>
+    <Reference Include="XGem300ProW_C40_01_64, Version=1.0.9196.24822, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\XGem300ProW_C40_01_64.dll</HintPath>
+    </Reference>
+    <Reference Include="ZedGraph, Version=5.1.2.878, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Release\ZedGraph.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Account\CAccount.cs" />
+    <Compile Include="Config\ConfigAlarm.cs" />
+    <Compile Include="Config\ConfigAnalogIO.cs" />
+    <Compile Include="Config\ConfigCylinder.cs" />
+    <Compile Include="Config\ConfigDevice.cs" />
+    <Compile Include="Config\ConfigDigitalIO.cs" />
+    <Compile Include="Config\ConfigDynamicLink.cs" />
+    <Compile Include="Config\ConfigFlow.cs" />
+    <Compile Include="Config\ConfigFTP.cs" />
+    <Compile Include="Config\ConfigInterlock.cs" />
+    <Compile Include="Config\ConfigInterrupt.cs" />
+    <Compile Include="Config\ConfigJog.cs" />
+    <Compile Include="Config\ConfigLanguage.cs" />
+    <Compile Include="Config\ConfigMotion.cs" />
+    <Compile Include="Config\ConfigMotionSpeed.cs" />
+    <Compile Include="Config\ConfigPort.cs" />
+    <Compile Include="Config\ConfigSerial.cs" />
+    <Compile Include="Config\ConfigSocket.cs" />
+    <Compile Include="Config\ConfigTask.cs" />
+    <Compile Include="Config\ConfigTool.cs" />
+    <Compile Include="Config\ConfigTrigger.cs" />
+    <Compile Include="Config\ConfigWCF.cs" />
+    <Compile Include="Controller\AnalogIO\NewCrevisModbusAnalogIOController.cs" />
+    <Compile Include="Controller\AnalogIO\CrevisModbusAnalogIOController.cs" />
+    <Compile Include="Controller\DigitalIO\ModbusTcpClient.cs" />
+    <Compile Include="Controller\DigitalIO\NewCrevisModbusDigitalIOController.cs" />
+    <Compile Include="Controller\DigitalIO\CrevisModbusDigitalIOController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\Modules\PWA500Common\ActionScheduler\CapacityLimitCarrierCompletionCondition.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500Common\ActionScheduler\CarrierEmptiedCompletionCondition.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500Common\MaterialAttribute\PWA500CarrierExtraAttributes.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500BIN\ProcessingScenario\PWA500BINTraceDataProvider.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Defines\PWA500CommonDefines.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\ActionScheduler\Robot\PWA500WRobotActionScheduler.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\Defines\PWA500WDefines.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\ProcessModule\ProcessModulePWA500W.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\ProcessModule\PWA500WCommunicator.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\Substrate\PWA500WSubstrateExtraAttributes.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\MapDataControl.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\PMSControl.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Object\ObjectMapData.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\IPortRoleProfile.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SeparatedBinAndEmptyPortProfile.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SharedBinAndEmptyPortProfile.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqBinMapUploadGEM300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapDownload.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapUpload.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioUploadBinData.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioUploadBinDataGEM300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\Defines\DefinesForPWA500W_NRD.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\FunctionsForPWA500W_NRD_300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\ProcessingScenarioPWA500W_NRD_300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\ProcessingScenarioPWA500W_NRD.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\FunctionsForPWA500W_NRD.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\PWA500WNRDTraceDataProvider.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500BIN\TaskGlobalForPWA500BIN.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500W\TaskAtmRobotForPWA500W_300.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500W\TaskAtmRobotForPWA500W.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500W\TaskGlobalForPWA500W.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500W\TaskLoadPortForPWA500W.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500W\TaskLoadPortForPWA500W_300.cs" />
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\MainDisplaySubPanelSummary500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\MainDisplaySubPanelSummary500BIN.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelSummary500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryProcessModuleInfo500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryProcessModuleInfo500BIN.Designer.cs">
+      <DependentUpon>SummaryProcessModuleInfo500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryQuickButtons.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryQuickButtons.Designer.cs">
+      <DependentUpon>SummaryQuickButtons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryRobotInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryRobotInfo.Designer.cs">
+      <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\MainDisplaySubPanelSummary500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\MainDisplaySubPanelSummary500W.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelSummary500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryProcessModuleInfo500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryProcessModuleInfo500W.Designer.cs">
+      <DependentUpon>SummaryProcessModuleInfo500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryQuickButtons.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryQuickButtons.Designer.cs">
+      <DependentUpon>SummaryQuickButtons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryRobotInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryRobotInfo.Designer.cs">
+      <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.Designer.cs">
+      <DependentUpon>FormProductionSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SafeMonthCalendar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SafeMonthCalendar.Designer.cs">
+      <DependentUpon>SafeMonthCalendar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryLotHistory500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryCurruntWorking500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.Designer.cs">
+      <DependentUpon>FormProductionSummary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SafeMonthCalendar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SafeMonthCalendar.Designer.cs">
+      <DependentUpon>SafeMonthCalendar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryCurruntWorking500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryLotHistory500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperation500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperation500BIN.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperation500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationControl500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationControl500BIN.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperationControl500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationEditor500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationEditor500BIN.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperationEditor500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperation500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperation500W.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperation500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationControl500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationControl500W.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperationControl500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationEditor500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationEditor500W.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperationEditor500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINAnalogs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINAnalogs.Designer.cs">
+      <DependentUpon>MainMonitoringSubPanel500BINAnalogs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINDigitals.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINDigitals.Designer.cs">
+      <DependentUpon>MainMonitoringSubPanel500BINDigitals.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WAnalogs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WAnalogs.Designer.cs">
+      <DependentUpon>MainMonitoringSubPanel500WAnalogs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WDigitals.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WDigitals.Designer.cs">
+      <DependentUpon>MainMonitoringSubPanel500WDigitals.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500W\SubViewOperationSecsGemCustomized.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500W\SubViewOperationSecsGemCustomized.Designer.cs">
+      <DependentUpon>SubViewOperationSecsGemCustomized.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500BIN\SubViewOperationSecsGemCustomized.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500BIN\SubViewOperationSecsGemCustomized.Designer.cs">
+      <DependentUpon>SubViewOperationSecsGemCustomized.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupProcessModulePWA500BIN.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupProcessModulePWA500BIN.Designer.cs">
+      <DependentUpon>SetupProcessModulePWA500BIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINLoadPortOptions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINLoadPortOptions.Designer.cs">
+      <DependentUpon>SetupPWA500BINLoadPortOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINOptions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINOptions.Designer.cs">
+      <DependentUpon>SetupPWA500BINOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupProcessModulePWA500W.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupProcessModulePWA500W.Designer.cs">
+      <DependentUpon>SetupProcessModulePWA500W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WLoadPortOptions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WLoadPortOptions.Designer.cs">
+      <DependentUpon>SetupPWA500WLoadPortOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WOptions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WOptions.Designer.cs">
+      <DependentUpon>SetupPWA500WOptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Define\DefineConstant.cs" />
+    <Compile Include="Define\DefineEnumBase.cs" />
+    <Compile Include="Define\DefineEnumProject.cs" />
+    <Compile Include="Define\DefineType.cs" />
+    <Compile Include="Define\ProcessTypeProvider.cs" />
+    <Compile Include="DynamicLink\ActionNode.cs" />
+    <Compile Include="DynamicLink\ActionPort.cs" />
+    <Compile Include="DynamicLink\DynamicLink.cs" />
+    <Compile Include="DynamicLink\FlowLink.cs" />
+    <Compile Include="DynamicLink\NodeLink.cs" />
+    <Compile Include="DynamicLink\PortLink.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500W\ActionScheduler\Robot\PWA500WRobotActionSchedulerGEM300.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\IJobBindingTargetIndex.cs" />
+    <Compile Include="EFEM Modules\Jobs\Completion\IJobCompletionEvaluator.cs" />
+    <Compile Include="EFEM Modules\Jobs\Completion\JobCompletionEvaluator.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\InMemoryJobBindingTargetIndex.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\JobBindingTarget.cs" />
+    <Compile Include="EFEM Modules\Jobs\Completion\JobCompletionService.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\CarrierCompletionWriter.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\DefaultCarrierCompletionCondition.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\DefaultCarrierCompletionHandlingPolicy.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\FinalizeAfterUnloadCarrierCompletionHandlingPolicy.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\ISubstrateJobBinder.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\JobBindingSnapshot.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\SubstrateJobBinder.cs" />
+    <Compile Include="EFEM Modules\Jobs\Binding\SubstrateJobBindingService.cs" />
+    <Compile Include="EFEM Modules\Jobs\Manager\IJobManager.cs" />
+    <Compile Include="EFEM Modules\Jobs\Manager\JobManager.cs" />
+    <Compile Include="EFEM Modules\Jobs\Policy\Policy.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\ControlJobRecoveryDto.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\ControlJobRecoveryJsonAdapter.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\IJobJsonEntityAdapter.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\InMemoryJobRelationRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\InMemoryRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\IEntity.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\IJobRelationRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\IRemovedBindingTargetRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\IRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\JobStorageRecovery.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\JsonJobRelationRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\JsonJobStorageFile.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\JsonOrderedJobRepository.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\ProcessJobRecoveryDto.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\ProcessJobRecoveryJsonAdapter.cs" />
+    <Compile Include="EFEM Modules\Jobs\Repository\RemovedBindingTarget.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\CarrierEventObserver.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\DatabaseContext.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\IMaterialEvent.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\IMaterial.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\IMaterialExtraAttribute.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\SubstrateHistoryEvent.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Location\Storage\JsonAndSqliteSubstrateLocationHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Location\Storage\SqliteSubstrateLocationHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Processing\Storage\ISubstrateProcessingHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Processing\Storage\JsonAndSqliteSubstrateProcessingHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Processing\Storage\JsonSubstrateProcessingHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Processing\Storage\SqliteSubstrateProcessingHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Processing\SubstrateProcessingService.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\LocationService.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\Storage\ILocationStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\Storage\JsonLocationStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\Storage\SqliteLocationStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Carrier\Storage\ICarrierStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Carrier\Storage\JsonAndSqliteCarrierStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Carrier\Storage\JsonCarrierStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\CarrierMapper.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Location\Storage\JsonSubstrateLocationHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\LocationService\LocationOccupancyEvent.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Location\Storage\ISubstrateLocationHistoryStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\History\Location\SubstrateStayHistoryTracker.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\LocationService\LocationStateService.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Carrier\Storage\SqliteCarrierStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Substrate\Storage\ISubstrateStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\MaterialEntrys.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\SubstrateMapper.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Substrate\Storage\JsonAndSqliteSubstrateStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Substrate\Storage\JsonSubstrateStorage.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Substrate\Storage\SqliteSubstrateStorage.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\ICarrierCompletionHandlingPolicy.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\E87\E87CarrierStateModel.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\E87\E87LoadPortStateModel.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\E87\E87PendingInputs.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\Recovery\LoadPortRecoveryStorage.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\Legacy\LegacyLoadPortStateModel.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\Recovery\LoadPortRecoveryData.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\State\LoadPortStateModelFactory.cs" />
+    <Compile Include="EquipmentProperty\EquipmentProperty.cs" />
+    <Compile Include="EquipmentProperty\RawMaterialPortManager.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\LoadPortActionScheduler.cs" />
+    <Compile Include="EFEM Modules\Defines\JobDefines.cs" />
+    <Compile Include="EFEM Modules\Jobs\Domain\ControlJob.cs" />
+    <Compile Include="EFEM Modules\Jobs\Domain\ProcessJob.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotControllers\NRCRobotController.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortControllers\SELOP8Controller.cs" />
+    <Compile Include="EFEM Modules\ActionScheduler\RobotActionSchedulerManager.cs" />
+    <Compile Include="EFEM Modules\ActionScheduler\RobotActionScheduler\BaseRobotActionScheduler.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500BIN\ActionScheduler\Robot\PWA500BINRobotActionScheduler.cs" />
+    <Compile Include="EFEM Modules\Defines\ProcessModuleDefines.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Carrier\Carrier.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\CarrierManagementServer.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500BIN\Defines\PWA500BINDefines.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Location\LocationServer.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500BIN\Substrate\PWA500BINSubstrateExtraAttributes.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\SubstrateManager.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotController.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotControllers\RobotControllerSimulator.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotControllers\QuadraRobotController.cs" />
+    <Compile Include="EFEM Modules\Defines\AtmRobotDefines.cs" />
+    <Compile Include="EFEM Modules\Defines\Communicator.cs" />
+    <Compile Include="EFEM Modules\Defines\EfemCommon.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotManager.cs" />
+    <Compile Include="EFEM Modules\Modules\AtmRobot\AtmRobotOperator.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortController.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortControllers\LoadPortControllerSimulator.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortControllers\DuraportController.cs" />
+    <Compile Include="EFEM Modules\Defines\LoadportDefines.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortManager.cs" />
+    <Compile Include="EFEM Modules\Modules\LoadPort\LoadPortOperator.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500BIN\ProcessModule\PWA500BINCommunicator.cs" />
+    <Compile Include="EFEM Modules\Modules\Process\SignalBasedInterfaceHandler.cs" />
+    <Compile Include="EFEM Modules\Modules\Process\BaseProcessModuleCommunicator.cs" />
+    <Compile Include="EFEM Modules\Modules\Process\ProcessModuleGroup.cs" />
+    <Compile Include="CustomizedByProcessType\Modules\PWA500BIN\ProcessModule\ProcessModulePWA500BIN.cs" />
+    <Compile Include="EFEM Modules\Modules\RFID\Controllers\RfidSimulator.cs" />
+    <Compile Include="EFEM Modules\Modules\RFID\Controllers\CeyonRfid.cs" />
+    <Compile Include="EFEM Modules\Modules\RFID\RFIDManagers.cs" />
+    <Compile Include="EFEM Modules\Modules\RFID\Controllers\XedionRfid.cs" />
+    <Compile Include="ExternalDevice\Serial\FanFilterUnit\BlueCord\FanFilterUnitControllerBluecord.cs" />
+    <Compile Include="ExternalDevice\Serial\FanFilterUnit\FanFilterUnitController.cs" />
+    <Compile Include="ExternalDevice\Serial\FanFilterUnit\FanFilterUnitManager.cs" />
+    <Compile Include="ExternalDevice\Socket\Modbus\ModbusData.cs" />
+    <Compile Include="ExternalDevice\Socket\Modbus\modbusTCP.cs" />
+    <Compile Include="ExternalDevice\Socket\Modbus\ModbusTCPClient2.cs" />
+    <Compile Include="ExternalDevice\Socket\Modbus\SocketForModbus.cs" />
+    <Compile Include="Functional\AppConfigControl.cs" />
+    <Compile Include="Functional\Compression.cs" />
+    <Compile Include="Functional\FunctionsETC.cs" />
+    <Compile Include="Functional\GlobalEvent.cs" />
+    <Compile Include="Functional\IniControl.cs" />
+    <Compile Include="Functional\MathFormula.cs" />
+    <Compile Include="Functional\PostOffice.cs" />
+    <Compile Include="Functional\ProfileFactories.cs" />
+    <Compile Include="Functional\Scheduler.cs" />
+    <Compile Include="Functional\SelectionListProject.cs" />
+    <Compile Include="Functional\SerializableObject\ObjectSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Functional\Storage.cs" />
+    <Compile Include="Functional\Initializer.cs" />
+    <Compile Include="Functional\SelectionList.cs" />
+    <Compile Include="Functional\Sys3FileXmlConverter.cs" />
+    <Compile Include="Functional\WorkPosition.cs" />
+    <Compile Include="Functional\XmlWriter.cs" />
+    <Compile Include="Interfaces\RegisteredInterface.cs" />
+    <Compile Include="Log\Log.cs" />
+    <Compile Include="Log\LogWriter.cs" />
+    <Compile Include="RAMMetrics\RAM_Metrics.cs" />
+    <Compile Include="Recipe\PreviousValueStorage.cs" />
+    <Compile Include="EFEM Modules\Defines\MaterialTrackingDefines.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Materials\Substrate\Substrate.cs" />
+    <Compile Include="EFEM Modules\Modules\Process\BaseProcessModule.cs" />
+    <Compile Include="Recipe\Recipe.cs" />
+    <Compile Include="Recipe\RecipeDefine.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500BIN\Defines\DefinesForPWA500BIN_TP.cs" />
+    <Compile Include="SECSGEM\DefineSecsGem\DefineSecsGemBase.cs" />
+    <Compile Include="SECSGEM\DefineSecsGem\Project\DefinesForProject.cs" />
+    <Compile Include="SECSGEM\GEM300Services\Gem300ScenarioService.cs" />
+    <Compile Include="SECSGEM\Logger\AsyncLogger.cs" />
+    <Compile Include="SECSGEM\Logger\LogArchiveManager.cs" />
+    <Compile Include="SECSGEM\Logger\PeriodicLogArchiveService.cs" />
+    <Compile Include="SECSGEM\ScenarioOperator.cs" />
+    <Compile Include="SECSGEM\ScenarioOperatorLazyConfig.cs" />
+    <Compile Include="SECSGEM\ScenarioOperatorLazyConfigFactory.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\AutoScenarioRuntimeManager.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\AutoScenarioStoredResult.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\SenderScenarioKey.cs" />
+    <Compile Include="SECSGEM\Scenario\ProcessingScenario.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500BIN\ProcessingScenario\ProcessingScenarioPWA500BIN_TP.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500BIN\ProcessingScenario\FunctionsForPWA500BIN_TP.cs" />
+    <Compile Include="SECSGEM\Scenario\ScenarioBaseClass.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\AutoScenarioLifecycleStates.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\AutoScenarioRuntimeContext.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\AlarmStateChangedScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ClientToClientCommunicationScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ScenarioProceedWithCarrier.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ScenarioRecipeHandlingRequest.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ScenarioSendEventThenHandlingSecsMessage.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ScenarioUpdateFDC.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\ScenarioUploadRecipe.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\SendingEventScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\SendingEventScenarioEx.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\UpdateParameterScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common.Auto\UpdateVariablesScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\AlarmStateChangedScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\ClientToClientCommunicationScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\ScenarioProceedWithCarrier.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\ScenarioSendEventThenHandlingSecsMessage.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\ScenarioUpdateFDC.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\ScenarioRecipeHandlingRequest.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\SendingEventScenario.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\SendingEventScenarioEx.cs" />
+    <Compile Include="SECSGEM\Scenario\Scenario\Common\UpdateVariablesScenario.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioRecipeHandlingRequest.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqLotMergeAndChange.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqPartIdInfo.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqUploadBinFile.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqChipSplit.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferIdAssign.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWorkEnd.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWorkStart.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferSplitFromLot.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqLotInfo.cs" />
+    <Compile Include="SECSGEM\Scenario\AutoScenario\IAutoScenarioLifecycleState.cs" />
+    <Compile Include="SECSGEM\SecsGem300.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E40\IProcessJobServiceCallback.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E87\CarrierService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E87\ICarrierServiceCallback.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E90\ISubstrateServiceCallback.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E94\ControlJobService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E87\ICarrierService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E94\IControlJobService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E94\IControlJobServiceCallback.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\IEpt.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E40\IProcessJobService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E90\ISubstrateService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E40\ProcessJobService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\Gem300\E90\SubstrateService.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\ISecsGemRuntime.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\SecsGem.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\SecsGemRuntime.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\Gem300\XGemCarrierManagementDriver.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\Gem300\XGemControlJobDriver.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\Gem300\XGemProcessJobDriver.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\Gem300\XGemSubstrateTrackingDriver.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\ProcessForXGem.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\XGemPro300.cs" />
+    <Compile Include="SECSGEM\SecsGemSDK\XGemPro300\XGemPro300WithWCF.cs" />
+    <Compile Include="SECSGEM\Trace\IniTraceRecoveryStore.cs" />
+    <Compile Include="SECSGEM\Trace\ITraceDataProvider.cs" />
+    <Compile Include="SECSGEM\Trace\ITraceRecoveryStore.cs" />
+    <Compile Include="SECSGEM\Trace\TraceDefinition.cs" />
+    <Compile Include="SECSGEM\Trace\TraceRuntimeManager.cs" />
+    <Compile Include="SubSequence\ASubControl.cs" />
+    <Compile Include="SubSequence\ASubSequence.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500BIN\TaskAtmRobotForPWA500BIN.cs" />
+    <Compile Include="CustomizedByProcessType\TaskWrapper\PWA500BIN\TaskLoadPortForPWA500BIN.cs" />
+    <Compile Include="Task\RunningTaskEx.cs" />
+    <Compile Include="Task\RunningTaskWrapper.cs" />
+    <Compile Include="Task\TaskGlobal.cs" />
+    <Compile Include="Task\TaskAtmRobot.cs" />
+    <Compile Include="Task\TaskOperator.cs" />
+    <Compile Include="Task\TaskLoadPort.cs" />
+    <Compile Include="Tool\WorkTool.cs" />
+    <Compile Include="Views\Component\ControlInterface.cs" />
+    <Compile Include="Views\Component\MapView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Component\MapView.designer.cs">
+      <DependentUpon>MapView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Component\ParameterControls.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\Component\TaskAttribute.cs" />
+    <Compile Include="Views\Config\Action\Config_Flow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Action\Config_Flow.Designer.cs">
+      <DependentUpon>Config_Flow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Action\Config_Link.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Action\Config_Link.Designer.cs">
+      <DependentUpon>Config_Link.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Action\Config_Port.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Action\Config_Port.Designer.cs">
+      <DependentUpon>Config_Port.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Analog\Config_AnalogItemDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Analog\Config_AnalogItemDisplay.Designer.cs">
+      <DependentUpon>Config_AnalogItemDisplay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_FTP.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_FTP.Designer.cs">
+      <DependentUpon>Config_FTP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_Serial.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_Serial.Designer.cs">
+      <DependentUpon>Config_Serial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_Socket.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_Socket.Designer.cs">
+      <DependentUpon>Config_Socket.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_WCF.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Communication\Config_WCF.Designer.cs">
+      <DependentUpon>Config_WCF.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Action.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Action.Designer.cs">
+      <DependentUpon>Config_Action.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Alarm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Alarm.Designer.cs">
+      <DependentUpon>Config_Alarm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Analog.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Analog.Designer.cs">
+      <DependentUpon>Config_Analog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Communication.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Communication.Designer.cs">
+      <DependentUpon>Config_Communication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Cylinder.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Cylinder.Designer.cs">
+      <DependentUpon>Config_Cylinder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Device.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Device.Designer.cs">
+      <DependentUpon>Config_Device.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Digital.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Digital.Designer.cs">
+      <DependentUpon>Config_Digital.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Interlock.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Interlock.Designer.cs">
+      <DependentUpon>Config_Interlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Interrupt.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Interrupt.Designer.cs">
+      <DependentUpon>Config_Interrupt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_JogManage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_JogManage.Designer.cs">
+      <DependentUpon>Config_JogManage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Language.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Language.Designer.cs">
+      <DependentUpon>Config_Language.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Motion.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Motion.Designer.cs">
+      <DependentUpon>Config_Motion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Parameters.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Parameters.Designer.cs">
+      <DependentUpon>Config_Parameters.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Tool.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Tool.Designer.cs">
+      <DependentUpon>Config_Tool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Config_Trigger.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Config_Trigger.Designer.cs">
+      <DependentUpon>Config_Trigger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_Cylinder.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_Cylinder.Designer.cs">
+      <DependentUpon>Interlock_Cylinder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_DO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_DO.Designer.cs">
+      <DependentUpon>Interlock_DO.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_Motion.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Interlock\Interlock_Motion.Designer.cs">
+      <DependentUpon>Interlock_Motion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Jog\Config_Jog.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Jog\Config_Jog.Designer.cs">
+      <DependentUpon>Config_Jog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\Jog\Config_JogReverse.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\Jog\Config_JogReverse.Designer.cs">
+      <DependentUpon>Config_JogReverse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorGantry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorGantry.Designer.cs">
+      <DependentUpon>MotorGantry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorGeneral.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorGeneral.Designer.cs">
+      <DependentUpon>MotorGeneral.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorHome.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorHome.Designer.cs">
+      <DependentUpon>MotorHome.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorLimit.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorLimit.Designer.cs">
+      <DependentUpon>MotorLimit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorSpeed.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorSpeed.Designer.cs">
+      <DependentUpon>MotorSpeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorState.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Config\MotionPanel\MotorState.Designer.cs">
+      <DependentUpon>MotorState.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\EFEMSimulator_AtmRobot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\EFEMSimulator_AtmRobot.Designer.cs">
+      <DependentUpon>EFEMSimulator_AtmRobot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\EFEMSimulator_LoarPort.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\EFEMSimulator_LoarPort.Designer.cs">
+      <DependentUpon>EFEMSimulator_LoarPort.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\Form_EFEMSimulator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\EFEM Simulator\Form_EFEMSimulator.Designer.cs">
+      <DependentUpon>Form_EFEMSimulator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_AlarmMessage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_AlarmMessage.Designer.cs">
+      <DependentUpon>Form_AlarmMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_AlarmMessage_BackGround.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_AlarmMessage_BackGround.Designer.cs">
+      <DependentUpon>Form_AlarmMessage_BackGround.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Calculator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Calculator.Designer.cs">
+      <DependentUpon>Form_Calculator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_ColorPalette.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_ColorPalette.Designer.cs">
+      <DependentUpon>Form_ColorPalette.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_DateTimeSelector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_DateTimeSelector.Designer.cs">
+      <DependentUpon>Form_DateTimeSelector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Jog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Jog.Designer.cs">
+      <DependentUpon>Form_Jog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Keyboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Keyboard.Designer.cs">
+      <DependentUpon>Form_Keyboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Loading.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Loading.Designer.cs">
+      <DependentUpon>Form_Loading.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_MessageBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_MessageBox.Designer.cs">
+      <DependentUpon>Form_MessageBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_OperatorCall.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_OperatorCall.Designer.cs">
+      <DependentUpon>Form_OperatorCall.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Progress.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_Progress.Designer.cs">
+      <DependentUpon>Form_Progress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_ProgressBar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_ProgressBar.Designer.cs">
+      <DependentUpon>Form_ProgressBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_SelectionList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_SelectionList.Designer.cs">
+      <DependentUpon>Form_SelectionList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_TerminalMessage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_TerminalMessage.Designer.cs">
+      <DependentUpon>Form_TerminalMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Form_UserWaitingRequest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Form_UserWaitingRequest.Designer.cs">
+      <DependentUpon>Form_UserWaitingRequest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_DpadExtend.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_DpadExtend.Designer.cs">
+      <DependentUpon>JogPanel_DpadExtend.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_DpadNormal.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_DpadNormal.Designer.cs">
+      <DependentUpon>JogPanel_DpadNormal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ItemList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ItemList.Designer.cs">
+      <DependentUpon>JogPanel_ItemList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ModeRelative.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ModeRelative.Designer.cs">
+      <DependentUpon>JogPanel_ModeRelative.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ModeSpeed.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_ModeSpeed.Designer.cs">
+      <DependentUpon>JogPanel_ModeSpeed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_Monitor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_Monitor.Designer.cs">
+      <DependentUpon>JogPanel_Monitor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_MonitorItem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_Jog\JogPanel_MonitorItem.Designer.cs">
+      <DependentUpon>JogPanel_MonitorItem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_TimeSelector\TimePanel_Dial.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Functional\Panel_TimeSelector\TimePanel_Dial.Designer.cs">
+      <DependentUpon>TimePanel_Dial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionsUi.cs" />
+    <Compile Include="Views\History\History_MainLog.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\History\History_MainLog.Designer.cs">
+      <DependentUpon>History_MainLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Login\Form_Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Login\Form_Login.Designer.cs">
+      <DependentUpon>Form_Login.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainMenu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\MainMenu.Designer.cs">
+      <DependentUpon>MainMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MapManager\CarrierMapManager.cs" />
+    <Compile Include="Views\Operation\Operation_JobInfo\JobTreeBuilder.cs" />
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_State.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_State.Designer.cs">
+      <DependentUpon>SummaryLoadPortState_State.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\E84\MainDisplaySubPanelParallelIOE84.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\E84\MainDisplaySubPanelParallelIOE84.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelParallelIOE84.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\LoadPort\MainDisplaySubPanelManualOperationLoadPort.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\LoadPort\MainDisplaySubPanelManualOperationLoadPort.Designer.cs">
+      <DependentUpon>MainDisplaySubPanelManualOperationLoadPort.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.Designer.cs">
+      <DependentUpon>FormMaterialEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main.Designer.cs">
+      <DependentUpon>Operation_Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_RAMMetrics.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_RAMMetrics.Designer.cs">
+      <DependentUpon>Operation_RAMMetrics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_History.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_History.Designer.cs">
+      <DependentUpon>Operation_History.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_JobInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_JobInfo.Designer.cs">
+      <DependentUpon>Operation_JobInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem.Designer.cs">
+      <DependentUpon>Operation_SecsGem.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemEventList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemEventList.Designer.cs">
+      <DependentUpon>SubViewOperationSecsGemEventList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemCommon.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemCommon.Designer.cs">
+      <DependentUpon>SubViewOperationSecsGemCommon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_StateMonitor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_StateMonitor.Designer.cs">
+      <DependentUpon>Operation_StateMonitor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Tracking.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Tracking.Designer.cs">
+      <DependentUpon>Operation_Tracking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_PIO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_PIO.Designer.cs">
+      <DependentUpon>SummaryLoadPortState_PIO.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_Slot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_Slot.Designer.cs">
+      <DependentUpon>SummaryLoadPortState_Slot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState.Designer.cs">
+      <DependentUpon>SummaryLoadPortState.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PanelInterface.cs" />
+    <Compile Include="Views\ParameterGroupPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ParameterGroupPanel.Designer.cs">
+      <DependentUpon>ParameterGroupPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ParameterPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\ParameterPanel.Designer.cs">
+      <DependentUpon>ParameterPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Recipe\Options\RecipeOptionProcess.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Recipe\Options\RecipeOptionProcess.Designer.cs">
+      <DependentUpon>RecipeOptionProcess.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Recipe\Recipe_Main.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Recipe\Recipe_Main.Designer.cs">
+      <DependentUpon>Recipe_Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Recipe\Recipe_Options.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Recipe\Recipe_Options.Designer.cs">
+      <DependentUpon>Recipe_Options.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\FanFilterUnit\Setup_FanFilterUnit.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\FanFilterUnit\Setup_FanFilterUnit.Designer.cs">
+      <DependentUpon>Setup_FanFilterUnit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Options\SetupOptionCommon.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Options\SetupOptionCommon.Designer.cs">
+      <DependentUpon>SetupOptionCommon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Options\SetupOptionEquipment.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Options\SetupOptionEquipment.Designer.cs">
+      <DependentUpon>SetupOptionEquipment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\AtmRobot\SetupSubViewAtmRobot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\AtmRobot\SetupSubViewAtmRobot.Designer.cs">
+      <DependentUpon>SetupSubViewAtmRobot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\LoadPort\SetupSubViewLoadPort.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\LoadPort\SetupSubViewLoadPort.Designer.cs">
+      <DependentUpon>SetupSubViewLoadPort.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\RFID\SetupSubViewRfid.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\RFID\SetupSubViewRfid.Designer.cs">
+      <DependentUpon>SetupSubViewRfid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_AtmRobot.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_AtmRobot.Designer.cs">
+      <DependentUpon>Setup_AtmRobot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_LoadPort.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_LoadPort.Designer.cs">
+      <DependentUpon>Setup_LoadPort.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_ProcessModules.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_ProcessModules.Designer.cs">
+      <DependentUpon>Setup_ProcessModules.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_Options.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_Options.Designer.cs">
+      <DependentUpon>Setup_Options.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_RFID.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Setup\Setup_RFID.Designer.cs">
+      <DependentUpon>Setup_RFID.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SubMenu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\SubMenu.Designer.cs">
+      <DependentUpon>SubMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TitleBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\TitleBar.Designer.cs">
+      <DependentUpon>TitleBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Form_Frame.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Form_Frame.Designer.cs">
+      <DependentUpon>Form_Frame.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Work\AppConfigManager.cs" />
+    <Compile Include="Work\RecoveryData.cs" />
+    <Compile Include="Work\ScenarioCirculator.cs" />
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\MainDisplaySubPanelSummary500BIN.resx">
+      <DependentUpon>MainDisplaySubPanelSummary500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryProcessModuleInfo500BIN.resx">
+      <DependentUpon>SummaryProcessModuleInfo500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryQuickButtons.resx">
+      <DependentUpon>SummaryQuickButtons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500BIN\SummaryRobotInfo.resx">
+      <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\MainDisplaySubPanelSummary500W.resx">
+      <DependentUpon>MainDisplaySubPanelSummary500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryProcessModuleInfo500W.resx">
+      <DependentUpon>SummaryProcessModuleInfo500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryQuickButtons.resx">
+      <DependentUpon>SummaryQuickButtons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryRobotInfo.resx">
+      <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.resx">
+      <DependentUpon>FormProductionSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.resx">
+      <DependentUpon>SubViewOperationHistoryLotHistory500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.resx">
+      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.resx">
+      <DependentUpon>SubViewOperationHistoryCurruntWorking500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.resx">
+      <DependentUpon>FormProductionSummary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.resx">
+      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.resx">
+      <DependentUpon>SubViewOperationHistoryCurruntWorking500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.resx">
+      <DependentUpon>SubViewOperationHistoryLotHistory500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperation500BIN.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperation500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationControl500BIN.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperationControl500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationEditor500BIN.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperationEditor500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperation500W.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperation500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationControl500W.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperationControl500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationEditor500W.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperationEditor500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINAnalogs.resx">
+      <DependentUpon>MainMonitoringSubPanel500BINAnalogs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINDigitals.resx">
+      <DependentUpon>MainMonitoringSubPanel500BINDigitals.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WAnalogs.resx">
+      <DependentUpon>MainMonitoringSubPanel500WAnalogs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500W\MainMonitoringSubPanel500WDigitals.resx">
+      <DependentUpon>MainMonitoringSubPanel500WDigitals.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500W\SubViewOperationSecsGemCustomized.resx">
+      <DependentUpon>SubViewOperationSecsGemCustomized.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_SecsGem\PWA500BIN\SubViewOperationSecsGemCustomized.resx">
+      <DependentUpon>SubViewOperationSecsGemCustomized.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupProcessModulePWA500BIN.resx">
+      <DependentUpon>SetupProcessModulePWA500BIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINLoadPortOptions.resx">
+      <DependentUpon>SetupPWA500BINLoadPortOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500BIN\SetupPWA500BINOptions.resx">
+      <DependentUpon>SetupPWA500BINOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupProcessModulePWA500W.resx">
+      <DependentUpon>SetupProcessModulePWA500W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WLoadPortOptions.resx">
+      <DependentUpon>SetupPWA500WLoadPortOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Setup\PWA500W\SetupPWA500WOptions.resx">
+      <DependentUpon>SetupPWA500WOptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Component\MapView.resx">
+      <DependentUpon>MapView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Component\ParameterControls.resx">
+      <DependentUpon>ParameterControls.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Action\Config_Flow.resx">
+      <DependentUpon>Config_Flow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Action\Config_Link.resx">
+      <DependentUpon>Config_Link.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Action\Config_Port.resx">
+      <DependentUpon>Config_Port.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Analog\Config_AnalogItemDisplay.resx">
+      <DependentUpon>Config_AnalogItemDisplay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Communication\Config_FTP.resx">
+      <DependentUpon>Config_FTP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Communication\Config_Serial.resx">
+      <DependentUpon>Config_Serial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Communication\Config_Socket.resx">
+      <DependentUpon>Config_Socket.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Communication\Config_WCF.resx">
+      <DependentUpon>Config_WCF.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Action.resx">
+      <DependentUpon>Config_Action.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Alarm.resx">
+      <DependentUpon>Config_Alarm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Analog.resx">
+      <DependentUpon>Config_Analog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Communication.resx">
+      <DependentUpon>Config_Communication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Cylinder.resx">
+      <DependentUpon>Config_Cylinder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Device.resx">
+      <DependentUpon>Config_Device.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Digital.resx">
+      <DependentUpon>Config_Digital.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Interlock.resx">
+      <DependentUpon>Config_Interlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Interrupt.resx">
+      <DependentUpon>Config_Interrupt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_JogManage.resx">
+      <DependentUpon>Config_JogManage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Language.resx">
+      <DependentUpon>Config_Language.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Motion.resx">
+      <DependentUpon>Config_Motion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Parameters.resx">
+      <DependentUpon>Config_Parameters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Tool.resx">
+      <DependentUpon>Config_Tool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Config_Trigger.resx">
+      <DependentUpon>Config_Trigger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Interlock\Interlock_Cylinder.resx">
+      <DependentUpon>Interlock_Cylinder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Interlock\Interlock_DO.resx">
+      <DependentUpon>Interlock_DO.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Interlock\Interlock_Motion.resx">
+      <DependentUpon>Interlock_Motion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Jog\Config_Jog.resx">
+      <DependentUpon>Config_Jog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\Jog\Config_JogReverse.resx">
+      <DependentUpon>Config_JogReverse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorGantry.resx">
+      <DependentUpon>MotorGantry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorGeneral.resx">
+      <DependentUpon>MotorGeneral.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorHome.resx">
+      <DependentUpon>MotorHome.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorLimit.resx">
+      <DependentUpon>MotorLimit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorSpeed.resx">
+      <DependentUpon>MotorSpeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Config\MotionPanel\MotorState.resx">
+      <DependentUpon>MotorState.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\EFEM Simulator\EFEMSimulator_AtmRobot.resx">
+      <DependentUpon>EFEMSimulator_AtmRobot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\EFEM Simulator\EFEMSimulator_LoarPort.resx">
+      <DependentUpon>EFEMSimulator_LoarPort.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\EFEM Simulator\Form_EFEMSimulator.resx">
+      <DependentUpon>Form_EFEMSimulator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Form_Frame.resx">
+      <DependentUpon>Form_Frame.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="Views\Functional\Form_AlarmMessage.resx">
+      <DependentUpon>Form_AlarmMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_AlarmMessage_BackGround.resx">
+      <DependentUpon>Form_AlarmMessage_BackGround.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_Calculator.resx">
+      <DependentUpon>Form_Calculator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_ColorPalette.resx">
+      <DependentUpon>Form_ColorPalette.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_DateTimeSelector.resx">
+      <DependentUpon>Form_DateTimeSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_Jog.resx">
+      <DependentUpon>Form_Jog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_Keyboard.resx">
+      <DependentUpon>Form_Keyboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_Loading.resx">
+      <DependentUpon>Form_Loading.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_MessageBox.resx">
+      <DependentUpon>Form_MessageBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_OperatorCall.resx">
+      <DependentUpon>Form_OperatorCall.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_Progress.resx">
+      <DependentUpon>Form_Progress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_ProgressBar.resx">
+      <DependentUpon>Form_ProgressBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_SelectionList.resx">
+      <DependentUpon>Form_SelectionList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_TerminalMessage.resx">
+      <DependentUpon>Form_TerminalMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Form_UserWaitingRequest.resx">
+      <DependentUpon>Form_UserWaitingRequest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_DpadExtend.resx">
+      <DependentUpon>JogPanel_DpadExtend.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_DpadNormal.resx">
+      <DependentUpon>JogPanel_DpadNormal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_ItemList.resx">
+      <DependentUpon>JogPanel_ItemList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_ModeRelative.resx">
+      <DependentUpon>JogPanel_ModeRelative.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_ModeSpeed.resx">
+      <DependentUpon>JogPanel_ModeSpeed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_Monitor.resx">
+      <DependentUpon>JogPanel_Monitor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_Jog\JogPanel_MonitorItem.resx">
+      <DependentUpon>JogPanel_MonitorItem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Functional\Panel_TimeSelector\TimePanel_Dial.resx">
+      <DependentUpon>TimePanel_Dial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\History\History_MainLog.resx">
+      <DependentUpon>History_MainLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Login\Form_Login.resx">
+      <DependentUpon>Form_Login.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\MainMenu.resx">
+      <DependentUpon>MainMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_State.resx">
+      <DependentUpon>SummaryLoadPortState_State.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\E84\MainDisplaySubPanelParallelIOE84.resx">
+      <DependentUpon>MainDisplaySubPanelParallelIOE84.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\LoadPort\MainDisplaySubPanelManualOperationLoadPort.resx">
+      <DependentUpon>MainDisplaySubPanelManualOperationLoadPort.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.resx">
+      <DependentUpon>FormMaterialEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main.resx">
+      <DependentUpon>Operation_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_RAMMetrics.resx">
+      <DependentUpon>Operation_RAMMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_History.resx">
+      <DependentUpon>Operation_History.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_JobInfo.resx">
+      <DependentUpon>Operation_JobInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_SecsGem.resx">
+      <DependentUpon>Operation_SecsGem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemEventList.resx">
+      <DependentUpon>SubViewOperationSecsGemEventList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_SecsGem\Common\SubViewOperationSecsGemCommon.resx">
+      <DependentUpon>SubViewOperationSecsGemCommon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_StateMonitor.resx">
+      <DependentUpon>Operation_StateMonitor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Tracking.resx">
+      <DependentUpon>Operation_Tracking.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_PIO.resx">
+      <DependentUpon>SummaryLoadPortState_PIO.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState_Slot.resx">
+      <DependentUpon>SummaryLoadPortState_Slot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_Display\LoadPortSummary\SummaryLoadPortState.resx">
+      <DependentUpon>SummaryLoadPortState.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ParameterGroupPanel.resx">
+      <DependentUpon>ParameterGroupPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ParameterPanel.resx">
+      <DependentUpon>ParameterPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Recipe\Options\RecipeOptionProcess.resx">
+      <DependentUpon>RecipeOptionProcess.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Recipe\Recipe_Main.resx">
+      <DependentUpon>Recipe_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Recipe\Recipe_Options.resx">
+      <DependentUpon>Recipe_Options.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\FanFilterUnit\Setup_FanFilterUnit.resx">
+      <DependentUpon>Setup_FanFilterUnit.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Options\SetupOptionCommon.resx">
+      <DependentUpon>SetupOptionCommon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Options\SetupOptionEquipment.resx">
+      <DependentUpon>SetupOptionEquipment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\AtmRobot\SetupSubViewAtmRobot.resx">
+      <DependentUpon>SetupSubViewAtmRobot.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\LoadPort\SetupSubViewLoadPort.resx">
+      <DependentUpon>SetupSubViewLoadPort.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\RFID\SetupSubViewRfid.resx">
+      <DependentUpon>SetupSubViewRfid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Setup_AtmRobot.resx">
+      <DependentUpon>Setup_AtmRobot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Setup_LoadPort.resx">
+      <DependentUpon>Setup_LoadPort.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Setup_ProcessModules.resx">
+      <DependentUpon>Setup_ProcessModules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Setup_Options.resx">
+      <DependentUpon>Setup_Options.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Setup\Setup_RFID.resx">
+      <DependentUpon>Setup_RFID.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\SubMenu.resx">
+      <DependentUpon>SubMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\TitleBar.resx">
+      <DependentUpon>TitleBar.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
+    <Content Include="Resources\E84_Diagram.png" />
+    <None Include="Resources\E84_Diagram.bmp" />
+    <None Include="Resources\프로텍_로고.png" />
+    <None Include="Resources\ADD_ID%28BLACK%29.png" />
+    <None Include="Resources\ANALYZE%28BLACK%29.png" />
+    <None Include="Resources\broken_link_52px.png" />
+    <None Include="Resources\broom_52px.png" />
+    <None Include="Resources\center_of_gravity_52px.png" />
+    <None Include="Resources\check_file_52px.png" />
+    <None Include="Resources\CLEAR%28BLACK%29.png" />
+    <None Include="Resources\close_window_52px.png" />
+    <None Include="Resources\close_window_104px.png" />
+    <None Include="Resources\CONFIG_ADD2.png" />
+    <None Include="Resources\CONNECT%28BLACK%29.png" />
+    <None Include="Resources\COPY.png" />
+    <None Include="Resources\Copy_60px.png" />
+    <None Include="Resources\CREATE_FILE.png" />
+    <None Include="Resources\CREATE_FOLDER.png" />
+    <None Include="Resources\csv_52px.png" />
+    <None Include="Resources\delete_52px.png" />
+    <None Include="Resources\DISABLE%28BLACK%29.png" />
+    <None Include="Resources\DISCONNECT%28BLACK%29.png" />
+    <None Include="Resources\down_52px.png" />
+    <None Include="Resources\down_96px.png" />
+    <None Include="Resources\down_104px.png" />
+    <None Include="Resources\down_left_52px.png" />
+    <None Include="Resources\down_left_96px.png" />
+    <None Include="Resources\down_left_104px.png" />
+    <None Include="Resources\down_right_52px.png" />
+    <None Include="Resources\down_right_96px.png" />
+    <None Include="Resources\down_right_104px.png" />
+    <None Include="Resources\download_52px.png" />
+    <None Include="Resources\edit_52px.png" />
+    <None Include="Resources\edit_row_52px.png" />
+    <None Include="Resources\empty_trash_52px.png" />
+    <None Include="Resources\ENABLE%28BLACK%29.png" />
+    <None Include="Resources\ENTER%28WHITE%29.png" />
+    <None Include="Resources\ENTER.png" />
+    <None Include="Resources\enter_52px.png" />
+    <None Include="Resources\erase_48px.png" />
+    <None Include="Resources\erase_52px.png" />
+    <None Include="Resources\exercise_52px.png" />
+    <None Include="Resources\export_csv_48px.png" />
+    <None Include="Resources\export_csv_64px.png" />
+    <None Include="Resources\file_52px.png" />
+    <None Include="Resources\Home%28black%29.png" />
+    <None Include="Resources\Home%28White%29.png" />
+    <None Include="Resources\home_52px.png" />
+    <None Include="Resources\import_csv_48px.png" />
+    <None Include="Resources\import_csv_64px.png" />
+    <None Include="Resources\Initialize_white.png" />
+    <None Include="Resources\INSERT%28BLACK%29.png" />
+    <None Include="Resources\left_52px.png" />
+    <None Include="Resources\left_96px.png" />
+    <None Include="Resources\left_104px.png" />
+    <None Include="Resources\left_arrow_96px.png" />
+    <None Include="Resources\length_52px.png" />
+    <None Include="Resources\link_52px.png" />
+    <None Include="Resources\LOAD.png" />
+    <None Include="Resources\LOCK%28BLACK%29.png" />
+    <None Include="Resources\lock_52px.png" />
+    <None Include="Resources\Main_Config_blueblack.png" />
+    <None Include="Resources\Main_Exit_blueblack.png" />
+    <None Include="Resources\Main_History_blueblack.png" />
+    <None Include="Resources\Main_Operation_blueBlack.png" />
+    <None Include="Resources\Main_Recipe_blueblack.png" />
+    <None Include="Resources\Main_Setup_blueblack.png" />
+    <None Include="Resources\Main_User_blueblack.png" />
+    <None Include="Resources\map_editing_52px.png" />
+    <None Include="Resources\MODIFY%28CHANGE%29.png" />
+    <None Include="Resources\modify_48px.png" />
+    <None Include="Resources\new_copy_52px.png" />
+    <None Include="Resources\open_document_48px.png" />
+    <None Include="Resources\opened_folder_52px.png" />
+    <None Include="Resources\padlock_52px.png" />
+    <None Include="Resources\play_52px.png" />
+    <None Include="Resources\plus_math_52px.png" />
+    <None Include="Resources\PREVIOUS.png" />
+    <None Include="Resources\PREVIOUS1.png" />
+    <None Include="Resources\refresh_52px.png" />
+    <None Include="Resources\REMOVE.png" />
+    <None Include="Resources\remove_48px.png" />
+    <None Include="Resources\REPEAT%28BLACK%29.png" />
+    <None Include="Resources\reset_52px.png" />
+    <None Include="Resources\resize_52px.png" />
+    <None Include="Resources\resize_104px.png" />
+    <None Include="Resources\right_52px.png" />
+    <None Include="Resources\right_96px.png" />
+    <None Include="Resources\right_104px.png" />
+    <None Include="Resources\ruler_52px.png" />
+    <None Include="Resources\save_52px.png" />
+    <None Include="Resources\SEND_BLACK.png" />
+    <None Include="Resources\Start_white.png" />
+    <None Include="Resources\Step_white.png" />
+    <None Include="Resources\stop_52px.png" />
+    <None Include="Resources\stop_sign_52px.png" />
+    <None Include="Resources\stop_sign_52px_B.png" />
+    <None Include="Resources\stop_sign_104px.png" />
+    <None Include="Resources\stop_sign_w_104px.png" />
+    <None Include="Resources\Stop_white.png" />
+    <None Include="Resources\swipe_right_52px.png" />
+    <None Include="Resources\time_52px.png" />
+    <None Include="Resources\undo_52px.png" />
+    <None Include="Resources\UNLOCK%28WHITE%29.png" />
+    <None Include="Resources\up_52px.png" />
+    <None Include="Resources\up_96px.png" />
+    <None Include="Resources\up_104px.png" />
+    <None Include="Resources\up_left_52px.png" />
+    <None Include="Resources\up_left_96px.png" />
+    <None Include="Resources\up_left_104px.png" />
+    <None Include="Resources\up_right_52px.png" />
+    <None Include="Resources\up_right_96px.png" />
+    <None Include="Resources\up_right_104px.png" />
+    <None Include="Resources\upload_52px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5%28x86 및 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controller\Motion\" />
+    <Folder Include="Controller\Vision\" />
+    <Folder Include="Views\Setup\ProcessModules\" />
+    <Folder Include="WorkInformation\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>copy /Y "$(TargetDir)Config\$(TargetFileName).config" "$(ProjectDir)App.Config"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)Config\$(TargetFileName).config" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
