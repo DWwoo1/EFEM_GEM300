@@ -317,6 +317,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             subsMap.AttributeSubstrateType = AttributeSubstrateTypeFieldValue;
             subsMap.AttributeSubstrateId = waferId;
             subsMap.AttributeLayoutSpecifier = AttributeSubsMapLayoutSpecFieldValue;
+            subsMap.AttributeOrientation = angle;       // 2026.06.09 dwlim [ADD]
             subsMap.AttributeOriginLocation = AttributeSubsMapOriginLocationFieldValue;
 
             // Overlay
