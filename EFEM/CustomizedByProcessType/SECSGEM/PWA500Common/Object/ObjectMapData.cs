@@ -96,8 +96,10 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         [XmlElement("SubstrateMaps")]
         public MapDataSubstrateMaps SubstrateMaps { get; set; } // MapDataSubstrateMap 0개 이상
 
-        [XmlAttribute("FormatRevision")]
-        public string AttributeFormatRevision { get; set; } // 필수아님
+        #region <현재 사양에서는 사용안함>
+        //[XmlAttribute("FormatRevision")]
+        //public string AttributeFormatRevision { get; set; } // 필수아님
+        #endregion </현재 사양에서는 사용안함>
     }
     #endregion </MapData>
 
@@ -127,11 +129,11 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public MapDataXYDimensions AttributeLowerLeft { get; set; }        //필수 아님
         [XmlElement("Z")]
         public MapDataZDimensions AttributeZ { get; set; }                 //필수 아님
-        [XmlAttribute("TopImage")]
+        [XmlElement("TopImage")]
         public string AttributeTopImage { get; set; }               //필수 아님
-        [XmlAttribute("BottomImage")]
+        [XmlElement("BottomImage")]
         public string AttributeBottomImage { get; set; }            //필수 아님
-        [XmlAttribute("ProductId")]
+        [XmlElement("ProductId")]
         public string AttributeProductId { get; set; }              //필수 아님
         [XmlAttribute("TopLevel")]
         public bool TopLevel { get; set; }                 //필수 아님
@@ -145,6 +147,20 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             {
                 TopLevel = value;
                 TopLevelSpecified = true;
+            }
+        }
+        [XmlAttribute("Package")]
+        public bool Package { get; set; }                 //필수 아님
+        [XmlIgnore]
+        public bool PackageSpecified { get; set; }
+        [XmlIgnore]
+        public bool AttributePackage
+        {
+            get => PackageSpecified ? TopLevel : false;
+            set
+            {
+                Package = value;
+                PackageSpecified = true;
             }
         }
         [XmlElement("ChildLayouts")]
@@ -181,11 +197,11 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public string AttributeSubstrateId { get; set; }    //필수
         [XmlElement("LotId")]
         public string AttributeLotId { get; set; }          //필수 아님
-        [XmlAttribute("CarrierType")]
+        [XmlElement("CarrierType")]
         public string AttributeCarrierType { get; set; }    //필수 아님
-        [XmlAttribute("CarrierId")]
+        [XmlElement("CarrierId")]
         public string AttributeCarrierId { get; set; }      //필수 아님
-        [XmlAttribute("SlotNumber")]
+        [XmlElement("SlotNumber")]
         public int SlotNumber { get; set; }        //필수 아님
         [XmlIgnore]
         public bool SlotNumberSpecified { get; set; }
@@ -213,7 +229,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 SubstrateNumberSpecified = true;
             }
         }
-        [XmlAttribute("GoodDevices")]
+        [XmlElement("GoodDevices")]
         public int GoodDevices { get; set; }       //필수 아님
         [XmlIgnore]
         public bool GoodDevicesSpecified { get; set; }
@@ -227,13 +243,17 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 GoodDevicesSpecified = true;
             }
         }
-        [XmlAttribute("SupplierName")]
+        [XmlElement("SupplierName")]
         public string AttributeSupplierName { get; set; }   //필수 아님
-        [XmlAttribute("CreateDate")]
-        public string AttributeCreateDate { get; set; }     //필수 아님
-        [XmlAttribute("LastModified")]
-        public string AttributeLastModified { get; set; }   //필수 아님
-        [XmlAttribute("Status")]
+
+        #region <현재 사양에서는 사용안함>
+        //[XmlAttribute("CreateDate")]
+        //public string AttributeCreateDate { get; set; }     //필수 아님
+        //[XmlAttribute("LastModified")]
+        //public string AttributeLastModified { get; set; }   //필수 아님
+        #endregion </현재 사양에서는 사용안함>
+
+        [XmlElement("Status")]
         public string AttributeStatus { get; set; }         //필수 아님
     }
     public class MapDataAliasIds
@@ -282,7 +302,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         [XmlAttribute("SubstrateSide")]
         public string AttributeSubstrateSide { get; set; }      //필수 아님
         [XmlAttribute("Orientation")]
-        public int Orientation { get; set; }           //필수 아님
+        public int Orientation { get; set; }           //필수 아님      생략되어 있으면 0이다.
         [XmlIgnore]
         public bool OrientationSpecified { get; set; }
         [XmlIgnore]
@@ -300,25 +320,17 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         [XmlAttribute("AxisDirection")]
         public string AttributeAxisDirection { get; set; }      //필수 아님
     }
-    //public class MapDataOverlays
-    //{
-    //    public MapDataOverlays()
-    //    {
-    //        Overlay = new List<MapDataOverlay>();
-    //    }
-    //    [XmlElement("Overlay")]
-    //    public List<MapDataOverlay> Overlay { get; set; }
-    //}
+
     public class MapDataOverlay
     {
         [XmlElement("ReferenceDevices")]
         public MapDataReferenceDevices ReferenceDevices { get; set; }   // MapDataReferenceDevice 0개 이상
         [XmlElement("BinCodeMap")]
         public MapDataBinCodeMap BinCodeMap { get; set; }
-
         [XmlElement("DeviceIdMap")]
         public MapDataDeviceIdMap DeviceIdMap { get; set; }
-
+        [XmlElement("DeviceDataMap")]
+        public MapDataDeviceDataMap DeviceDataMap { get; set; }
         [XmlElement("TransferMap")]
         public MapDataTransferMap TransferMap { get; set; }
         [XmlAttribute("MapName")]
@@ -327,7 +339,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public string AttributeMapVersion { get; set; } //필수 아님
     }
 
-    #region ReferenceDevice
+    #region <ReferenceDevice>
     public class MapDataReferenceDevices
     {
         public MapDataReferenceDevices()
@@ -346,9 +358,9 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         [XmlAttribute("Name")]
         public string AttributeName { get; set; }                       //필수 아님
     }
-    #endregion /ReferenceDevice
+    #endregion </ReferenceDevice>
 
-    #region BincodeMap
+    #region <BincodeMap>
     public class MapDataBinCodeMap
     {
         public MapDataBinCodeMap()
@@ -363,6 +375,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public string AttributeBinType { get; set; }    //필수
         [XmlAttribute("NullBin")]
         public string AttributeNullBin { get; set; }    //필수
+        [XmlAttribute("MapType")]
+        public string AttributeMapType { get; set; }    //필수 아님
     }
     //public class MapDataBinCodes
     //{
@@ -480,9 +494,9 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             }
         }
     }
-    #endregion /BincodeMap
+    #endregion </BincodeMap>
 
-    #region DeviceIdMap
+    #region <DeviceIdMap>
     public class MapDataDeviceIdMap
     {
         [XmlElement("DeviceIds")]
@@ -499,40 +513,39 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
     }
     public class MapDataDeviceId
     {
-        [XmlAttribute("Value")]
+        [XmlText]
         public string AttributeValue { get; set; }  //필수
         [XmlAttribute("X")]
         public int AttributeX { get; set; }         //필수
         [XmlAttribute("Y")]
         public int AttributeY { get; set; }         //필수
     }
-    #endregion /DeviceIdMap
+    #endregion </DeviceIdMap>
 
-    #region TransferMap
+    #region <TransferMap>
     public class MapDataTransferMap
     {
         public MapDataTransferMap()
         {
             Transfer = new List<MapDataTransfer>();
         }
-        [XmlElement("Transfer")]
+        [XmlElement("T")]
         public List<MapDataTransfer> Transfer { get; set; }         // MapDataTransfer 1개 이상
         [XmlAttribute("FromSubstrateType")]
         public string AttributeFromSubstrateType { get; set; }  //필수
         [XmlAttribute("FromSubstrateId")]
         public string AttributeFromSubstrateId { get; set; }    //필수
+        [XmlAttribute("FromLayoutSpecifier")]
+        public string AttributeFromLayoutSpecifier { get; set; }    //필수
     }
     public class MapDataTransfer
     {
-        public MapDataTransfer()
-        {
-            AttributeT = new List<MapDataT>();
-        }
-        [XmlElement("T")]
-        public List<MapDataT> AttributeT { get; set; }    //필수
-    }
-    public class MapDataT
-    {
+        //public MapDataTransfer()
+        //{
+        //    AttributeT = new List<MapDataT>();
+        //}
+        //[XmlElement("T")]
+        //public List<MapDataT> AttributeT { get; set; }    //필수
         [XmlAttribute("FX")]
         public int AttributeFX { get; set; }    //필수
         [XmlAttribute("FY")]
@@ -545,7 +558,64 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         [XmlAttribute("BondHead")]
         public string AttributeBondHead { get; set; }
     }
-    #endregion /TransferMap
+    //public class MapDataT
+    //{
+    //    [XmlAttribute("FX")]
+    //    public int AttributeFX { get; set; }    //필수
+    //    [XmlAttribute("FY")]
+    //    public int AttributeFY { get; set; }    //필수
+    //    [XmlAttribute("TX")]
+    //    public int AttributeTX { get; set; }    //필수
+    //    [XmlAttribute("TY")]
+    //    public int AttributeTY { get; set; }    //필수
+    //    // 2026.05.18 dwlim [ADD] Bond Head 추가
+    //    [XmlAttribute("BondHead")]
+    //    public string AttributeBondHead { get; set; }
+    //}
+    #endregion </TransferMap>
+
+    #region <DeviceDataMap>
+    public class MapDataDeviceDataMap
+    {
+        public MapDataDeviceDataMap()
+        {
+            DeviceData = new List<MapDataDeviceData>();
+            Parameter = new List<MapDataParameter>();
+        }
+        [XmlElement("DeviceData")]
+        public List<MapDataDeviceData> DeviceData { get; set; }     // 필수 MapDataDeviceData 1개 이상
+        [XmlElement("Parameter")]
+        public List<MapDataParameter> Parameter { get; set; }     // 필수 MapDataParameter 1개 이상
+    }
+    public class MapDataDeviceData
+    {
+        public MapDataDeviceData()
+        {
+            AttributeValues = new List<object>();
+        }
+        [XmlAttribute("X")]
+        public int AttributeX { get; set; }         //필수 아님
+        [XmlAttribute("Y")]
+        public int AttributeY { get; set; }         //필수 아님
+        [XmlAttribute("LID")]
+        public string AttributeLID { get; set; }    //필수 아님
+        /// <summary>
+        /// 이건 좀 특이함. DeviceDataMap이 속성으로 갖고있는 Parameters의 순서와 일치해야함.
+        /// Parameters와 연관되어 있는듯하다. (사용할 때 E142 참고해야할듯)
+        /// [XmlAttribute("Values")] 이거로 하면 터진다. 이게 어떻게 쓰이는지 잘 모르겠다.
+        /// 일단 Element로 했음
+        /// </summary>
+        [XmlElement("Values")]
+        public List<object> AttributeValues { get; set; }  //필수
+    }
+    public class MapDataParameter
+    {
+        [XmlAttribute("Name")]
+        public string AttributeName { get; set; }  //필수
+        [XmlAttribute("Description")]
+        public string AttributeDescription { get; set; }  //필수 아님
+    }
+    #endregion </DeviceDataMap>
 
     #endregion </SubstrateMap>
 }

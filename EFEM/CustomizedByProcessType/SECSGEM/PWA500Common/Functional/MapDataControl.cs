@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Net;
 
 namespace EFEM.CustomizedByProcessType.PWA500Common
 {
@@ -46,10 +47,11 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
         #region <Constants_SubstrateMap>
         private const string AttributeSubsMapLayoutSpecFieldValue = "Wafer/Die";
-        private const string AttributeSubsMapOriginLocationFieldValue = "UpperLefte";
+        private const string AttributeSubsMapOriginLocationFieldValue = "UpperLeft";
 
         // Overlay
-        private const string AttributeOverlayBinMapNameFieldValue = "UploadBinCodeMap";
+        private const string AttributeOverlayMapNameFieldValue_Core = "UploadCoreWaferMap";
+        private const string AttributeOverlayMapNameFieldValue_Bin = "UploadBinWaferMap";
         private const string AttributeOverlayTransferMapNameFieldValue = "CoreToEmpty";
 
         // BinCodeMap
@@ -322,13 +324,13 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
             // Overlay
             MapDataOverlay overlay = new MapDataOverlay();
-            overlay.AttributeMapName = AttributeOverlayBinMapNameFieldValue;
+            overlay.AttributeMapName = AttributeOverlayMapNameFieldValue_Core;
 
             // ReferenceDevices
-            MapDataReferenceDevice referenceDevice = new MapDataReferenceDevice();
-            referenceDevice.AttributeCoordinates = new MapDataLogicalCoordinates();
-            referenceDevice.AttributeCoordinates.LogicalCoordinateX = refX;
-            referenceDevice.AttributeCoordinates.LogicalCoordinateY = refY;
+            //MapDataReferenceDevice referenceDevice = new MapDataReferenceDevice();
+            //referenceDevice.AttributeCoordinates = new MapDataLogicalCoordinates();
+            //referenceDevice.AttributeCoordinates.LogicalCoordinateX = refX;
+            //referenceDevice.AttributeCoordinates.LogicalCoordinateY = refY;
 
             // BinCodeMap
             MapDataBinCodeMap binCodeMap = new MapDataBinCodeMap();
@@ -381,8 +383,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             binCodeMap.BinDefinitions = binDefinitions;
             binCodeMap.BinCode = binCode;
             overlay.BinCodeMap = binCodeMap;
-            overlay.ReferenceDevices = new MapDataReferenceDevices();
-            overlay.ReferenceDevices.ReferenceDevice.Add(referenceDevice);
+            //overlay.ReferenceDevices = new MapDataReferenceDevices();
+            //overlay.ReferenceDevices.ReferenceDevice.Add(referenceDevice);
             subsMap.Overlay.Add(overlay);
 
             mapData.SubstrateMaps.SubstrateMap.Add(subsMap);
@@ -451,18 +453,19 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             subsMap.AttributeSubstrateType = AttributeSubstrateTypeFieldValue;
             subsMap.AttributeSubstrateId = binWaferId;
             subsMap.AttributeLayoutSpecifier = AttributeSubsMapLayoutSpecFieldValue;
+            subsMap.AttributeOrientation = angle;
             subsMap.AttributeOriginLocation = AttributeSubsMapOriginLocationFieldValue;
 
             #region <MapData>
             // Overlay
             MapDataOverlay overlay_BinCodeMap = new MapDataOverlay();
-            overlay_BinCodeMap.AttributeMapName = AttributeOverlayBinMapNameFieldValue;
+            overlay_BinCodeMap.AttributeMapName = AttributeOverlayMapNameFieldValue_Bin;
 
             // ReferenceDevices
-            MapDataReferenceDevice referenceDevice = new MapDataReferenceDevice();
-            referenceDevice.AttributeCoordinates = new MapDataLogicalCoordinates();
-            referenceDevice.AttributeCoordinates.LogicalCoordinateX = refX;
-            referenceDevice.AttributeCoordinates.LogicalCoordinateY = refY;
+            //MapDataReferenceDevice referenceDevice = new MapDataReferenceDevice();
+            //referenceDevice.AttributeCoordinates = new MapDataLogicalCoordinates();
+            //referenceDevice.AttributeCoordinates.LogicalCoordinateX = refX;
+            //referenceDevice.AttributeCoordinates.LogicalCoordinateY = refY;
 
             // BinCodeMap
             MapDataBinCodeMap binCodeMap = new MapDataBinCodeMap();
@@ -515,8 +518,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             binCodeMap.BinDefinitions = binDefinitions;
             binCodeMap.BinCode = binCode;
             overlay_BinCodeMap.BinCodeMap = binCodeMap;
-            overlay_BinCodeMap.ReferenceDevices = new MapDataReferenceDevices();
-            overlay_BinCodeMap.ReferenceDevices.ReferenceDevice.Add(referenceDevice);
+            //overlay_BinCodeMap.ReferenceDevices = new MapDataReferenceDevices();
+            //overlay_BinCodeMap.ReferenceDevices.ReferenceDevice.Add(referenceDevice);
             subsMap.Overlay.Add(overlay_BinCodeMap);
             #endregion </MapData>
 
@@ -530,7 +533,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 overlay_TransferMap.AttributeMapName = AttributeOverlayTransferMapNameFieldValue;
 
                 MapDataTransferMap transferMap = new MapDataTransferMap();
-                MapDataTransfer transfer = new MapDataTransfer();
+                //MapDataTransfer transfer = new MapDataTransfer();
                 transferMap.AttributeFromSubstrateType = AttributeSubstrateTypeFieldValue;
                 transferMap.AttributeFromSubstrateId = transferedCoreChips.Key;
 
@@ -539,15 +542,15 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                     if (null == item)
                         return null;
 
-                    MapDataT t = new MapDataT();
+                    MapDataTransfer t = new MapDataTransfer();
                     t.AttributeFX = int.Parse(item[0]);
                     t.AttributeFY = int.Parse(item[1]);
                     t.AttributeTX = int.Parse(item[2]);
                     t.AttributeTY = int.Parse(item[3]);
                     t.AttributeBondHead = item[4];
-                    transfer.AttributeT.Add(t);
+                    transferMap.Transfer.Add(t);
                 }
-                transferMap.Transfer.Add(transfer);
+                //transferMap.Transfer.Add(transfer);
                 overlay_TransferMap.TransferMap = transferMap;
                 subsMap.Overlay.Add(overlay_TransferMap);
             }
@@ -574,6 +577,11 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
                 string xmlData = receiveXmlData;
 
+                if (xmlData.Contains("%0D") || xmlData.Contains("%0A") || xmlData.Contains("%3C"))
+                {
+                    xmlData = WebUtility.UrlDecode(xmlData);
+                }
+
                 XmlSerializer serializer = new XmlSerializer(typeof(MapData));
 
                 using (StringReader reader = new StringReader(xmlData))
@@ -586,6 +594,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 Exception root = ex;
                 while (root.InnerException != null)
                     root = root.InnerException;
+
+                Console.WriteLine(root.Message);
 
                 throw new Exception("Deserialize 실패: " + root.Message, ex);
             }

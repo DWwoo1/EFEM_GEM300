@@ -57,16 +57,18 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         private const string AttributeDataFieldName = "ATTRDATA";
         private const string AttributeRelationshipFieldName = "ATTRRELN";
 
-        private const string AttributeIdFieldValue = "SubstrateType";       //임시
-        private const string AttributeIdFieldValue2 = "MapData";            //임시
-        private const string AttributeDataFieldValue = "Wafer";             //임시
+        private const string AttributeIdFieldValue_SubsType = "SubstrateType";       //임시
+        private const string AttributeIdFieldValue_MapData = "MapData";            //임시
+        private const string AttributeIdFieldValue_Orientation = "Orientation";             //임시
+        private const string AttributeDataFieldValue_Wafer = "Wafer";             //임시
         private const string AttributeOriginLocationFieldValue = "UpperLeft";
         private const string AttributeLayoutIdFieldValueWafer = "Die";
         private const string AttributeNullBinFieldValue = ".";
-        private const string AttributeOverlayMapNameFieldValue = "DownloadBinCodeMap";
+        private const string AttributeOverlayMapNameFieldValue = "DownloadCoreWaferMap";
         private const string AttributeReferenceDeviceFieldValue_First = "FirstDevice";
         private const string AttributeReferenceDeviceFieldValue_FDI = "FDI";
         private const int AttributeRelationshipFieldValue = 0;
+        private const int AttributeDataFieldValue_0 = 0;             //임시
 
         private const int FieldIndexObjectName = 2;
         private const int FieldIndexObjectId = 4;
@@ -206,8 +208,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             // RPOSEL pass(5)
 
             // RefXYList(List : 6)
-            if (false == xmlControl.FindReferenceDeviceByName(mapDataSubstrateMap, AttributeReferenceDeviceFieldValue_FDI, out MapDataReferenceDevice refDevice_FDI))
-                return false;
+            //if (false == xmlControl.FindReferenceDeviceByName(mapDataSubstrateMap, AttributeReferenceDeviceFieldValue_FDI, out MapDataReferenceDevice refDevice_FDI))
+            //    return false;
 
             // DUTMS pass(8)
             // XDIES pass? (9)
@@ -238,19 +240,19 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             // MLCL pass (16)
 
             // STRP
-            if (false == xmlControl.FindReferenceDeviceByName(mapDataSubstrateMap, AttributeReferenceDeviceFieldValue_First, out MapDataReferenceDevice refDevice_First))
-                return false;
+            //if (false == xmlControl.FindReferenceDeviceByName(mapDataSubstrateMap, AttributeReferenceDeviceFieldValue_First, out MapDataReferenceDevice refDevice_First))
+            //    return false;
 
             _paramValue.WaferDataToHandling.WaferId = materialId.GetValue();
             _paramValue.WaferDataToHandling.Angle = angle;
-            _paramValue.WaferDataToHandling.IndexOfRefX = refDevice_FDI.AttributeCoordinates.LogicalCoordinateX;
-            _paramValue.WaferDataToHandling.IndexOfRefY = refDevice_FDI.AttributeCoordinates.LogicalCoordinateY;
+            _paramValue.WaferDataToHandling.IndexOfRefX = /*refDevice_FDI.AttributeCoordinates.LogicalCoordinateX*/0;
+            _paramValue.WaferDataToHandling.IndexOfRefY = /*refDevice_FDI.AttributeCoordinates.LogicalCoordinateY*/0;
             _paramValue.WaferDataToHandling.CountOfCol = mapDataLayout.AttributeDimension.LogicalCoordinateX;
             _paramValue.WaferDataToHandling.CountOfRow = mapDataLayout.AttributeDimension.LogicalCoordinateY;
             _paramValue.WaferDataToHandling.CountOfProcessDies = dieCount;
             _paramValue.WaferDataToHandling.MapData = binCodeMap;
-            _paramValue.WaferDataToHandling.IndexOfStartingX = refDevice_First.AttributeCoordinates.LogicalCoordinateX;
-            _paramValue.WaferDataToHandling.IndexOfStartingX = refDevice_First.AttributeCoordinates.LogicalCoordinateY;
+            _paramValue.WaferDataToHandling.IndexOfStartingX = /*refDevice_First.AttributeCoordinates.LogicalCoordinateX*/0;
+            _paramValue.WaferDataToHandling.IndexOfStartingX = /*refDevice_First.AttributeCoordinates.LogicalCoordinateY*/0;
 
             Permission = EN_SCENARIO_PERMISSION_RESULT.OK;
             return true;
@@ -274,13 +276,19 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             _messageFormatToSend.Add(new SemiObjectAscii(ObjectTypeFieldName, objTypeName));
             _messageFormatToSend.Add(new SemiObjectList(1));
             _messageFormatToSend.Add(new SemiObjectAscii(ObjectIdFieldName, value.WaferDataToHandling.WaferId));
-            _messageFormatToSend.Add(new SemiObjectList(1));
+            _messageFormatToSend.Add(new SemiObjectList(2));
             _messageFormatToSend.Add(new SemiObjectList(3));
-            _messageFormatToSend.Add(new SemiObjectAscii(AttributeIdFieldName, AttributeIdFieldValue));
-            _messageFormatToSend.Add(new SemiObjectAscii(AttributeDataFieldName, AttributeDataFieldValue));
+            _messageFormatToSend.Add(new SemiObjectAscii(AttributeIdFieldName, AttributeIdFieldValue_SubsType));
+            _messageFormatToSend.Add(new SemiObjectAscii(AttributeDataFieldName, AttributeDataFieldValue_Wafer));
+            _messageFormatToSend.Add(new SemiObjectUInt(AttributeRelationshipFieldName, AttributeRelationshipFieldValue));
+            // 2026.06.10 dwlim [ADD] Core Map Download 요청 시 각도 추가
+            _messageFormatToSend.Add(new SemiObjectList(3));
+            _messageFormatToSend.Add(new SemiObjectAscii(AttributeIdFieldName, AttributeIdFieldValue_Orientation));
+            _messageFormatToSend.Add(new SemiObjectInt2(AttributeDataFieldName, AttributeDataFieldValue_0));
             _messageFormatToSend.Add(new SemiObjectUInt(AttributeRelationshipFieldName, AttributeRelationshipFieldValue));
             _messageFormatToSend.Add(new SemiObjectList(1));
-            _messageFormatToSend.Add(new SemiObjectAscii(AttributeIdFieldName, AttributeIdFieldValue2));
+            // 2026.06.10 dwlim [END]
+            _messageFormatToSend.Add(new SemiObjectAscii(AttributeIdFieldName, AttributeIdFieldValue_MapData));
 
             Receiving = true;
             return true;
