@@ -169,6 +169,9 @@ namespace EFEM.Modules.LoadPort
         {
             get
             {
+                if (_gem300Service == null)
+                    return null;
+
                 return _gem300Service.Carrier;
             }
         }
@@ -479,22 +482,31 @@ namespace EFEM.Modules.LoadPort
         }
         private void NotifyCarrierAccessStateToService(CarrierAccessStates state)
         {
-            _gem300Service.Carrier.SetCarrierAccessing(Name, state, _carrierServer.GetCarrierId(PortId));
+            if (CarrierService == null)
+                return;
+
+            CarrierService.SetCarrierAccessing(Name, state, _carrierServer.GetCarrierId(PortId));
         }
         private void NotifyAccessModeToService(LoadPortAccessMode acceeMode)
         {
-            _gem300Service.Carrier.ChangeAccessMode(Name, acceeMode);
+            if (CarrierService == null)
+                return;
+
+            CarrierService.ChangeAccessMode(Name, acceeMode);
         }
         private void NotifyTransferStateToService(LoadPortTransferStates state)
         {
+            if (CarrierService == null)
+                return;
+
             long result;
             switch (state)
             {
                 case LoadPortTransferStates.ReadyToLoad:
-                    result = _gem300Service.Carrier.SetReadyToLoad(Name);
+                    result = CarrierService.SetReadyToLoad(Name);
                     break;
                 case LoadPortTransferStates.ReadyToUnload:
-                    result = _gem300Service.Carrier.SetReadyToUnload(Name);
+                    result = CarrierService.SetReadyToUnload(Name);
                     break;
                 default:
                     result = 0;
@@ -555,7 +567,7 @@ namespace EFEM.Modules.LoadPort
             //                Controller.RemoveCarrierMap();
             //                _logger.WriteCarrrierEvent(false);
 
-            //                _gem300Service.Carrier.NotifyCarrierDetection(
+            //                CarrierService.NotifyCarrierDetection(
             //                    Name,
             //                    _carrierServer.HasCarrier(PortId));
             //            }
@@ -570,7 +582,7 @@ namespace EFEM.Modules.LoadPort
             //                _carrierServer.CreateCarrier(PortId);
             //                _logger.WriteCarrrierEvent(true);
 
-            //                var result = _gem300Service.Carrier.NotifyCarrierDetection(
+            //                var result = CarrierService.NotifyCarrierDetection(
             //                    Name,
             //                    _carrierServer.HasCarrier(PortId));
             //            }
@@ -662,11 +674,14 @@ namespace EFEM.Modules.LoadPort
                 _carrierServer.CreateCarrier(PortId);
                 _logger.WriteCarrrierEvent(true);
 
-                var result = _gem300Service.Carrier.NotifyCarrierDetection(
-                    Name,
-                    string.Empty,
-                    _state.CarrierIdVerificationState,
-                    _carrierServer.HasCarrier(PortId));
+                if (CarrierService != null)
+                {
+                    CarrierService.NotifyCarrierDetection(
+                        Name,
+                        string.Empty,
+                        _state.CarrierIdVerificationState,
+                        _carrierServer.HasCarrier(PortId));
+                }
             }
 
             // 2. physical carrier 제거 기준
@@ -683,11 +698,14 @@ namespace EFEM.Modules.LoadPort
                 Controller.RemoveCarrierMap();
                 _logger.WriteCarrrierEvent(false);
 
-                _gem300Service.Carrier.NotifyCarrierDetection(
-                    Name,
-                    _carrierServer.GetCarrierId(PortId),
-                    _state.CarrierIdVerificationState,
-                    _carrierServer.HasCarrier(PortId));
+                if (CarrierService != null)
+                {
+                    CarrierService.NotifyCarrierDetection(
+                        Name,
+                        _carrierServer.GetCarrierId(PortId),
+                        _state.CarrierIdVerificationState,
+                        _carrierServer.HasCarrier(PortId));
+                }
             }
         }
         #endregion </Carrier>
@@ -1494,10 +1512,13 @@ namespace EFEM.Modules.LoadPort
 
             _stateModel.ApplyExternalInput(in input);
 
-            _gem300Service.Carrier.SetPioSignal(
-                Name,
-                7,
-                1);
+            if (CarrierService != null)
+            {
+                CarrierService.SetPioSignal(
+                    Name,
+                    7,
+                    1);
+            }
         }
 
         // 개념상 Loading은 Ready 신호만 꺼지면 되지만 쌍을 맞추기 위해서 추가한다.
@@ -1512,10 +1533,13 @@ namespace EFEM.Modules.LoadPort
 
             //_stateModel.ApplyExternalInput(in input);
 
-            _gem300Service.Carrier.SetPioSignal(
-                Name,
-                7,
-                0);
+            if (CarrierService != null)
+            {
+                CarrierService.SetPioSignal(
+                    Name,
+                    7,
+                    0);
+            }
         }
 
         /// <summary>
@@ -1533,10 +1557,13 @@ namespace EFEM.Modules.LoadPort
 
             _stateModel.ApplyExternalInput(in input);
 
-            _gem300Service.Carrier.SetPioSignal(
-                Name,
-                7,
-                1);
+            if (CarrierService != null)
+            {
+                CarrierService.SetPioSignal(
+                    Name,
+                    7,
+                    1);
+            }
         }
 
         /// <summary>
@@ -1554,10 +1581,13 @@ namespace EFEM.Modules.LoadPort
 
             _stateModel.ApplyExternalInput(in input);
 
-            _gem300Service.Carrier.SetPioSignal(
-                Name,
-                7,
-                0);
+            if (CarrierService != null)
+            {
+                CarrierService.SetPioSignal(
+                    Name,
+                    7,
+                    0);
+            }
         }
 
         /// <summary>
@@ -2000,11 +2030,14 @@ namespace EFEM.Modules.LoadPort
                 AssignCarrierByTransferState();
                 UpdateAMHSValues();
 
-                var carrierId = _carrierServer.GetCarrierId(PortId);
-                _gem300Service.Carrier.SetLoadPortInfo(
-                Name,
-                _state,
-                carrierId);
+                if (CarrierService != null)
+                {
+                    var carrierId = _carrierServer.GetCarrierId(PortId);
+                    CarrierService.SetLoadPortInfo(
+                        Name,
+                        _state,
+                        carrierId);
+                }
 
                 return true;
             }

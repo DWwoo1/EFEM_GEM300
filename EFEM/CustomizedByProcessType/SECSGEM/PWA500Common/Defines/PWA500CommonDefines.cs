@@ -3424,7 +3424,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 var ringId = item.Value.GetAttribute(PWA500SubstrateAttributes.RingId);
                 if (string.IsNullOrEmpty(ringId))
                 {
-                    _substrateManager.SetAttributeByKey(item.Value.UniqueKey, PWA500SubstrateAttributes.RingId, item.Value.UniqueKey);
+                    _substrateManager.SetAttributeByKey(item.Value.UniqueKey, PWA500SubstrateAttributes.RingId, item.Value.Name);
                     isChanged = true;
                 }
 

@@ -55,7 +55,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\Release\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PWA500W</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>

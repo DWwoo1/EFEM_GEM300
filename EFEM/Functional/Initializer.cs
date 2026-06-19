@@ -840,7 +840,7 @@ namespace FrameOfSystem3.Functional
                     break;
                 case EN_INITIALIZATION_STEP.INIT_EFEM_MODULES_END:
                     {
-                        SECSGEM.IGem300ScenarioService gem300Service = new SECSGEM.Gem300ScenarioService();
+                        BuildGem300ServiceIfNeeded(out var gem300Service);
 
                         ConfigureScenarioOperator(gem300Service);
 
@@ -848,9 +848,12 @@ namespace FrameOfSystem3.Functional
 
                         ExecuteBeforeInitialization(gem300Service);
 
-                        BuildJobBinder();
+                        if (gem300Service != null)
+                        {
+                            BuildJobBinder();
 
-                        RecoverJobManager();
+                            RecoverJobManager();
+                        }
 
                         int i;
 
@@ -957,6 +960,9 @@ namespace FrameOfSystem3.Functional
 
         private void BuildJobManager(SECSGEM.IGem300ScenarioService gem300Service)
         {
+            if (gem300Service == null)
+                return;
+
             //EFEM.Jobs.Repository.IOrderedRepository<EFEM.Jobs.Domain.ControlJob, string> controlJobRepository =
             //    new EFEM.Jobs.Repository.InMemoryRepository<EFEM.Jobs.Domain.ControlJob, string>();
 
@@ -1058,11 +1064,11 @@ namespace FrameOfSystem3.Functional
             #region <기판 관리자 생성>
             EFEM.MaterialTracking.SubstrateManager.Configure(
                 storageContext.Substrate,
-                new List<EFEM.MaterialTracking.ISubstrateEventObserver> 
+                new List<EFEM.MaterialTracking.ISubstrateEventObserver>
                 {
-                    storageContext.LocationHistory,
-                    storageContext.ProcessingHistory,
-                    SubstrateHistoryServicesFactory.HistoryTracker,
+                                    storageContext.LocationHistory,
+                                    storageContext.ProcessingHistory,
+                                    SubstrateHistoryServicesFactory.HistoryTracker,
                 },
                 substrate,
                 provider,
@@ -1121,6 +1127,22 @@ namespace FrameOfSystem3.Functional
             //EFEM.Jobs.Manager.JobManager.Instance.RequestAllControlJobIds();
             //EFEM.Jobs.Manager.JobManager.Instance.RequestControlJobHeadOfQueueInfo();
         }
+        private void BuildGem300ServiceIfNeeded(out SECSGEM.IGem300ScenarioService gem300Service)
+        {
+            switch (Work.AppConfigManager.Instance.GemSpecification)
+            {
+                case Define.DefineEnumProject.AppConfig.EN_SECSGEM_SPEC.GEM300:
+                    {
+                        gem300Service = new SECSGEM.Gem300ScenarioService();
+                    }
+                    break;
+                default:
+                    {
+                        gem300Service = null;
+                    }
+                    break;
+            }
+        }
         private void ConfigureScenarioOperator(SECSGEM.IGem300ScenarioService gem300Service)
         {
             Vision_.Vision.GetInstance().SetUseVision(false);
@@ -1143,8 +1165,10 @@ namespace FrameOfSystem3.Functional
                 config.CfgPath,
                 config.RecipePath);
 
-            SECSGEM.ScenarioOperator.Instance.AttachGem300Service(gem300Service);
-
+            if (gem300Service != null)
+            {
+                SECSGEM.ScenarioOperator.Instance.AttachGem300Service(gem300Service);
+            }
         }        
         private void BuildLoadPorts(SECSGEM.IGem300ScenarioService gem300Service)
         {
@@ -1317,18 +1341,56 @@ namespace FrameOfSystem3.Functional
 
                 Work.AppConfigManager.Instance.LoadPortLocationNames.TryGetValue(i, out Dictionary<string, string> locationNames);
 
-                var verificationOptions = new EFEM.Defines.LoadPort.VerificationTransitionOptions
+                EFEM.Defines.LoadPort.VerificationTransitionOptions verificationOptions;
+                EFEM.Defines.LoadPort.ILoadPortStateModel stateModel;
+                switch (Work.AppConfigManager.Instance.GemSpecification)
                 {
-                    //CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate,
-                    //SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate
-                    CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult,
-                    SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult
-                };
+                    //case Define.DefineEnumProject.AppConfig.EN_SECSGEM_SPEC.SECSGEM:
+                    //    break;
+                    case Define.DefineEnumProject.AppConfig.EN_SECSGEM_SPEC.GEM300:
+                        {
+                            verificationOptions = new EFEM.Defines.LoadPort.VerificationTransitionOptions
+                            {
+                                //CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate,
+                                //SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate
+                                CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult,
+                                SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult
+                            };
 
-                var stateModel = EFEM.Modules.LoadPort.State.LoadPortStateModelFactory.Create(
-                    EFEM.Modules.LoadPort.State.LoadPortStateModelType.E87,
-                    portId,
-                    verificationOptions);
+                            stateModel = EFEM.Modules.LoadPort.State.LoadPortStateModelFactory.Create(
+                                EFEM.Modules.LoadPort.State.LoadPortStateModelType.E87,
+                                portId,
+                                verificationOptions);
+                        }
+                        break;
+                    default:
+                        {
+                            verificationOptions = new EFEM.Defines.LoadPort.VerificationTransitionOptions
+                            {
+                                CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate,
+                                SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate
+                            };
+
+                            stateModel = EFEM.Modules.LoadPort.State.LoadPortStateModelFactory.Create(
+                                EFEM.Modules.LoadPort.State.LoadPortStateModelType.Legacy,
+                                portId,
+                                verificationOptions);
+                        }
+                        break;
+                }
+                
+                //var verificationOptions = new EFEM.Defines.LoadPort.VerificationTransitionOptions
+                //{
+                //    //CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate,
+                //    //SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.Immediate
+                //    CarrierIdPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult,
+                //    SlotMapPolicy = EFEM.Defines.LoadPort.VerificationTransitionPolicy.WaitForHostResult
+                //};
+
+                //var stateModel = EFEM.Modules.LoadPort.State.LoadPortStateModelFactory.Create(
+                //    EFEM.Modules.LoadPort.State.LoadPortStateModelType.E87,
+                //    portId,
+                //    verificationOptions);
                 //EFEM.Defines.LoadPort.ILoadPortStateModel stateModel = new EFEM.Modules.LoadPort.State.LegacyLoadPortStateModel(portId, verificationOptions);
 
                 var processType = Work.AppConfigManager.Instance.ProcessType;

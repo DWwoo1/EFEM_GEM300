@@ -1187,6 +1187,12 @@ namespace Define
                 DIE_TRANSFER,
                 DIE_TRANSFER_300,
             }
+
+            public enum EN_SECSGEM_SPEC
+            {
+                SECSGEM,
+                GEM300,
+            }
             #endregion </Customer>
 
             #region <Device>

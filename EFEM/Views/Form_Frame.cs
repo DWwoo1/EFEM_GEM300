@@ -317,7 +317,13 @@ namespace FrameOfSystem3.Views
                     if (Enum.TryParse(strMainMenu, out enMainMenu))
                     {
                         string strButtonName    = strSubMenu.Substring(nIndexOfToken + 1).Replace('_', ' ');
-
+                        
+                        if (string.Equals(strButtonName, "JOB INFO", StringComparison.OrdinalIgnoreCase) &&
+                            false == Work.AppConfigManager.Instance.ProcessType.Equals(Define.DefineEnumProject.AppConfig.EN_PROCESS_TYPE.DIE_TRANSFER_300))
+                        {
+                            continue;
+                        }
+                        
                         if (strButtonName.Equals("EFEM SIMULATOR"))
                         {
                             if (false == Debugger.IsAttached && false == Work.AppConfigManager.Instance.LoadPortControllerType.Equals(Define.DefineEnumProject.AppConfig.EN_LOADPORT_CONTROLLER.NONE))

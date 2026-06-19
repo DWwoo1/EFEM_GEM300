@@ -315,8 +315,11 @@ namespace EFEM.MaterialTracking
             if (false == hasKey)
                 return;
 
-            var locName = LocationServer.FindNameById(s.LocationId);
-           _gem300Service.Substrate.SetInfo(locName, s.Name, s.TransportStatus, s.ProcessingStatus, s.IdReadingStatus);
+            if (_gem300Service != null)
+            {
+                var locName = LocationServer.FindNameById(s.LocationId);
+                _gem300Service.Substrate.SetInfo(locName, s.Name, s.TransportStatus, s.ProcessingStatus, s.IdReadingStatus);
+            }
         }
         public async void RemoveSubstrateByKey(string key, bool includeCache = true)
         {
@@ -372,19 +375,22 @@ namespace EFEM.MaterialTracking
 
                 RemoveSubstrateKey(key);
 
-                // 자재 제거 처리
-                _gem300Service.Substrate.SetProcessing(s.LocationId, s.Name, ProcessingStates.Lost);
-
-                // 객체 제거
-                _gem300Service.Substrate.Remove(s.Name);
-
-                if (Jobs.Binding.SubstrateJobBindingService.Instance != null)
+                if (_gem300Service != null)
                 {
-                    Jobs.Binding.SubstrateJobBindingService.Instance.RemoveBindingTarget(
-                        s.ProcessJobId,
-                        s.SourceCarrierId,
-                        s.SourceSlot,
-                        "Lost");
+                    // 자재 제거 처리
+                    _gem300Service.Substrate.SetProcessing(s.LocationId, s.Name, ProcessingStates.Lost);
+
+                    // 객체 제거
+                    _gem300Service.Substrate.Remove(s.Name);
+
+                    if (Jobs.Binding.SubstrateJobBindingService.Instance != null)
+                    {
+                        Jobs.Binding.SubstrateJobBindingService.Instance.RemoveBindingTarget(
+                            s.ProcessJobId,
+                            s.SourceCarrierId,
+                            s.SourceSlot,
+                            "Lost");
+                    }
                 }
             }
         }
@@ -515,8 +521,13 @@ namespace EFEM.MaterialTracking
                 if (false == _substratesByKey.TryGetValue(item.Value, out var s) || s == null)
                     continue;
 
-                if (false == _storage.IsExists(s.UniqueKey))
-                    continue;
+                // 2026.06.05. dwlim [MOD] CONTINUE 에 의해 이전 정보가 지워지지 않음
+                _storage.IsExists(s.UniqueKey);
+                //if (false == _storage.IsExists(s.UniqueKey))
+                //{
+                //    Console.WriteLine($"Not removed : {s.UniqueKey}");
+                //    continue;
+                //}
 
                 //if (string.IsNullOrWhiteSpace(destinationPath))
                 //    continue;
@@ -533,6 +544,8 @@ namespace EFEM.MaterialTracking
 
                 // 아카이브에서 지워졌을 것이니 여기서 또 지울 필요가 없다.
                 RemoveSubstrateKey(item.Value, false);
+
+                // Console.WriteLine($"Removed : {s.UniqueKey}");
             }
 
             _substratesAtLoadPortSlots[portId].Clear();

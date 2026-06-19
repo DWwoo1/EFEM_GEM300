@@ -9,7 +9,7 @@ namespace EFEM.Modules.LoadPort.Recovery
         public static void Save(string filePath, LoadPortRecoveryData data)
         {
             if (data == null)
-                throw new ArgumentNullException(nameof(data));
+                return;
 
             data.SavedAtUtc = DateTime.UtcNow;
 

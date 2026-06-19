@@ -1391,7 +1391,7 @@ namespace FrameOfSystem3.Task
                 var ringId = item.Value.GetAttribute(PWA500SubstrateAttributes.RingId);
                 if (string.IsNullOrEmpty(ringId))
                 {
-                    _substrateManager.SetAttributeByKey(item.Value.UniqueKey, PWA500SubstrateAttributes.RingId, item.Value.UniqueKey);
+                    _substrateManager.SetAttributeByKey(item.Value.UniqueKey, PWA500SubstrateAttributes.RingId, item.Value.Name);
                 }
                 _substrateManager.SaveDataByKey(item.Value.UniqueKey);
             }

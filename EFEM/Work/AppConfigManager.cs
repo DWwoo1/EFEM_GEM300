@@ -150,6 +150,7 @@ namespace FrameOfSystem3.Work
             RobotStationNames = new ReadOnlyDictionary<int, Dictionary<string, string>>(temporaryStations);
 			#endregion </Station>
 
+			Update(NameOf(() => GemSpecification				), ref GemSpecification					);
 			Update(NameOf(() => FoupRfidLotIdAddress			), ref FoupRfidLotIdAddress				);
 			Update(NameOf(() => FoupRfidLotIdLength				), ref FoupRfidLotIdLength				);
 			Update(NameOf(() => FoupRfidCarrierIdAddress		), ref FoupRfidCarrierIdAddress			);
@@ -166,6 +167,7 @@ namespace FrameOfSystem3.Work
 		readonly public Language_.TYPE_LANGUAGE Language 					= Language_.TYPE_LANGUAGE.ENGLISH;
 		readonly public EN_CUSTOMER Customer								= EN_CUSTOMER.NONE;
 		readonly public bool ProcessModuleSimulation						= false;
+		readonly public EN_SECSGEM_SPEC GemSpecification					= EN_SECSGEM_SPEC.SECSGEM;
         readonly public EN_PROCESS_TYPE ProcessType                         = EN_PROCESS_TYPE.NONE;
         readonly public EN_ROBOT_CONTROLLER AtmRobotControllerType			= EN_ROBOT_CONTROLLER.NONE;
 		readonly public EN_LOADPORT_CONTROLLER LoadPortControllerType		= EN_LOADPORT_CONTROLLER.NONE;
