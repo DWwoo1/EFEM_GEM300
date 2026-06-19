@@ -121,6 +121,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (type)
             {
                 case SubstrateType.Core:
+                case SubstrateType.Empty:
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         IJobManager manager = JobManager.Instance;
@@ -153,32 +154,32 @@ namespace FrameOfSystem3.SECSGEM.PortRole
                     }
                     break;
 
-                case SubstrateType.Bin1:
-                    {
-                        foreach (var item in substrates)
-                        {
-                            if (item.Value == null)
-                                continue;
+                //case SubstrateType.Bin1:
+                //    {
+                //        foreach (var item in substrates)
+                //        {
+                //            if (item.Value == null)
+                //                continue;
 
-                            var transf = item.Value.TransportStatus;
-                            var proc = item.Value.ProcessingStatus;
-                            if (transf == TransportStates.AtSource &&
-                                proc == ProcessingStates.NeedsProcessing)
-                            {
-                                var locId = item.Value.LocationId;
-                                if (false == LocationServer.FindLocationById(locId, out var loc))
-                                    continue;
+                //            var transf = item.Value.TransportStatus;
+                //            var proc = item.Value.ProcessingStatus;
+                //            if (transf == TransportStates.AtSource &&
+                //                proc == ProcessingStates.NeedsProcessing)
+                //            {
+                //                var locId = item.Value.LocationId;
+                //                if (false == LocationServer.FindLocationById(locId, out var loc))
+                //                    continue;
 
-                                location = loc as LoadPortLocation;
-                                substrateKey = item.Value.UniqueKey;
-                                if (location != null)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    break;
+                //                location = loc as LoadPortLocation;
+                //                substrateKey = item.Value.UniqueKey;
+                //                if (location != null)
+                //                {
+                //                    return true;
+                //                }
+                //            }
+                //        }
+                //    }
+                //    break;
 
                 //case SubstrateType.Bin2:
                 //    break;

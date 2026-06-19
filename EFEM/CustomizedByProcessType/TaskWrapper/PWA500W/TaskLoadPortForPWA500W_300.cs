@@ -1263,29 +1263,29 @@ namespace FrameOfSystem3.Task
             if (string.IsNullOrWhiteSpace(carrierId))
                 return false;
 
-            if (MySubstrateType == SubstrateType.Core)
+            if (MySubstrateType == SubstrateType.Core || MySubstrateType == SubstrateType.Empty)
             {
                 return ContainsControlJobByBinderCarrier(
                     controlJob,
                     carrierId);
             }
 
-            if (_functionsForPWA500.IsBinType(MySubstrateType))
-            {
-                // Bin 정책:
-                // OutSpec이 있으면 OutSpec destination carrier로 간다.
-                if (HasMaterialOutputSpecification(controlJob))
-                {
-                    return ContainsMaterialOutputSpecificationValue(
-                        controlJob,
-                        carrierId);
-                }
+            //if (_functionsForPWA500.IsBinType(MySubstrateType))
+            //{
+            //    // Bin 정책:
+            //    // OutSpec이 있으면 OutSpec destination carrier로 간다.
+            //    if (HasMaterialOutputSpecification(controlJob))
+            //    {
+            //        return ContainsMaterialOutputSpecificationValue(
+            //            controlJob,
+            //            carrierId);
+            //    }
 
-                // OutSpec이 없으면 source carrier로 간다.
-                return ContainsControlJobByBinderCarrier(
-                    controlJob,
-                    carrierId);
-            }
+            //    // OutSpec이 없으면 source carrier로 간다.
+            //    return ContainsControlJobByBinderCarrier(
+            //        controlJob,
+            //        carrierId);
+            //}
 
             return false;
         }
@@ -1467,7 +1467,9 @@ namespace FrameOfSystem3.Task
         }
         private bool TryPrepareJobsUntilReady()
         {
-            if (MySubstrateType == SubstrateType.Empty)
+            if (MySubstrateType == SubstrateType.Bin1
+                || MySubstrateType == SubstrateType.Bin2
+                || MySubstrateType == SubstrateType.Bin3)
                 return true;
 
             string carrierId = _carrierServer.GetCarrierId(PortId);
@@ -1499,7 +1501,8 @@ namespace FrameOfSystem3.Task
             {
                 // TODO : 고객사 확인 필요
                 // Bin1/2/3의 경우 JobBinding 이후 잡 스타트 진행
-                if (_functionsForPWA500.IsBinType(MySubstrateType))
+                // 2026.06.19 dwlim [MOD] 공테이프(Empty 또는 Bin에 Job 사용 안하기로함)에 잡 진행 
+                if (/*_functionsForPWA500.IsBinType(MySubstrateType)*/MySubstrateType == SubstrateType.Empty)
                 {
                     //string processJobId;
                     return TryAdvanceJobUntilProcessJobProcessing(

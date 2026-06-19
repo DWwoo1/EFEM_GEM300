@@ -161,7 +161,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
         }
         public bool IsJobRequiredForLoading(SubstrateType type)
         {
-            return type == SubstrateType.Core;
+            return type == SubstrateType.Core || type == SubstrateType.Empty;
         }
         public bool IsBinType(SubstrateType type)
         {
@@ -191,6 +191,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (type)
             {
                 case SubstrateType.Core:
+                case SubstrateType.Empty:
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         IJobManager manager = JobManager.Instance;
@@ -223,32 +224,32 @@ namespace FrameOfSystem3.SECSGEM.PortRole
                     }
                     break;
                 
-                case SubstrateType.Empty:
-                    {
-                        foreach (var item in substrates)
-                        {
-                            if (item.Value == null)
-                                continue;
+                //case SubstrateType.Empty:
+                //    {
+                //        foreach (var item in substrates)
+                //        {
+                //            if (item.Value == null)
+                //                continue;
 
-                            var transf = item.Value.TransportStatus;
-                            var proc = item.Value.ProcessingStatus;
-                            if (transf == TransportStates.AtSource &&
-                                proc == ProcessingStates.NeedsProcessing)
-                            {
-                                var locId = item.Value.LocationId;
-                                if (false == LocationServer.FindLocationById(locId, out var loc))
-                                    continue;
+                //            var transf = item.Value.TransportStatus;
+                //            var proc = item.Value.ProcessingStatus;
+                //            if (transf == TransportStates.AtSource &&
+                //                proc == ProcessingStates.NeedsProcessing)
+                //            {
+                //                var locId = item.Value.LocationId;
+                //                if (false == LocationServer.FindLocationById(locId, out var loc))
+                //                    continue;
 
-                                location = loc as LoadPortLocation;
-                                substrateKey = item.Value.UniqueKey;
-                                if (location != null)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    break;
+                //                location = loc as LoadPortLocation;
+                //                substrateKey = item.Value.UniqueKey;
+                //                if (location != null)
+                //                {
+                //                    return true;
+                //                }
+                //            }
+                //        }
+                //    }
+                //    break;
 
                 case SubstrateType.Bin1:
                     break;
@@ -269,6 +270,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (substrateType)
             {
                 case SubstrateType.Core:
+                case SubstrateType.Empty:
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);
@@ -284,8 +286,8 @@ namespace FrameOfSystem3.SECSGEM.PortRole
                         return processJobIds.Count > 0;
                     }
 
-                case SubstrateType.Empty:
-                    return false;
+                //case SubstrateType.Empty:
+                //    return false;
 
                 case SubstrateType.Bin1:
                 case SubstrateType.Bin2:
