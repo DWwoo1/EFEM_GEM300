@@ -4017,7 +4017,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.ChipQty, chipQty.ToString());
                 _substrateManager.SaveDataByKey(substrate.UniqueKey);
 
-                double ffrot = angle + 180 <= 360 ? angle + 180 : angle - 180;
+                double ffrot = 0;
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
                     [UploadMapKeys.KeyParamWaferId] = substrateId,

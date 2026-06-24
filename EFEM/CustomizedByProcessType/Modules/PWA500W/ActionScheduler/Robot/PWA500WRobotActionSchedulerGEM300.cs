@@ -155,12 +155,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 var arm = GetTargetArmBySize(size);
                 if (false == IsArmAvailable(arm)) continue;
 
-                if (substrateType == SubstrateType.Core)
-                {
-                    if (HasCoreWaferAtProcessModule())
-                        continue;
-                }
-                else
+                if (substrateType != SubstrateType.Core)
                 {
                     if (HasBinWaferAtProcessModule())
                         continue;
@@ -963,21 +958,6 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                     || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin1.ToString())
                     || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin2.ToString())
                     || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin3.ToString()))
-                    return true;
-            }
-
-            return false;
-        }
-        private bool HasCoreWaferAtProcessModule()
-        {
-            var pmName = GetProcessModuleName();
-
-            if (false == _substrateManager.GetSubstratesAtProcessModule(pmName, ref _substratesAtProcessModule))
-                return false;
-
-            foreach (var item in _substratesAtProcessModule)
-            {
-                if (item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()))
                     return true;
             }
 

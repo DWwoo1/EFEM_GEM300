@@ -678,7 +678,7 @@ namespace FrameOfSystem3.Task
                                         _binDataToUpload.SubstrateId,
                                         _binDataToUpload.RingId,
                                         _binDataToUpload.ChipQty,
-                                        90,
+                                        0,
                                         /*_binDataToUpload.Angle*/270,
                                         _binDataToUpload.CountRow,
                                         _binDataToUpload.CountCol,
@@ -924,7 +924,7 @@ namespace FrameOfSystem3.Task
                         //var portId = lpLocation.PortId;
 
                         var portId = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()) ?
-                            substrate.SourcePortId : lpLocation.PortId;
+                            lpLocation.PortId : substrate.SourcePortId;
 
                         if (_functionsForPWA500.IsProcessingCompleted(portId, substrate, out var jobs))
                         {
@@ -2461,21 +2461,12 @@ namespace FrameOfSystem3.Task
                             // Bin Wafer의 Job은 공테이프 Carrier에 속해있다.
                             int targetJobPortId = convertedType != SubstrateType.Core ? sourcePortId : targetPortId;
 
-                            if (TryGetExecutingControlJobOrPrepare(targetJobPortId, out var jobId))
-                            {
                                 if (convertedType != SubstrateType.Core)
                                 {
-                                    _substrateManager.SetControlJobIdByKey(key, jobId);
                                     _substrateManager.SetDestinationPortIdByKey(key, targetPortId);
                                     _substrateManager.SetDestinationSlotByKey(key, targetSlot);
                                     _substrateManager.SaveDataByKey(key);
                                 }
-                            }
-                            else
-                            {
-                                checkingResult = CheckingCarrierCodeToUnload.Skip;
-                                description = ErrorDescriptionsForMaterialHanding.ErrorDescriptionForControlJobIsNotExecuted;
-                            }
                         }
 
                         #endregion </Data 확인>

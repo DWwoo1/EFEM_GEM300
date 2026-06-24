@@ -1493,24 +1493,6 @@ namespace FrameOfSystem3.Task
             if (false == IsControlJobBound(controlJob))
                 return false;
 
-            if (MySubstrateType == SubstrateType.Core)
-            {
-                return true;
-            }
-            else
-            {
-                // TODO : 고객사 확인 필요
-                // Bin1/2/3의 경우 JobBinding 이후 잡 스타트 진행
-                // 2026.06.19 dwlim [MOD] 공테이프(Empty 또는 Bin에 Job 사용 안하기로함)에 잡 진행 
-                if (/*_functionsForPWA500.IsBinType(MySubstrateType)*/MySubstrateType == SubstrateType.Empty)
-                {
-                    //string processJobId;
-                    return TryAdvanceJobUntilProcessJobProcessing(
-                        JobManager.Instance,
-                        controlJob,
-                        out _);
-                }
-            }
             return true;
         }
         private bool IsLotStarted()

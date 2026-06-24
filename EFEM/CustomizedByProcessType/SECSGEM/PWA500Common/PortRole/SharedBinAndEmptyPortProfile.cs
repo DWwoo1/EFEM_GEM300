@@ -121,7 +121,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (type)
             {
                 case SubstrateType.Core:
-                case SubstrateType.Empty:
+                case SubstrateType.Bin1:
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         IJobManager manager = JobManager.Instance;

@@ -597,8 +597,6 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public static readonly string KeyParamSlotId = "SLOTID";
         public static readonly string KeyParamOperatorId = "OPERID";
         public static readonly string KeyParamMapData = "MAPDATA";
-        public static readonly string KeyParamFilmFrameLocation = "FILM_FRAME_LOCATION";
-        public static readonly string KeyParamFlatNotchLocation = "FLAT_NOTCH_LOCATION";
     }
     public static class SlotMappingKeys
     {
@@ -1896,10 +1894,10 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
             Dictionary<string, string> scenarioParams = new Dictionary<string, string>
             {
-                [UploadCoreOrBinFileKeys.KeyParamWaferId] = substrateId,
-                [UploadCoreOrBinFileKeys.KeyParamFilmFrameLocation] = ringFrameAngle.ToString(),
-                [UploadCoreOrBinFileKeys.KeyParamFlatNotchLocation] = waferAngle.ToString(),
-                [UploadCoreOrBinFileKeys.KeyParamMapData] = serializedMapdata,
+                [UploadMapKeys.KeyParamWaferId] = substrateId,
+                [UploadMapKeys.KeyParamFilmFrameLocation] = ringFrameAngle.ToString(),
+                [UploadMapKeys.KeyParamFlatNotchLocation] = waferAngle.ToString(),
+                [UploadMapKeys.KeyParamMapData] = serializedMapdata,
             };
 
             return scenarioParams;
