@@ -531,6 +531,13 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public static readonly string KeyResultQty = "Qty";
         public static readonly string KeyResultMapData = "MapData";
     }
+    public static class UploadMapKeys
+    {
+        public static readonly string KeyParamWaferId = "WAFERID";
+        public static readonly string KeyParamMapData = "MAPDATA";
+        public static readonly string KeyParamFilmFrameLocation = "FILM_FRAME_LOCATION";
+        public static readonly string KeyParamFlatNotchLocation = "FLAT_NOTCH_LOCATION";
+    }
     public static class TrackInOrOut
     {
         public static readonly string KeyParamCarrierId = "CARRIERID";
@@ -590,6 +597,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public static readonly string KeyParamSlotId = "SLOTID";
         public static readonly string KeyParamOperatorId = "OPERID";
         public static readonly string KeyParamMapData = "MAPDATA";
+        public static readonly string KeyParamFilmFrameLocation = "FILM_FRAME_LOCATION";
+        public static readonly string KeyParamFlatNotchLocation = "FLAT_NOTCH_LOCATION";
     }
     public static class SlotMappingKeys
     {
@@ -639,6 +648,14 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public static readonly string KeyParamLotId = "LOTID";
         public static readonly string KeyParamPartId = "PARTID";
         public static readonly string KeyParamStepSeq = "STEPSEQ";
+    }
+    public static class WaferEndKeys
+    {
+        public static readonly string KeyParamPortId = "PortID";
+        public static readonly string KeyParamLotId = "LOTID";
+        public static readonly string KeyParamSlotId = "SLOTID";
+        public static readonly string KeyParamSortingInfo = "SORTING_INFO";
+        public static readonly string KeyParamRingFrameId = "RINGFRAME_ID";
     }
     #endregion </For SECS/GEM>
 
@@ -1851,7 +1868,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         }
         // [TODO] : 2025.05.16 dwlim [ADD] 로그 제출로인해 작성. 나중에 수정해야함
         public Dictionary<string, string> MakeScenarioParamToUploadBinMap
-            (string substrateId, string ringId, int chipQty, double angle, int countRow, int countCol, string nullBinCode, string mapData,
+            (string substrateId, string ringId, int chipQty, double ringFrameAngle, double waferAngle, int countRow, int countCol, string nullBinCode, string mapData,
             string userId, bool useEventHandling, BinDataToUploadFromPWA500 bindata)
         {
             string recipeId = GetRecipeId();
@@ -1868,11 +1885,11 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             MapDataControl e142MapControl = new MapDataControl();
             PMSControl e142PMSControl = new PMSControl();
             Dictionary<string, List<string[]>> transferedDiesData = new Dictionary<string, List<string[]>>();
-            (int refX, int refY) = FindReferencePosition(countCol, countRow, angle, mapData, "D", nullBinCode);
+            (int refX, int refY) = FindReferencePosition(countCol, countRow, waferAngle, mapData, "D", nullBinCode);
             if (null != bindata.PmsFileBody)
             {
                 transferedDiesData = e142PMSControl.GetTransferedData(bindata.PmsFileBody);
-                e142Mapdata = e142MapControl.MakeBinMapObject(lotId, substrateId, recipeId, mapData, (int)angle, countCol, countRow, chipQty, refX, refY, transferedDiesData);
+                e142Mapdata = e142MapControl.MakeBinMapObject(lotId, substrateId, recipeId, mapData, (int)waferAngle, countCol, countRow, chipQty, refX, refY, transferedDiesData);
             }
 
             string serializedMapdata = e142MapControl.SerializeMapData(e142Mapdata);
@@ -1880,6 +1897,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             Dictionary<string, string> scenarioParams = new Dictionary<string, string>
             {
                 [UploadCoreOrBinFileKeys.KeyParamWaferId] = substrateId,
+                [UploadCoreOrBinFileKeys.KeyParamFilmFrameLocation] = ringFrameAngle.ToString(),
+                [UploadCoreOrBinFileKeys.KeyParamFlatNotchLocation] = waferAngle.ToString(),
                 [UploadCoreOrBinFileKeys.KeyParamMapData] = serializedMapdata,
             };
 

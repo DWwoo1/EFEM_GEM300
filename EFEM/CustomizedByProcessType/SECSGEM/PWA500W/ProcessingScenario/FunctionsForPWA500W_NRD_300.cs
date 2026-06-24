@@ -75,6 +75,23 @@ namespace FrameOfSystem3.SECSGEM
 
             return PortRoleProfile.IsProcessingCompleted(portId, substrateType, out processJobIds);
         }
+        public bool IsProcessingCompleted(int portId, Substrate substrate ,out List<string> processJobIds)
+        {
+            var lpIndex = LoadPortManager.GetLoadPortIndexByPortId(portId);
+            var substrateType = GetSubstrateTypeByLoadPortIndex(lpIndex);
+
+            int targetPortId;
+            if (substrateType.Equals(SubstrateType.Core))
+            {
+                targetPortId = portId;
+            }
+            else
+            {
+                targetPortId = substrate.SourcePortId;
+            }
+
+            return PortRoleProfile.IsProcessingCompleted(targetPortId, substrateType, out processJobIds);
+        }
         public bool IsEmptyCarrierAtSimulation(SubstrateType substrateType)
         {
             return PortRoleProfile.IsEmptyCarrierAtSimulation(substrateType);

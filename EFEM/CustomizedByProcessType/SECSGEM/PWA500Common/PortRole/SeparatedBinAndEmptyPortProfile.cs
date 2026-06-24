@@ -171,6 +171,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
         }
         public SubstrateType GetRequestTypeFromPMForBinOrEmptyType(bool isLoading)
         {
+            // TODO : Bin1 밖에 없어서 수정해야함
             return isLoading ? SubstrateType.Empty : SubstrateType.Bin1;
         }
         public bool GetNextSlotInformationToPick(int lpIndex,
@@ -270,7 +271,9 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (substrateType)
             {
                 case SubstrateType.Core:
-                case SubstrateType.Empty:
+                case SubstrateType.Bin1:
+                case SubstrateType.Bin2:
+                case SubstrateType.Bin3:
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);
@@ -289,43 +292,43 @@ namespace FrameOfSystem3.SECSGEM.PortRole
                 //case SubstrateType.Empty:
                 //    return false;
 
-                case SubstrateType.Bin1:
-                case SubstrateType.Bin2:
-                case SubstrateType.Bin3:
-                    {
-                        int offsetIndex = substrateType - SubstrateType.Bin1;
-                        // Capacity 확인 필요
-                        PARAM_EQUIPMENT paramUseCapacity =
-                            PARAM_EQUIPMENT.UseCapacityLimitBin1 + offsetIndex;
+                //case SubstrateType.Bin1:
+                //case SubstrateType.Bin2:
+                //case SubstrateType.Bin3:
+                //    {
+                //        int offsetIndex = substrateType - SubstrateType.Bin1;
+                //        // Capacity 확인 필요
+                //        PARAM_EQUIPMENT paramUseCapacity =
+                //            PARAM_EQUIPMENT.UseCapacityLimitBin1 + offsetIndex;
 
-                        PARAM_EQUIPMENT paramCapacityLimit =
-                            PARAM_EQUIPMENT.AvailableCarrierCapacityBin1 + offsetIndex;
+                //        PARAM_EQUIPMENT paramCapacityLimit =
+                //            PARAM_EQUIPMENT.AvailableCarrierCapacityBin1 + offsetIndex;
 
-                        if (Recipe.GetValue(EN_RECIPE_TYPE.EQUIPMENT, paramUseCapacity.ToString(), false))
-                        {
-                            var capacity = Recipe.GetValue(EN_RECIPE_TYPE.EQUIPMENT, paramCapacityLimit.ToString(), 12);
-                            var substrates = SubstrateManager.GetSubstratesAtLoadPort(portId);
-                            int count = 0;
-                            foreach (var item in substrates)
-                            {
-                                if (item.Value.ProcessingStatus == ProcessingStates.Processed)
-                                {
-                                    ++count;
-                                }
-                            }
+                //        if (Recipe.GetValue(EN_RECIPE_TYPE.EQUIPMENT, paramUseCapacity.ToString(), false))
+                //        {
+                //            var capacity = Recipe.GetValue(EN_RECIPE_TYPE.EQUIPMENT, paramCapacityLimit.ToString(), 12);
+                //            var substrates = SubstrateManager.GetSubstratesAtLoadPort(portId);
+                //            int count = 0;
+                //            foreach (var item in substrates)
+                //            {
+                //                if (item.Value.ProcessingStatus == ProcessingStates.Processed)
+                //                {
+                //                    ++count;
+                //                }
+                //            }
 
-                            if (capacity <= count)
-                            {
-                                // 완료 처리
-                                var carrierId = CarrierServer.GetCarrierId(portId);
-                                var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);
-                                processJobIds = new List<string>(jobs);
-                                return true;
-                            }
-                        }
+                //            if (capacity <= count)
+                //            {
+                //                // 완료 처리
+                //                var carrierId = CarrierServer.GetCarrierId(portId);
+                //                var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);
+                //                processJobIds = new List<string>(jobs);
+                //                return true;
+                //            }
+                //        }
 
-                        return false;
-                    }
+                //        return false;
+                //    }
 
                 default:
                     return false;

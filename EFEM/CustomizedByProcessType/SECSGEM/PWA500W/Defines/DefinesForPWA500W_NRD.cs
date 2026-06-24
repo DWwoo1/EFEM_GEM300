@@ -234,6 +234,8 @@ namespace EFEM.CustomizedByProcessType.PWA500W
         PLACE_FORCE,
         PLACE_SLOWUP_LEVEL,
         PLACE_SLOWUP_SPEED,
+
+        PortID,
     }
 
     

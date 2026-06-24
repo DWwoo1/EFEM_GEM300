@@ -477,7 +477,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                 CollectionEventList[EN_EVENT_LIST.BIN_DATA_UPLOAD.ToString()].Id,
                                 CollectionEventList[EN_EVENT_LIST.BIN_DATA_UPLOAD.ToString()].VariableIds,
                                 StatusVariableList[EN_SVID_LIST.PMS_FILEBODY.ToString()].Id,
-                                EN_ITEM_FORMAT.UINT4, 10000));
+                                10000));
                         }
                         break;
                     case EN_SCENARIO.SCENARIO_ASSIGN_SUBSTRATE_ID:
@@ -487,10 +487,11 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         break;
                     case EN_SCENARIO.SCENARIO_BIN_WAFER_END:
                         {
-                            MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
+                            MakeScenario(scenario, new ScenarioBinWaferEndForGEM300(scenario.ToString(),
                                 CollectionEventList[EN_EVENT_LIST.BIN_WAFER_END.ToString()].Id,
                                 CollectionEventList[EN_EVENT_LIST.BIN_WAFER_END.ToString()].VariableIds,
-                                false, 10000, false));
+                                StatusVariableList[EN_SVID_LIST.SORTING_INFO.ToString()].Id,
+                                10000));
                         }
                         break;
 
@@ -650,8 +651,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
             else if (scen is ScenarioReqWaferMapUpload || scen is ScenarioReqBinMapUploadGEM300)
             {
                 parameterList = new List<string>();
-                parameterList.Add(RequestDownloadMapFileKeys.KeyParamWaferId);
-                parameterList.Add(RequestDownloadMapFileKeys.KeyParamMapData);
+                parameterList.Add(UploadMapKeys.KeyParamWaferId);
+                parameterList.Add(UploadMapKeys.KeyParamFilmFrameLocation);
+                parameterList.Add(UploadMapKeys.KeyParamFlatNotchLocation);
+                parameterList.Add(UploadMapKeys.KeyParamMapData);
             }
             else if (scen is ScenarioUploadBinDataGEM300)
             {
@@ -913,8 +916,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 case ScenarioReqBinMapUploadGEM300 _:
                     {
                         List<string> vids = new List<string>();
-                        vids.Add(param[UploadCoreOrBinFileKeys.KeyParamWaferId]);
-                        vids.Add(param[UploadCoreOrBinFileKeys.KeyParamMapData]);
+                        vids.Add(param[UploadMapKeys.KeyParamWaferId]);
+                        vids.Add(param[UploadMapKeys.KeyParamFilmFrameLocation]);
+                        vids.Add(param[UploadMapKeys.KeyParamFlatNotchLocation]);
+                        vids.Add(param[UploadMapKeys.KeyParamMapData]);
 
                         ScenarioList[scenario].UpdateParamValues(new ScenarioReqBinMapUploadGEM300ParamValues(vids, true, string.Empty));
                     }
@@ -969,6 +974,18 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         vids.Add(param[UploadCoreOrBinFileKeys.KeyPMSFileBody]);
 
                         s.UpdateParamValues(new ScenarioUploadBinDataGEM300ParamValues(vids, true, param[UploadCoreOrBinFileKeys.KeyPMSFileBody]));
+                    }
+                    break;
+                case ScenarioBinWaferEndForGEM300 _:
+                    {
+                        List<string> vids = new List<string>();
+                        vids.Add(param[WaferEndKeys.KeyParamPortId]);
+                        vids.Add(param[WaferEndKeys.KeyParamLotId]);
+                        vids.Add(param[WaferEndKeys.KeyParamSlotId]);
+                        vids.Add(param[WaferEndKeys.KeyParamRingFrameId]);
+                        vids.Add(param[WaferEndKeys.KeyParamSortingInfo]);
+
+                        s.UpdateParamValues(new ScenarioBinWaferEndForGEM300ParamValues(vids, true, param[WaferEndKeys.KeyParamSortingInfo]));
                     }
                     break;
                 case ScenarioReqUploadBinFile _:
@@ -4000,10 +4017,13 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.ChipQty, chipQty.ToString());
                 _substrateManager.SaveDataByKey(substrate.UniqueKey);
 
+                double ffrot = angle + 180 <= 360 ? angle + 180 : angle - 180;
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
-                    [UploadCoreOrBinFileKeys.KeyParamWaferId] = substrateId,
-                    [UploadCoreOrBinFileKeys.KeyParamMapData] = dataToUpload
+                    [UploadMapKeys.KeyParamWaferId] = substrateId,
+                    [UploadMapKeys.KeyParamFilmFrameLocation] = ffrot.ToString(),
+                    [UploadMapKeys.KeyParamFlatNotchLocation] = angle.ToString(),
+                    [UploadMapKeys.KeyParamMapData] = dataToUpload
                 };
 
                 Dictionary<string, string> additionalParams = new Dictionary<string, string>

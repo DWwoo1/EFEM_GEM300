@@ -678,6 +678,7 @@ namespace FrameOfSystem3.Task
                                         _binDataToUpload.SubstrateId,
                                         _binDataToUpload.RingId,
                                         _binDataToUpload.ChipQty,
+                                        90,
                                         /*_binDataToUpload.Angle*/270,
                                         _binDataToUpload.CountRow,
                                         _binDataToUpload.CountCol,
@@ -781,6 +782,8 @@ namespace FrameOfSystem3.Task
                                    substrate.LotId,
                                    substrate.DestinationSlot);
 
+                                scenarioParam[EN_SVID_LIST.PortID.ToString()] = portId.ToString();
+                                scenarioParam[EN_SVID_LIST.RINGFRAME_ID.ToString()] = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
                                 scenarioParam[EN_SVID_LIST.SORTING_INFO.ToString()] = substrate.GetAttribute(PWA500SubstrateAttributes.SplittedHistory);
                                 _executingScenario = new QueuedScenarioInfo
                                 {
@@ -918,8 +921,12 @@ namespace FrameOfSystem3.Task
                             return _commandResult;
                         }
 
-                        var portId = lpLocation.PortId;
-                        if (_functionsForPWA500.IsProcessingCompleted(portId, out var jobs))
+                        //var portId = lpLocation.PortId;
+
+                        var portId = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()) ?
+                            substrate.SourcePortId : lpLocation.PortId;
+
+                        if (_functionsForPWA500.IsProcessingCompleted(portId, substrate, out var jobs))
                         {
                             foreach (var item in jobs)
                             {
@@ -2432,21 +2439,29 @@ namespace FrameOfSystem3.Task
 
                         int targetPortId = 0, targetSlot = 0;
                         string description = string.Empty;
-                        
+
                         //bool isSeperatedWithBinAndEmpty = true;
                         //bool isSeperatedWithBinAndEmpty = false;
 
                         //hasCarrier = FindWellknownProtInfoBySubstrateType(substrate, convertedType, ref targetPortId, ref targetSlot, ref description);
+
                         var checkingResult = _functionsForPWA500.FindWellknownProtInfoBySubstrateType(
-                            substrate, 
-                            convertedType, 
-                            ref targetPortId, 
-                            ref targetSlot, 
+                            substrate,
+                            convertedType,
+                            ref targetPortId,
+                            ref targetSlot,
                             ref description);
 
                         if (checkingResult == CheckingCarrierCodeToUnload.Ok)
                         {
-                            if (TryGetExecutingControlJobOrPrepare(targetPortId, out var jobId))
+                            //
+                            // TODO : Bin으로 Unloading할 때 Target Job이 Null이라 터짐
+                            //
+
+                            // Bin Wafer의 Job은 공테이프 Carrier에 속해있다.
+                            int targetJobPortId = convertedType != SubstrateType.Core ? sourcePortId : targetPortId;
+
+                            if (TryGetExecutingControlJobOrPrepare(targetJobPortId, out var jobId))
                             {
                                 if (convertedType != SubstrateType.Core)
                                 {
@@ -2462,7 +2477,7 @@ namespace FrameOfSystem3.Task
                                 description = ErrorDescriptionsForMaterialHanding.ErrorDescriptionForControlJobIsNotExecuted;
                             }
                         }
-                        
+
                         #endregion </Data 확인>
 
                         // 5. Ack 전송 : 콜백에서 자동 Ack 나가니 현재 미구현

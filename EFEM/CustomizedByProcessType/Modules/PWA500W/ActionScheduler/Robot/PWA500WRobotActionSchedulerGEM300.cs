@@ -155,6 +155,17 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 var arm = GetTargetArmBySize(size);
                 if (false == IsArmAvailable(arm)) continue;
 
+                if (substrateType == SubstrateType.Core)
+                {
+                    if (HasCoreWaferAtProcessModule())
+                        continue;
+                }
+                else
+                {
+                    if (HasBinWaferAtProcessModule())
+                        continue;
+                }
+
                 //ProcessModuleLocation pmInputLoc = new ProcessModuleLocation(string.Empty, string.Empty);
                 //if (false == GetProcessModuleLocation(item, ref pmInputLoc))
                 //    continue;
@@ -246,23 +257,23 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                             // Bin1/2/3 완료품은 안착 전에 Output Job 선택 필요
                             // 로딩 직후 잡이 생성되고 실행되겠지만, 혹시 모를 상황에 대비해 남겨둔다.
                             // 정상적이라면 기판 속성에 잡만 설정, 비정상적이면 잡 실행 후 기판 속성에 잡을 설정
-                            if (TryFindLoadPortForPlacingByPortId(
-                                destLoc.PortId,
-                                onArmType,
-                                substrateSize,
-                                out _,
-                                out var pjId) &&
-                                false == string.IsNullOrWhiteSpace(pjId))
-                            {
-                                _substrateManager.SetProcessJobIdByKey(
-                                    substrateOnArm.UniqueKey,
-                                    pjId);
+                            //if (TryFindLoadPortForPlacingByPortId(
+                            //    destLoc.PortId,
+                            //    onArmType,
+                            //    substrateSize,
+                            //    out _,
+                            //    out var pjId) &&
+                            //    false == string.IsNullOrWhiteSpace(pjId))
+                            //{
+                            //    _substrateManager.SetProcessJobIdByKey(
+                            //        substrateOnArm.UniqueKey,
+                            //        pjId);
 
-                                _substrateManager.SaveDataByKey(
-                                    substrateOnArm.UniqueKey);
+                            //    _substrateManager.SaveDataByKey(
+                            //        substrateOnArm.UniqueKey);
 
                                 canPlaceToLoadPort = true;
-                            }
+                            //}
                         }
                         else if (onArmType == SubstrateType.Empty)
                         {
@@ -521,6 +532,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 controlJob,
                 portId);
         }
+
         private static bool HasMaterialOutputSpecification(ControlJob controlJob)
         {
             if (controlJob == null)
@@ -734,7 +746,9 @@ namespace EFEM.CustomizedByProcessType.PWA500W
             // 개조 후 아래 주석 살려야함
             // 개조 전도 BIN1로 설정하므로 있어도 무방하다.
             // Loading 정책: Empty는 Job 없이 투입 가능
-            if (target.SubstrateType == SubstrateType.Empty)
+            if (target.SubstrateType == SubstrateType.Bin1
+                || target.SubstrateType == SubstrateType.Bin2
+                || target.SubstrateType == SubstrateType.Bin3)
                 return true;
 
             // 개조 후 아래 주석 살려야함
@@ -934,6 +948,40 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 return true;
 
             return _substratesAtProcessModule == null || _substratesAtProcessModule.Count == 0;
+        }
+        // PM에 원하는 Type의 Wafer가 있는지
+        private bool HasBinWaferAtProcessModule()
+        {
+            var pmName = GetProcessModuleName();
+
+            if (false == _substrateManager.GetSubstratesAtProcessModule(pmName, ref _substratesAtProcessModule))
+                return false;
+
+            foreach (var item in _substratesAtProcessModule)
+            {
+                if (item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Empty.ToString())
+                    || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin1.ToString())
+                    || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin2.ToString())
+                    || item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Bin3.ToString()))
+                    return true;
+            }
+
+            return false;
+        }
+        private bool HasCoreWaferAtProcessModule()
+        {
+            var pmName = GetProcessModuleName();
+
+            if (false == _substrateManager.GetSubstratesAtProcessModule(pmName, ref _substratesAtProcessModule))
+                return false;
+
+            foreach (var item in _substratesAtProcessModule)
+            {
+                if (item.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()))
+                    return true;
+            }
+
+            return false;
         }
         // 요청을 튜플로 반환
         private (List<string> loading, List<string> unloading) GetRequestPairs()
