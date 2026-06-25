@@ -49,6 +49,10 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
         private long _eventId;
         private List<long> _variables;
+
+        private readonly int _indexSortingInfoLotId = 0;
+        private readonly int _indexSortingInfoWaferId = 1;
+        private readonly int _indexSortingInfoSplittedQty = 2;
         #endregion </Fields>
 
         #region <Types>
@@ -89,30 +93,51 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
                 case (int)ScenarioSeq.UPDATE_BINARY_VARIABLE:
                     {
-                        List<SemiObject> objectSortingInfo = new List<SemiObject>();
                         string sortingInfo = _paramValue.SortingInfo;
+                        int sortingInfoCount;
+
+                        List<SemiObject> objectSortingInfo = new List<SemiObject>();
+                        objectSortingInfo.Add(new SemiObjectList(2));
+                        objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", "SORTING_INFO"));
                         if (string.IsNullOrEmpty(sortingInfo))
                         {
-                            objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", "Test"));
+                            objectSortingInfo.Add(new SemiObjectList(0));
                         }
+                        //else
+                        //{
+                        //    if (sortingInfo.Contains(','))
+                        //    {
+                        //        string[] arraySortingInfo = sortingInfo.Split(',');
+                        //        int arrayCount = arraySortingInfo.Length;
+                        //        objectSortingInfo.Add(new SemiObjectList(arrayCount));
+
+                        //        foreach (var item in arraySortingInfo)
+                        //        {
+                        //            objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", item));
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        objectSortingInfo.Add(new SemiObjectList(1));
+                        //        objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", sortingInfo));
+                        //    }
+                        //}
                         else
                         {
-                            if (sortingInfo.Contains(','))
-                            {
-                                string[] arraySortingInfo = sortingInfo.Split(',');
-                                int arrayCount = arraySortingInfo.Length;
-                                objectSortingInfo.Add(new SemiObjectList(arrayCount));
+                            string[] arraySortingInfo = sortingInfo.Split(',');
+                            int arrayCount = arraySortingInfo.Length;
+                            objectSortingInfo.Add(new SemiObjectList(arrayCount));
 
-                                foreach (var item in arraySortingInfo)
-                                {
-                                    objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", item));
-                                }
-                            }
-                            else
+                            foreach (var item in arraySortingInfo)
                             {
-                                objectSortingInfo.Add(new SemiObjectAscii("SORTING_INFO", sortingInfo));
+                                string[] arraySortingInfoValue = item.Split(':');
+
+                                objectSortingInfo.Add(new SemiObjectList(2));
+                                objectSortingInfo.Add(new SemiObjectAscii("WAFER_ID", arraySortingInfoValue[_indexSortingInfoWaferId]));
+                                objectSortingInfo.Add(new SemiObjectAscii("WAFER_ID", arraySortingInfoValue[_indexSortingInfoSplittedQty]));
                             }
                         }
+
                         _gemHandler.UpdateVariable(VidSortingInfo, objectSortingInfo);
 
                         SetTickCount(100);

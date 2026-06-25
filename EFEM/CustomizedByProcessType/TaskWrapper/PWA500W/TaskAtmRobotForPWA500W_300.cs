@@ -292,10 +292,15 @@ namespace FrameOfSystem3.Task
                s != null)
             {
                 var typeString = s.GetAttribute(PWA500SubstrateAttributes.SubstrateType);
-                if (Enum.TryParse(typeString, out SubstrateType substrateType) &&
-                    substrateType == SubstrateType.Core)
+                if (false == Enum.TryParse(typeString, out SubstrateType substrateType))
                 {
-                    int portId = s.SourcePortId;
+                    _commandResult.CommandResult = CommandResult.Skipped;
+                    return _commandResult;
+                }
+
+                int portId = s.SourcePortId;
+                if (substrateType == SubstrateType.Core)
+                {
                     var trackInStatusString = _carrierServer.SetAttribute(portId, PWA500CarrierAttributes.KeyTrackInCompleted, bool.TrueString);
                     _carrierServer.SaveCarrierData(portId);
 
@@ -308,6 +313,19 @@ namespace FrameOfSystem3.Task
                             lotId,
                             slot),
                         OnAutoScenarioCompleted);
+                }
+                else
+                {
+                    // 2026.06.25 dwlim [ADD] 공 Tape Carrier에서 마지막 Wafer 꺼낸 후 잡 Complete 하기 위함
+                    if (IsLastSubstrateAtLoadPortAfterPick(s.SourcePortId, s))
+                    {
+                        var carrierId = _carrierServer.GetCarrierId(portId);
+                        var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);
+                        foreach (var item in jobs)
+                        {
+                            JobManager.Instance.SetProcessJobState(item, ProcessJobState.ProcessComplete);
+                        }
+                    }
                 }
 
             }
@@ -921,16 +939,26 @@ namespace FrameOfSystem3.Task
                             return _commandResult;
                         }
 
-                        //var portId = lpLocation.PortId;
+                        //var portId = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()) ?
+                        //    lpLocation.PortId : substrate.SourcePortId;
 
-                        var portId = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType).Equals(SubstrateType.Core.ToString()) ?
-                            lpLocation.PortId : substrate.SourcePortId;
+                        //if (_functionsForPWA500.IsProcessingCompleted(portId, substrate, out var jobs))
+                        //{
+                        //    foreach (var item in jobs)
+                        //    {
+                        //        JobManager.Instance.SetProcessJobState(item, ProcessJobState.ProcessComplete);
+                        //    }
+                        //}
 
-                        if (_functionsForPWA500.IsProcessingCompleted(portId, substrate, out var jobs))
+                        string substrateType = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType);
+                        if (Enum.TryParse(substrateType, out SubstrateType subType) && subType.Equals(SubstrateType.Core))
                         {
-                            foreach (var item in jobs)
+                            if (_functionsForPWA500.IsProcessingCompleted(lpLocation.PortId, substrate, out var jobs))
                             {
-                                JobManager.Instance.SetProcessJobState(item, ProcessJobState.ProcessComplete);
+                                foreach (var item in jobs)
+                                {
+                                    JobManager.Instance.SetProcessJobState(item, ProcessJobState.ProcessComplete);
+                                }
                             }
                         }
                     }
@@ -3022,6 +3050,30 @@ namespace FrameOfSystem3.Task
             }
 
             return true;
+        }
+        // 2026.06.25 dwlim [ADD] 공 Tape Carrier에서 마지막 Wafer 꺼낸 후 잡 Complete 하기 위함
+        private bool IsLastSubstrateAtLoadPortAfterPick(int portId, Substrate substate)
+        {
+            if (false == _substrateManager.HasAnySubstrateAtLoadPort(portId))
+                return true;
+
+            if (false == bool.TryParse(substate.GetAttribute(PWA500SubstrateAttributes.IsLastSubstrate).ToString(), out bool isLast))
+                return false;
+
+            return isLast;
+
+            //if (SubstrateType.Core.ToString() == substate.GetAttribute(PWA500SubstrateAttributes.SubstrateType))
+            //{
+            //    var subs = _substrateManager.GetSubstratesAtLoadPort(portId);
+
+            //    foreach (var item in subs)
+            //    {
+            //        if (item.Value.TransportStatus != TransportStates.AtDestination)
+            //            return false;
+            //    }
+            //}
+
+            //return false;
         }
         private string ResolveLotId(Substrate substrate, int portId)
         {
