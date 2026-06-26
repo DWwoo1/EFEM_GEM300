@@ -487,6 +487,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         break;
                     case EN_SCENARIO.SCENARIO_BIN_WAFER_END:
                         {
+                            // 2026.06.24 dwlim [MOD] VID 추가 및 Sorting_Info의 Format 변경으로 수정
                             MakeScenario(scenario, new ScenarioBinWaferEndForGEM300(scenario.ToString(),
                                 CollectionEventList[EN_EVENT_LIST.BIN_WAFER_END.ToString()].Id,
                                 CollectionEventList[EN_EVENT_LIST.BIN_WAFER_END.ToString()].VariableIds,
@@ -652,8 +653,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
             {
                 parameterList = new List<string>();
                 parameterList.Add(UploadMapKeys.KeyParamWaferId);
-                parameterList.Add(UploadMapKeys.KeyParamFilmFrameLocation);
-                parameterList.Add(UploadMapKeys.KeyParamFlatNotchLocation);
+                parameterList.Add(UploadMapKeys.KeyParamFilmFrameLocation);     // 2026.06.24 dwlim [ADD] VID 추가
+                parameterList.Add(UploadMapKeys.KeyParamFlatNotchLocation);     // 2026.06.24 dwlim [ADD] VID 추가
                 parameterList.Add(UploadMapKeys.KeyParamMapData);
             }
             else if (scen is ScenarioUploadBinDataGEM300)
@@ -917,8 +918,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     {
                         List<string> vids = new List<string>();
                         vids.Add(param[UploadMapKeys.KeyParamWaferId]);
-                        vids.Add(param[UploadMapKeys.KeyParamFilmFrameLocation]);
-                        vids.Add(param[UploadMapKeys.KeyParamFlatNotchLocation]);
+                        vids.Add(param[UploadMapKeys.KeyParamFilmFrameLocation]);   // 2026.06.24 dwlim [ADD] VID 추가
+                        vids.Add(param[UploadMapKeys.KeyParamFlatNotchLocation]);   // 2026.06.24 dwlim [ADD] VID 추가
                         vids.Add(param[UploadMapKeys.KeyParamMapData]);
 
                         ScenarioList[scenario].UpdateParamValues(new ScenarioReqBinMapUploadGEM300ParamValues(vids, true, string.Empty));
@@ -976,6 +977,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         s.UpdateParamValues(new ScenarioUploadBinDataGEM300ParamValues(vids, true, param[UploadCoreOrBinFileKeys.KeyPMSFileBody]));
                     }
                     break;
+                // 2026.06.24 dwlim [ADD] VID 추가 및 수정으로 추가됨
                 case ScenarioBinWaferEndForGEM300 _:
                     {
                         List<string> vids = new List<string>();
@@ -4021,8 +4023,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
                     [UploadMapKeys.KeyParamWaferId] = substrateId,
-                    [UploadMapKeys.KeyParamFilmFrameLocation] = ffrot.ToString(),
-                    [UploadMapKeys.KeyParamFlatNotchLocation] = angle.ToString(),
+                    [UploadMapKeys.KeyParamFilmFrameLocation] = ffrot.ToString(),   // 2026.06.24 dwlim [ADD] VID 추가
+                    [UploadMapKeys.KeyParamFlatNotchLocation] = angle.ToString(),   // 2026.06.24 dwlim [ADD] VID 추가
                     [UploadMapKeys.KeyParamMapData] = dataToUpload
                 };
 

@@ -68,13 +68,14 @@ namespace FrameOfSystem3.SECSGEM
                 ref currentPolicy,
                 ref currentCondition);
         }
-        public bool IsProcessingCompleted(int portId, out List<string> processJobIds)
-        {
-            var lpIndex = LoadPortManager.GetLoadPortIndexByPortId(portId);
-            var substrateType = GetSubstrateTypeByLoadPortIndex(lpIndex);
+        //public bool IsProcessingCompleted(int portId, out List<string> processJobIds)
+        //{
+        //    var lpIndex = LoadPortManager.GetLoadPortIndexByPortId(portId);
+        //    var substrateType = GetSubstrateTypeByLoadPortIndex(lpIndex);
 
-            return PortRoleProfile.IsProcessingCompleted(portId, substrateType, out processJobIds);
-        }
+        //    return PortRoleProfile.IsProcessingCompleted(portId, substrateType, out processJobIds);
+        //}
+        // 2026.06.24 dwlim [ADD] Bin Wafer는 Bin Carrier가 아닌 공 Tape Carrier에 Job이 있는 차이로 추가됨 
         public bool IsProcessingCompleted(int portId, Substrate substrate ,out List<string> processJobIds)
         {
             var lpIndex = LoadPortManager.GetLoadPortIndexByPortId(portId);

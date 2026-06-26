@@ -155,6 +155,8 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 var arm = GetTargetArmBySize(size);
                 if (false == IsArmAvailable(arm)) continue;
 
+                // 2026.06.24 dwlim [ADD] Process Module에 공 Tape 1장씩만 투입되게 하기 위함
+                // 공테이프 Carrier에 Job 내려오고 공테이프 전부 Carrier에서 나가면 Job Complete 되는 것으로 변경됨
                 if (substrateType != SubstrateType.Core)
                 {
                     if (HasBinWaferAtProcessModule())
@@ -252,6 +254,11 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                             // Bin1/2/3 완료품은 안착 전에 Output Job 선택 필요
                             // 로딩 직후 잡이 생성되고 실행되겠지만, 혹시 모를 상황에 대비해 남겨둔다.
                             // 정상적이라면 기판 속성에 잡만 설정, 비정상적이면 잡 실행 후 기판 속성에 잡을 설정
+
+                            // 2026.06.24 dwlim [DEL] 공 Tape Carrier에 Job 쓰기로해서 이제 필요없다.
+                            // 아래는 기존 Bin Wafer Carrer(Empty Carrier)에 Job 사용했을 때,
+                            // 작업 완료된 Bin Wafer에 Bin MAC의 Job을 적용하기 위한 내용이다. (현재는 공 Tape에 바로 Job이 있으므로 필요없음)
+
                             //if (TryFindLoadPortForPlacingByPortId(
                             //    destLoc.PortId,
                             //    onArmType,
@@ -267,7 +274,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                             //    _substrateManager.SaveDataByKey(
                             //        substrateOnArm.UniqueKey);
 
-                                canPlaceToLoadPort = true;
+                            canPlaceToLoadPort = true;
                             //}
                         }
                         else if (onArmType == SubstrateType.Empty)
@@ -741,6 +748,9 @@ namespace EFEM.CustomizedByProcessType.PWA500W
             // 개조 후 아래 주석 살려야함
             // 개조 전도 BIN1로 설정하므로 있어도 무방하다.
             // Loading 정책: Empty는 Job 없이 투입 가능
+
+            // 2026.06.24 dwlim [MOD] Bin1, Bin2, Bin3은 LP에서 픽업할 때, Select할 Job이 없다. (애초에 처음에 공 Tape이다.)
+            //if (target.SubstrateType == SubstrateType.Empty)
             if (target.SubstrateType == SubstrateType.Bin1
                 || target.SubstrateType == SubstrateType.Bin2
                 || target.SubstrateType == SubstrateType.Bin3)
@@ -944,7 +954,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
 
             return _substratesAtProcessModule == null || _substratesAtProcessModule.Count == 0;
         }
-        // PM에 원하는 Type의 Wafer가 있는지
+        // 2026.06.24 dwlim [ADD] PM에 공 Tape or Bin Wafer가 있는지 확인한다. 1장만 투입하기 위함이다.
         private bool HasBinWaferAtProcessModule()
         {
             var pmName = GetProcessModuleName();

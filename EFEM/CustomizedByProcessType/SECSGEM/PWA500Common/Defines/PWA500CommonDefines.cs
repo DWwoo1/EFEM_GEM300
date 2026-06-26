@@ -1865,6 +1865,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 _binDataToUpload = null;
         }
         // [TODO] : 2025.05.16 dwlim [ADD] 로그 제출로인해 작성. 나중에 수정해야함
+        // 2026.06.24 dwlim [MOD] Core/Bin Map Upload할 때 FNLOC, FFROT와 같은의미의 Variable 추가
         public Dictionary<string, string> MakeScenarioParamToUploadBinMap
             (string substrateId, string ringId, int chipQty, double ringFrameAngle, double waferAngle, int countRow, int countCol, string nullBinCode, string mapData,
             string userId, bool useEventHandling, BinDataToUploadFromPWA500 bindata)

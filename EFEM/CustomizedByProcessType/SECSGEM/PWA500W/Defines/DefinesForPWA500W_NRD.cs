@@ -235,7 +235,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
         PLACE_SLOWUP_LEVEL,
         PLACE_SLOWUP_SPEED,
 
-        PortID,
+        PortID,     // 2026.06.24 dwlim [ADD] PortID Uint1 Format 사용으로 추가 - Bin Wafer End
     }
 
     

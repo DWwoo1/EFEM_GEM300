@@ -159,6 +159,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
                     return false;
             }
         }
+        // 2026.06.24 dwlim [MOD] 공 Tape MAC에 Job 사용으로 공 Tape Pick Up 할 때의 조건 중 Job 요구되어 추가
         public bool IsJobRequiredForLoading(SubstrateType type)
         {
             return type == SubstrateType.Core || type == SubstrateType.Empty;
@@ -192,7 +193,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (type)
             {
                 case SubstrateType.Core:
-                case SubstrateType.Empty:
+                case SubstrateType.Empty:   // 2026.06.24 dwlim [ADD] 공 Tape 잡 사용하는 것으로 변경되어 LP에서 Pick할 때 Job의 Slot정보 확인해서 Pick
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         IJobManager manager = JobManager.Instance;
@@ -271,7 +272,7 @@ namespace FrameOfSystem3.SECSGEM.PortRole
             switch (substrateType)
             {
                 case SubstrateType.Core:
-                case SubstrateType.Empty:
+                case SubstrateType.Empty:   // 2026.06.24 dwlim [ADD] 공 Tape Carrier에도 Job이 생성되기 때문에 추가
                     {
                         var carrierId = CarrierServer.GetCarrierId(portId);
                         var jobs = SubstrateJobBindingService.Instance.GetProcessJobIdsByCarrier(carrierId);

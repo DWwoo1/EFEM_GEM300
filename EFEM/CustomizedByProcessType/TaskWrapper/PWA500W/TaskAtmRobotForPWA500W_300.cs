@@ -800,7 +800,7 @@ namespace FrameOfSystem3.Task
                                    substrate.LotId,
                                    substrate.DestinationSlot);
 
-                                scenarioParam[EN_SVID_LIST.PortID.ToString()] = portId.ToString();
+                                scenarioParam[EN_SVID_LIST.PortID.ToString()] = substrate.SourcePortId.ToString();
                                 scenarioParam[EN_SVID_LIST.RINGFRAME_ID.ToString()] = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
                                 scenarioParam[EN_SVID_LIST.SORTING_INFO.ToString()] = substrate.GetAttribute(PWA500SubstrateAttributes.SplittedHistory);
                                 _executingScenario = new QueuedScenarioInfo
@@ -950,6 +950,7 @@ namespace FrameOfSystem3.Task
                         //    }
                         //}
 
+                        // 2026.06.24 dwlim [MOD] Core는 Carrier에 안착 완료 후에 Job Complete함 
                         string substrateType = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType);
                         if (Enum.TryParse(substrateType, out SubstrateType subType) && subType.Equals(SubstrateType.Core))
                         {
@@ -1051,6 +1052,7 @@ namespace FrameOfSystem3.Task
 
             switch (scenario)
             {
+                // 2026.06.26 dwlim [ADD] Formatted Recipe Download 추가
                 case ScenarioCoreLotStart:
                     {
                         bool isManual = IsManual();
@@ -2482,19 +2484,16 @@ namespace FrameOfSystem3.Task
 
                         if (checkingResult == CheckingCarrierCodeToUnload.Ok)
                         {
-                            //
-                            // TODO : Bin으로 Unloading할 때 Target Job이 Null이라 터짐
-                            //
+                            // 2026.06.24 dwlim [MOD]
+                            // TODO : 한번 더 봐야할듯
+                            //int targetJobPortId = convertedType != SubstrateType.Core ? sourcePortId : targetPortId;
 
-                            // Bin Wafer의 Job은 공테이프 Carrier에 속해있다.
-                            int targetJobPortId = convertedType != SubstrateType.Core ? sourcePortId : targetPortId;
-
-                                if (convertedType != SubstrateType.Core)
-                                {
-                                    _substrateManager.SetDestinationPortIdByKey(key, targetPortId);
-                                    _substrateManager.SetDestinationSlotByKey(key, targetSlot);
-                                    _substrateManager.SaveDataByKey(key);
-                                }
+                            if (convertedType != SubstrateType.Core)
+                            {
+                                _substrateManager.SetDestinationPortIdByKey(key, targetPortId);
+                                _substrateManager.SetDestinationSlotByKey(key, targetSlot);
+                                _substrateManager.SaveDataByKey(key);
+                            }
                         }
 
                         #endregion </Data 확인>
@@ -3057,7 +3056,7 @@ namespace FrameOfSystem3.Task
             if (false == _substrateManager.HasAnySubstrateAtLoadPort(portId))
                 return true;
 
-            if (false == bool.TryParse(substate.GetAttribute(PWA500SubstrateAttributes.IsLastSubstrate).ToString(), out bool isLast))
+            if (false == bool.TryParse(substate.GetAttribute(PWA500SubstrateAttributes.IsLastSubstrate), out bool isLast))
                 return false;
 
             return isLast;
