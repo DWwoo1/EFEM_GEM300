@@ -391,6 +391,7 @@
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\ProcessModule\PWA500WCommunicator.cs" />
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\Substrate\PWA500WSubstrateExtraAttributes.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\CommonFunctionsForPWA500.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\FormattedRecipeParser.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\MapDataControl.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\MapDataDefines.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\PMSControl.cs" />
@@ -399,6 +400,8 @@
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SeparatedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SharedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioBinWaferEndForGEM300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeDownloadRequest.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeUpload.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqBinMapUploadGEM300.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapDownload.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapUpload.cs" />

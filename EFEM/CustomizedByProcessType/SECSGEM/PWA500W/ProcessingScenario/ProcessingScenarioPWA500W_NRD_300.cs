@@ -239,8 +239,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     case EN_SCENARIO.SCENARIO_REQ_SLOT_INFO_CORE_2:
                     case EN_SCENARIO.SCENARIO_REQ_SLOT_INFO_CORE_3:
                     case EN_SCENARIO.SCENARIO_REQ_SLOT_INFO_EMPTY_TAPE:
-                    case EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD:
-                    case EN_SCENARIO.SCENARIO_REQ_RECIPE_UPLOAD:
+                    //case EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD:
+                    //case EN_SCENARIO.SCENARIO_REQ_RECIPE_UPLOAD:
                     case EN_SCENARIO.SCENARIO_REQ_TRACK_IN:
                     case EN_SCENARIO.SCENARIO_REQ_LOT_MATCH:
                     case EN_SCENARIO.SCENARIO_REQ_BIN_WAFER_TRACK_OUT:
@@ -288,7 +288,6 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     case EN_SCENARIO.SCENARIO_REQ_COLLET_CHANGE_2:
                     case EN_SCENARIO.SCENARIO_REQ_HOOD_CHANGE:
                         break;
-
 
                     case EN_SCENARIO.SCENARIO_EQUIPMENT_START:
                         {
@@ -497,6 +496,20 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                 CollectionEventList[EN_EVENT_LIST.BIN_WAFER_END.ToString()].VariableIds,
                                 StatusVariableList[EN_SVID_LIST.SORTING_INFO.ToString()].Id,
                                 10000));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD:
+                        {
+                            MakeScenario(scenario, new ScenarioFormattedRecipeDownloadRequest(scenario.ToString(),
+                                7,
+                                25));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_REQ_RECIPE_UPLOAD:
+                        {
+                            MakeScenario(scenario, new ScenarioFormattedRecipeUpload(scenario.ToString(),
+                                7,
+                                23));
                         }
                         break;
 
@@ -1002,7 +1015,21 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                             param));
                     }
                     break;
-
+                case ScenarioFormattedRecipeDownloadRequest _:
+                    {
+                        List<string> vids = new List<string>();
+                        vids.Add(param[FormattedRecipeHandlingKeys.KeyRecipeId]);
+                        s.UpdateParamValues(new ScenarioFormattedRecipeDownloadRequestParamValues(vids));
+                    }
+                    break;
+                case ScenarioFormattedRecipeUpload _:
+                    {
+                        List<string> vids = new List<string>();
+                        vids.Add(param[FormattedRecipeHandlingKeys.KeyRecipeId]);
+                        vids.Add(param[FormattedRecipeHandlingKeys.KeyRecipeBody]);
+                        s.UpdateParamValues(new ScenarioFormattedRecipeUploadParamValues(vids));
+                    }
+                    break;
                 case ClientToClientCommunicationScenario _:
                     {
                         s.UpdateParamValues(new ClientToClientCommunicationParamValues(
@@ -1521,12 +1548,102 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         #region <Formatted Recipe Control>
         public override bool UploadingFormattedRecipeReceived(string recipeName, out Dictionary<string, SemiObject[]> recipeBodies)
         {
-            recipeBodies = new Dictionary<string, SemiObject[]>();
-            return false;
+            //recipeBodies = new Dictionary<string, SemiObject[]>();
+            //return false;
+
+            // recipeName = A or A.rcp;
+            // recipeFullPath = D:\Work\Recipe\A.rcp;
+            WriteLog("Upload recipe (unformatted)");
+
+            // 1. 파일 있는지 체크, 있다면 복사
+            if (false == CheckRecipeFiles(recipeName))
+            {
+                WriteLog("> Check failed");
+                recipeBodies = null;
+                return false;
+            }
+
+            // 2. 파일 압축
+            //if (false == CompressFiles(_recipePath, recipeName, out recipeFullPath))
+            //{
+            //    WriteLog("> Compression failed");
+            //    return false;
+            //}
+
+            //if (System.Diagnostics.Debugger.IsAttached && File.Exists(recipeFullPath))
+            //{
+            //    var bytes = File.ReadAllBytes(recipeFullPath);
+            //    string temp = string.Empty;
+            //    for (int i = 0; i < bytes.Length; ++i)
+            //    {
+            //        if (i == 0)
+            //            temp = $"{bytes[i]}";
+            //        else
+            //            temp = $"{temp} {bytes[i]}";
+            //    }
+
+            //    Console.WriteLine($" ---- Uploading File Bytes ---- Length : {bytes.Length}");
+            //    Console.WriteLine(temp);
+            //}
+
+            //         string source = string.Format("{0}\\{1}{2}", _recipePath, recipeName, Define.DefineConstant.FileFormat.FILEFORMAT_RECIPE);
+            //if (false == FunctionsETC.FileExistCheck(source))
+            //	return false;
+
+            //string destination = string.Format("{0}\\upload\\{1}{2}", _recipePath, recipeName, Define.DefineConstant.FileFormat.FILEFORMAT_RECIPE);
+            //if (false == FunctionsETC.FileCopy(source, destination))
+            //	return false;
+
+            //recipeFullPath = destination;
+
+            WriteLog("> Success");
+            return true;
         }
+        // Download한 레시피 저장하거나 PM에 보내는 부분 처리해야하는데.. 
         public override bool DownloadingFormattedRecipeReceived(string recipeName, Dictionary<string, string[]> recipeBodies)
         {
-            return false;
+            WriteLog("Download recipe (formatted)");
+
+            // 2026.07.07 dwlim. PPARM은 Value 1개만 사용하기로 함.(Unit, Min, Max 없음)
+            Dictionary<string, string> recipeData = new Dictionary<string, string>();
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in recipeBodies)
+            {
+                sb.Clear();
+                for (int i = 0; i < item.Value.Length; i++)
+                {
+                    if (false == string.IsNullOrWhiteSpace(recipeData[item.Key]))
+                    {
+                        sb.Append(", ");
+                    }
+                    sb.Append(item.Value[i]);
+                    recipeData[item.Key] = sb.ToString();
+                }
+            }
+
+            string recipeBody = FormattedRecipeParser.Instance.ConvertForSendToPM(recipeData);
+
+            string recipePath = _recipePath;
+            string recipeId = recipeName;
+            if (false == Path.GetExtension(recipeId).Equals(FileFormat.FILEFORMAT_RECIPE))
+            {
+                recipeId = string.Format("{0}{1}", recipeId, FileFormat.FILEFORMAT_RECIPE);
+            }
+            string errorMessage = string.Empty;
+            if (false == Recipe.Recipe.GetInstance().LoadProcessRecipe(ref recipePath, ref recipeId, ref errorMessage))
+            {
+                return false;
+            }
+
+            WriteLog("> Success");
+
+            // 다운로드를 성공했으니 시나리오 실행 중이라면 Permission OK
+            if (IsScenarioRunning(EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD))
+            {
+                UpdateScenarioPermission(EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD, true);
+            }
+
+            return true;
         }
         #endregion </Formatted Recipe Control>
 

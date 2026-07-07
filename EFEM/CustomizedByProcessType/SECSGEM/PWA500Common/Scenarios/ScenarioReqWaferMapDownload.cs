@@ -167,19 +167,12 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             if (!(ReceiveMessageFormat[7] is SemiObjectAscii attrdata))
                 return false;
 
-            SemiObjectAscii resertAsciiObjectForXml = ReceiveMessageFormat[7] as SemiObjectAscii;
-            string[] xmlDatas = resertAsciiObjectForXml.GetValues();
-            string xmlData = resertAsciiObjectForXml.GetValue();
+            SemiObjectAscii resultAsciiObjectForXml = ReceiveMessageFormat[7] as SemiObjectAscii;
+            string xmlData = resultAsciiObjectForXml.GetValue();
             MapData mapdata = new MapData();
             MapDataControl xmlControl = new MapDataControl();
 
             mapdata = xmlControl.DeserializeMapData(xmlData);
-            //Console.WriteLine(xmlData);
-
-            //string testMapdata = xmlControl.SerializeMapData(mapdata);
-            //Console.WriteLine(testMapdata);
-
-            //mapdata = xmlControl.DeserializeMapData(testMapdata);
 
             if (null == mapdata)
                 return false;

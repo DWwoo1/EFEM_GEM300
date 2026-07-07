@@ -409,6 +409,14 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public static readonly string KeyParamStepSeq = "STEPSEQ";
         public static readonly string KeyParamLotType = "LOTTYPE";
     }
+    public static class FormattedRecipeHandlingKeys
+    {
+        public static readonly string KeyRecipeId = "RecipeId";
+        public static readonly string KeyRecipeBody = "RecipeBody";
+
+        public static readonly string KeyProcessProgramId = "PPID";
+        public static readonly string KeyCommandCode = "CCODE";
+    }
     public static class AssignRingIdKeys
     {
         public static readonly string KeyOldRingId = "OldRingId";

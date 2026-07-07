@@ -146,7 +146,6 @@ D:\Project\EFEM\PWA-500BIN\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.exe.confi
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\Release\EFEM.exe.config
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\Release\EFEM.exe
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\Release\EFEM.pdb
-D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.csproj.AssemblyReference.cache
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.CustomizedByProcessType.UserInterface.OperationMainSummary.PWA500BIN.MainDisplaySubPanelSummary500BIN.resources
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.CustomizedByProcessType.UserInterface.OperationMainSummary.PWA500BIN.SummaryProcessModuleInfo500BIN.resources
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.CustomizedByProcessType.UserInterface.OperationMainSummary.PWA500BIN.SummaryQuickButtons.resources
@@ -287,3 +286,4 @@ D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.csproj.Core
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.csproj.CopyComplete
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.exe
 D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.pdb
+D:\PROJECT\EFEM\PWA-500W\Source\PROGRAM\EFEM\EFEM\obj\x64\Debug\EFEM.csproj.AssemblyReference.cache
