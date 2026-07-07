@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 
 using EFEM.Defines.Common;
 using EFEM.MaterialTracking;
+using EFEM.Modules.LoadPort.Recovery;
 
 using FrameOfSystem3.Recipe;
 
@@ -3812,7 +3813,6 @@ namespace EFEM.Defines.LoadPort
     public interface ILoadPortStateModel
     {
         int PortId { get; }
-
         bool SupportsReservationState { get; }
         bool SupportsAssociationState { get; }
 
@@ -3829,8 +3829,8 @@ namespace EFEM.Defines.LoadPort
 
         void Initialize();
         void Reset();
-        EFEM.Modules.LoadPort.Recovery.LoadPortRecoveryData CreateRecoveryData();
-        void RecoverFromObservation(EFEM.Modules.LoadPort.Recovery.LoadPortRecoveryData recoveryData, in LoadPortObservation observation);
+        LoadPortRecoveryData CreateRecoveryData();
+        void RecoverFromObservation(LoadPortRecoveryData recoveryData, in LoadPortObservation observation);
         void UpdateObservation(in LoadPortObservation observation);
         bool Evaluate();
         void ApplyExternalInput(in LoadPortExternalInput input);
@@ -3848,6 +3848,7 @@ namespace EFEM.Defines.LoadPort
         public bool ClampState;
         public bool DockState;
         public bool DoorState;
+        public bool ReadyForWork;
         public bool PlacementErrorState;
         public bool CarrierOutErrorState;
         public string TriggeredAlarm;

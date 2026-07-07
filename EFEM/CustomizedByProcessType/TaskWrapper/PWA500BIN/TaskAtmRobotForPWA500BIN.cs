@@ -34,6 +34,8 @@ namespace FrameOfSystem3.Task
             _functionsForPWA500 = FunctionsForPWA500BIN_TP.Instance;
             ProcessModuleName = _processGroup.GetProcessModuleName(ProcessModuleIndex);
             _lotHistoryLog = LotHistoryLog.Instance;
+
+            IsOldEvents = NewVersionChecker.IsOldEvents();
         }
         #endregion </Constructors>
 
@@ -51,6 +53,10 @@ namespace FrameOfSystem3.Task
         private const EN_SCENARIO ScenarioUploadBinData = EN_SCENARIO.SCENARIO_BIN_DATA_UPLOAD;
         private const EN_SCENARIO ScenarioProcessStart = EN_SCENARIO.SCENARIO_PROCESS_START;
         private const EN_SCENARIO ScenarioProcessEnd = EN_SCENARIO.SCENARIO_PROCESS_END;
+
+        private const EN_SCENARIO ScenarioSendClientToUploadBinScrapInfo = EN_SCENARIO.SCENARIO_UPLOAD_BIN_SCRAP_INFO;
+        private const EN_SCENARIO ScenarioScrapBinChips = EN_SCENARIO.SCENARIO_SCRAP_BIN_CHIP;
+
         private QueuedScenarioInfo _executingScenario = new QueuedScenarioInfo();
         private readonly Queue<EN_SCENARIO> QueuedScenarioForBinSubstrate = new Queue<EN_SCENARIO>();
         private readonly Queue<EN_SCENARIO> QueuedScenarioForCoreSubstrate = new Queue<EN_SCENARIO>();
@@ -85,12 +91,14 @@ namespace FrameOfSystem3.Task
                 return GetParameter(PARAM_EQUIPMENT.MachineName, string.Empty);
             }
         }
+        private bool IsOldEvents { get; }
         #endregion </Properties>
 
         #region <Type>
         private enum UnloadingStepTypes
         {
             Init = 0,
+            AfterScrap,
             AfterIdAssignment,
             AfterBinTrackOut,
             Finished,
@@ -280,7 +288,7 @@ namespace FrameOfSystem3.Task
                         {
                             case ScenarioRecipeDownload:
                                 {
-                                    Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToRecipeDownload(substrate);
+                                    Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToRecipeDownload(substrate);
                                     if (scenarioParam == null)
                                     {
                                         _commandResult.CommandResult = CommandResult.Error;
@@ -321,7 +329,7 @@ namespace FrameOfSystem3.Task
                                         return _commandResult;
                                     }
 
-                                    Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToCoreTrackIn(portId, substrate);
+                                    Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToCoreTrackIn(portId, substrate);
                                     if (scenarioParam == null)
                                     {
                                         _commandResult.CommandResult = CommandResult.Error;
@@ -379,7 +387,7 @@ namespace FrameOfSystem3.Task
                         // 매 장 LotMatch 발생한다.
                         string lotId = _carrierServer.GetCarrierLotId(portId);
                         string carrierId = _carrierServer.GetCarrierId(portId);
-                        Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToLotMatch(portId, lotId, carrierId);
+                        Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToLotMatch(portId, lotId, carrierId);
                         if (scenarioParam == null)
                         {
                             _commandResult.CommandResult = CommandResult.Error;
@@ -495,36 +503,70 @@ namespace FrameOfSystem3.Task
                             {
                                 case (int)UnloadingStepTypes.Init:
                                     {
-                                        // 1. Id Assignment Event
+                                        if (false == IsOldEvents)
+                                        {
+                                            // 1. Upload Bin Scrap by PM
+                                            QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientToUploadBinScrapInfo);
+                                            // 2. Upload Bin Scrap Event
+                                            QueuedScenarioForBinSubstrate.Enqueue(ScenarioScrapBinChips);
+                                        }
+                                        else
+                                        {
+                                            // Step 증가
+                                            int nextStep = (int)UnloadingStepTypes.AfterScrap;
+                                            _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
+                                            _substrateManager.SaveDataByKey(substrate.UniqueKey);
+                                        }
+                                            
+                                        // 3. Id Assignment Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWaferIdAssign);
-                                        // 2. Send to PM Assigned Id
+                                        // 4. Send to PM Assigned Id
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientToBinWaferIdAssign);
-                                        // 3. Bin Work End Event
+                                        // 5. Bin Work End Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWorkEnd);
-                                        // 4. Bin Track Out Event
+                                        // 6. Bin Track Out Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScnearioBinTrackOut);
-                                        // 5. Request Part Id Info
+                                        // 7. Request Part Id Info
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioReqBinPartId);
-                                        // 6. Request Bin data to PWA500BIN
+                                        // 8. Request Bin data to PWA500BIN
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientUploadBinFile);
-                                        // 7. Upload Bin Data Event
+                                        // 9. Upload Bin Data Event
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioUploadBinData);
+                                    }
+                                    break;
+                                case (int)UnloadingStepTypes.AfterScrap:
+                                    {
+                                        // Scrap 이후
+                                        // 3. Id Assignment Event
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWaferIdAssign);
+                                        // 4. Send to PM Assigned Id
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientToBinWaferIdAssign);
+                                        // 5. Bin Work End Event
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWorkEnd);
+                                        // 6. Bin Track Out Event
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScnearioBinTrackOut);
+                                        // 7. Request Part Id Info
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioReqBinPartId);
+                                        // 8. Request Bin data to PWA500BIN
+                                        QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientUploadBinFile);
+                                        // 9. Upload Bin Data Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioUploadBinData);
                                     }
                                     break;
                                 case (int)UnloadingStepTypes.AfterIdAssignment:
                                     {
                                         // AssignWaferId 이후
-                                        // 2. Send to PM Assigned Id
+                                        // 4. Send to PM Assigned Id
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientToBinWaferIdAssign);
-                                        // 3. Bin Work End Event
+                                        // 5. Bin Work End Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWorkEnd);
-                                        // 4. Bin Track Out Event
+                                        // 6. Bin Track Out Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScnearioBinTrackOut);
-                                        // 5. Request Part Id Info
+                                        // 7. Request Part Id Info
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioReqBinPartId);
-                                        // 6. Request Bin data to PWA500BIN
+                                        // 8. Request Bin data to PWA500BIN
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioSendClientUploadBinFile);
-                                        // 7. Upload Bin Data Event
+                                        // 9. Upload Bin Data Event
                                         QueuedScenarioForBinSubstrate.Enqueue(ScenarioUploadBinData);
                                     }
                                     break;
@@ -613,7 +655,7 @@ namespace FrameOfSystem3.Task
                             {
                                 case ScenarioProcessEnd:
                                     {
-                                        var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                                        var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                                         InitResult(scenario);
                                         _executingScenario = new QueuedScenarioInfo
@@ -659,11 +701,119 @@ namespace FrameOfSystem3.Task
                             InitResult(scenario);
                             switch (scenario)
                             {
+                                case ScenarioSendClientToUploadBinScrapInfo:
+                                    {
+                                        #region <1. ScenarioSendClientToUploadBinScrapInfo>
+                                        // 매 장 BinFile Upload 발생이 필요하다.
+                                        Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToScrapBinInfo(
+                                            substrate.Name, substrate.GetAttribute(PWA500SubstrateAttributes.RingId));
+                                        if (scenarioParam == null)
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Error;
+                                            _commandResult.Description = "Invalid scenario param";
+                                            return _commandResult;
+                                        }
+
+                                        _executingScenario = new QueuedScenarioInfo
+                                        {
+                                            Scenario = scenario,
+                                            ScenarioParams = scenarioParam
+                                        };
+
+                                        _functionsForPWA500.ClearScrapDataToUpload();
+                                        if (false == UpdateScenarioParam(_executingScenario.Scenario, scenarioParam))
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Error;
+                                            _commandResult.Description = "Failed to update for scenario param";
+                                        }
+                                        else
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Completed;
+                                            _commandResult.Description = string.Empty;
+                                        }
+
+                                        return _commandResult;
+                                        #endregion </1. ScenarioSendClientToUploadBinScrapInfo>
+                                    }
+
+                                case ScenarioScrapBinChips:
+                                    {
+                                        #region <2. ScenarioScrapBinChips>
+                                        if (false == _functionsForPWA500.GetScrapDataToUpload(out var info))
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Error;
+                                            _commandResult.Description = "Invalid scenario param";
+                                            return _commandResult;
+                                        }
+
+                                        if (string.Equals(info.Qty, "0", StringComparison.OrdinalIgnoreCase) ||
+                                            string.IsNullOrWhiteSpace(info.Qty) ||
+                                            string.IsNullOrWhiteSpace(info.Info))
+                                        {
+                                            // 폐기 수량이 0인 경우, 빈칩으로 간주하여 스킵처리
+                                            int currentStep = GetUnloadingStep(ref substrate);
+                                            if (currentStep == (int)UnloadingStepTypes.Init)
+                                            {
+                                                // Step 증가
+                                                int nextStep = (int)UnloadingStepTypes.AfterScrap;
+                                                _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
+                                                _substrateManager.SaveDataByKey(substrate.UniqueKey);
+                                            }
+
+                                            _commandResult.CommandResult = CommandResult.Completed;
+                                            _commandResult.Description = string.Empty;
+
+                                            return _commandResult;
+                                        }
+
+                                        if (false == _functionsForPWA500.CreateScenarioParamToScrapInfo(
+                                            false,
+                                            substrate.LotId,
+                                            substrate.Name,
+                                            info.Qty,
+                                            info.Info,
+                                            info.UserId,
+                                            out var scenarioParam))
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Error;
+                                            _commandResult.Description = "Invalid scenario param";
+
+                                            return _commandResult;
+                                        }
+
+                                        Dictionary<string, string> additionalParams = new Dictionary<string, string>()
+                                        {
+                                            [AdditionalParamKeys.KeySubstrateKey] = substrate.UniqueKey,
+                                            [ScrapInfoKeys.KeyParamScrapInfo] = info.Info,
+                                        };
+
+                                        _executingScenario = new QueuedScenarioInfo
+                                        {
+                                            Scenario = scenario,
+                                            ScenarioParams = scenarioParam,
+                                            AdditionalParams = additionalParams
+                                        };
+
+                                        if (false == UpdateScenarioParam(_executingScenario.Scenario, scenarioParam))
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Error;
+                                            _commandResult.Description = "Failed to update for scenario param";
+                                        }
+                                        else
+                                        {
+                                            _commandResult.CommandResult = CommandResult.Completed;
+                                            _commandResult.Description = string.Empty;
+                                        }
+
+                                        return _commandResult;
+                                        #endregion </2. ScenarioScrapBinChips>
+                                    }
+
                                 case ScenarioBinWaferIdAssign:
                                     {
-                                        #region <1. Id Assignment Event>
+                                        #region <3. Id Assignment Event>
                                         Dictionary<string, string> scenarioParam
-                                            = _functionsForPWA500.MakeScenarioParamToAssignSubstrateId(portId, slot, substrateType, substrate);
+                                            = ScenarioParameterBuilder.MakeScenarioParamToAssignSubstrateId(portId, slot, substrateType, substrate);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -689,13 +839,13 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </1. Id Assignment Event>        
+                                        #endregion </3. Id Assignment Event>        
                                     }
 
                                 case ScenarioSendClientToBinWaferIdAssign:
                                     {
                                         int currentStep = GetUnloadingStep(ref substrate);
-                                        if (currentStep == (int)UnloadingStepTypes.Init)
+                                        if (currentStep == (int)UnloadingStepTypes.AfterScrap)
                                         {
                                             // Step 증가
                                             int nextStep = (int)UnloadingStepTypes.AfterIdAssignment;
@@ -707,7 +857,7 @@ namespace FrameOfSystem3.Task
                                             _newSubstrateId = substrate.Name;
                                         }
 
-                                        #region <2. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>
+                                        #region <4. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>
                                         string ringId = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
 
                                         _lotHistoryLog.WriteSubstrateHistoryForAssignSubstrateId(portId, ringId, _newSubstrateId);
@@ -719,7 +869,7 @@ namespace FrameOfSystem3.Task
                                         _substrateManager.SaveDataByKey(key);
                                         //substrate.SetAttribute(PWA500BINSubstrateAttributes.RingId, ringId);
 
-                                        var scenarioParam = _functionsForPWA500.MakeScenarioParamToSendingAssignId(_newSubstrateId, ringId);
+                                        var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToSendingAssignId(_newSubstrateId, ringId);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -744,13 +894,13 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </2. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>                                            
+                                        #endregion </4. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>                                            
                                     }
 
                                 case ScenarioBinWorkEnd:
                                     {
-                                        #region <3. Bin Work End Event : Bin Work End Event를 발생시킨다.>
-                                        var scenarioParam = _functionsForPWA500.MakeScenarioParamToBinWorkEnd(substrate.UniqueKey, true);
+                                        #region <5. Bin Work End Event : Bin Work End Event를 발생시킨다.>
+                                        var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToBinWorkEnd(substrate.UniqueKey, true);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -775,13 +925,13 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </3. Bin Work End Event : Bin Work End Event를 발생시킨다.>
+                                        #endregion </5. Bin Work End Event : Bin Work End Event를 발생시킨다.>
                                     }
 
                                 case ScnearioBinTrackOut:
                                     {
-                                        #region <4. Bin Track Out Event : Bin Track Out Event를 발생시킨다.>
-                                        var scenarioParam = _functionsForPWA500.MakeScenarioParamToTrackOut(substrate.UniqueKey, "AUTO", false);
+                                        #region <6. Bin Track Out Event : Bin Track Out Event를 발생시킨다.>
+                                        var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToTrackOut(substrate.UniqueKey, "AUTO", false);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -806,12 +956,12 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </4. Bin Track Out Event : Bin Track Out Event를 발생시킨다.>
+                                        #endregion </6. Bin Track Out Event : Bin Track Out Event를 발생시킨다.>
                                     }
 
                                 case ScenarioReqBinPartId:
                                     {
-                                        #region <5. Request Part Id Info : Track Out 이후 변경된 PartId 를 받기위한 이벤트를 발생시킨다.>
+                                        #region <7. Request Part Id Info : Track Out 이후 변경된 PartId 를 받기위한 이벤트를 발생시킨다.>
                                         string lotId = substrate.LotId;
                                         if (false == _carrierServer.HasCarrier(portId))
                                         {
@@ -822,7 +972,7 @@ namespace FrameOfSystem3.Task
 
                                         string carrierId = _carrierServer.GetCarrierId(portId);
 
-                                        var scenarioParam = _functionsForPWA500.MakeScenarioParamToRequestBinPartId(lotId, carrierId);
+                                        var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToRequestBinPartId(lotId, carrierId);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -847,7 +997,7 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </5. Request Part Id Info : Track Out 이후 변경된 PartId 를 받기위한 이벤트를 발생시킨다.>
+                                        #endregion </7. Request Part Id Info : Track Out 이후 변경된 PartId 를 받기위한 이벤트를 발생시킨다.>
                                     }
 
                                 case ScenarioSendClientUploadBinFile:
@@ -867,10 +1017,10 @@ namespace FrameOfSystem3.Task
                                             //});
                                         }
 
-                                        #region <6. Uploading Bin File Event>
+                                        #region <8. Uploading Bin File Event>
 
                                         // 매 장 BinFile Upload 발생이 필요하다.
-                                        Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
+                                        Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
                                         if (scenarioParam == null)
                                         {
                                             _commandResult.CommandResult = CommandResult.Error;
@@ -897,7 +1047,7 @@ namespace FrameOfSystem3.Task
                                             _commandResult.Description = string.Empty;
                                         }
                                         return _commandResult;
-                                        #endregion </6. Uploading Bin File Event>
+                                        #endregion </8. Uploading Bin File Event>
                                     }
 
                                 case ScenarioUploadBinData:
@@ -1018,7 +1168,7 @@ namespace FrameOfSystem3.Task
                         case ScenarioProcessStart:
                             {
                                 int portId = substrate.SourcePortId;
-                                var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                                var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                                 InitResult(scenario);
                                 _executingScenario = new QueuedScenarioInfo
@@ -1124,7 +1274,7 @@ namespace FrameOfSystem3.Task
                         if (IsFirstSubstrateAtLoadPort(sourceCarrierId, portId, substrate.UniqueKey))
                         {
                             #region <Process Start>
-                            var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                            var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                             InitResult(scenario);
                             _executingScenario = new QueuedScenarioInfo
@@ -2347,6 +2497,7 @@ namespace FrameOfSystem3.Task
                             var substrates = new List<Substrate>();
                             _substrateManager.GetSubstratesAtProcessModule(processModuleName, ref substrates);
                             substrate = substrates.First();
+
                             substrateName = substrate.Name;
                             lotId = substrate.LotId;
                             recipeId = substrate.RecipeId;
@@ -3154,8 +3305,42 @@ namespace FrameOfSystem3.Task
                                 }
                                 break;
 
+                            case ScenarioScrapBinChips:
+                                {
+                                    bool isManual = IsManual();
+                                    if (false == GetWorkingInformation(isManual, ref _workingInfo, ref _temporaryDescription))
+                                        break;
+
+                                    if (false == _substrateManager.GetSubstrateAtRobot(RobotName, _workingInfo.ActionArm, out var substrate))
+                                        break;
+
+                                    if (_functionsForPWA500.GetScrapDataToUpload(out var info))
+                                    {
+                                        _functionsForPWA500.ClearScrapDataToUpload();
+
+                                        int currentStep = GetUnloadingStep(ref substrate);
+                                        if (currentStep == (int)UnloadingStepTypes.Init)
+                                        {
+                                            // Step 증가
+                                            int nextStep = (int)UnloadingStepTypes.AfterScrap;
+                                            _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
+                                        }
+
+                                        _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.ScrapInfo, info.Info);
+                                        _substrateManager.SaveDataByKey(substrate.UniqueKey);
+                                    }                                    
+                                }
+                                break;
+
                             case ScenarioBinWaferIdAssign:
                                 {
+                                    bool isManual = IsManual();
+                                    if (false == GetWorkingInformation(isManual, ref _workingInfo, ref _temporaryDescription))
+                                        break;
+
+                                    if (false == _substrateManager.GetSubstrateAtRobot(RobotName, _workingInfo.ActionArm, out var substrate))
+                                        break;
+
                                     // Substrate Id 할당된 것을 전달
                                     var resultOfScenario = GetScenarioResultData(ScenarioBinWaferIdAssign);
                                     if (false == resultOfScenario.TryGetValue(AssignSubstrateIdKeys.KeyResultSubstrateId,

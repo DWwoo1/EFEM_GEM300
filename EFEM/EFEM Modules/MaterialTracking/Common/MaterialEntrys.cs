@@ -9,22 +9,23 @@ namespace EFEM.MaterialTracking
     {
         [DataMember(Order = 1)] public string UniqueKey { get; set; }
         [DataMember(Order = 2)] public string Name { get; set; }
-        [DataMember(Order = 3)] public string LocationId { get; set; }
-        [DataMember(Order = 4)] public int SourcePortId { get; set; }
-        [DataMember(Order = 5)] public int SourceSlot { get; set; }
-        [DataMember(Order = 6)] public string SourceCarrierId { get; set; }
-        [DataMember(Order = 7)] public string CurrentCarrierKey { get; set; }
-        [DataMember(Order = 8)] public int DestinationPortId { get; set; }
-        [DataMember(Order = 9)] public int DestinationSlot { get; set; }
-        [DataMember(Order = 10)] public string LotId { get; set; }
-        [DataMember(Order = 11)] public string RecipeId { get; set; }
-        [DataMember(Order = 12)] public string ProcessJobId { get; set; }
-        [DataMember(Order = 13)] public string ControlJobId { get; set; }
-        [DataMember(Order = 14)] public int TransportStatus { get; set; }
-        [DataMember(Order = 15)] public int ProcessingStatus { get; set; }
-        [DataMember(Order = 16)] public int IdReadingStatus { get; set; }
-        [DataMember(Order = 17)] public bool DoNotProcessFlag { get; set; }
-        [DataMember(Order = 18)] public bool Usage { get; set; }
+        [DataMember(Order = 3)] public string OriginName { get; set; }
+        [DataMember(Order = 4)] public string LocationId { get; set; }
+        [DataMember(Order = 5)] public int SourcePortId { get; set; }
+        [DataMember(Order = 6)] public int SourceSlot { get; set; }
+        [DataMember(Order = 7)] public string SourceCarrierId { get; set; }
+        [DataMember(Order = 8)] public string CurrentCarrierKey { get; set; }
+        [DataMember(Order = 9)] public int DestinationPortId { get; set; }
+        [DataMember(Order = 10)] public int DestinationSlot { get; set; }
+        [DataMember(Order = 11)] public string LotId { get; set; }
+        [DataMember(Order = 12)] public string RecipeId { get; set; }
+        [DataMember(Order = 13)] public string ProcessJobId { get; set; }
+        [DataMember(Order = 14)] public string ControlJobId { get; set; }
+        [DataMember(Order = 15)] public int TransportStatus { get; set; }
+        [DataMember(Order = 16)] public int ProcessingStatus { get; set; }
+        [DataMember(Order = 17)] public int IdReadingStatus { get; set; }
+        [DataMember(Order = 18)] public bool DoNotProcessFlag { get; set; }
+        [DataMember(Order = 19)] public bool Usage { get; set; }
 
         [DataMember(Order = 99)]
         public Dictionary<string, string> Extra { get; set; }

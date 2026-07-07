@@ -930,13 +930,23 @@ namespace FrameOfSystem3.Task
         }
         protected override bool ProcessAfterWarning()
         {
-            //
+            if (_taskOperator.GetTaskAlarmData(GetTaskName(), out _, out int step))
+            {
+                var message = $"Warning Occurred : {step}";
+                Logger.WriteAlarmLog(message);
+            }
+
             _loadPortManager.InitializeAMHSSignals(LoadPortIndex);
             return base.ProcessAfterWarning();
         }
         protected override bool ProcessAfterError()
         {
-            //
+            if (_taskOperator.GetTaskAlarmData(GetTaskName(), out _, out int step))
+            {
+                var message = $"Error Occurred : {step}";
+                Logger.WriteAlarmLog(message);
+            }
+
             return base.ProcessAfterError();
         }
         protected virtual bool ActionScheduling()
@@ -2273,12 +2283,14 @@ namespace FrameOfSystem3.Task
                                             else
                                             {
                                                 ApplyScannedInfo();
+                                                _loadPortManager.PostCarrierSlotMapVerificationResult(LoadPortIndex, true);
                                                 ++m_nSeqNum;
                                             }
                                         }
                                         else
                                         {
                                             ++m_nSeqNum;
+                                            _loadPortManager.PostCarrierSlotMapVerificationResult(LoadPortIndex, true);
                                         }
                                     }
                                 }
@@ -2308,7 +2320,10 @@ namespace FrameOfSystem3.Task
                             break;
                         }
 
-                        _loadPortManager.PostCarrierSlotMapVerificationResult(LoadPortIndex, true);
+                        if (false == _loadPortManager.IsLoadPortPrepared(LoadPortIndex))
+                            break;
+                        
+                        //_loadPortManager.PostCarrierSlotMapVerificationResult(LoadPortIndex, true);
                         m_nSeqNum = (int)STEP_CARRIER_LOADING.UPDATE_LINK;
                     }
                     break;
@@ -3085,7 +3100,7 @@ namespace FrameOfSystem3.Task
                     break;
             }
 
-            if (false == result.Equals(EN_SCENARIO_RESULT.PROCEED))
+            if (_commandResult.CommandResult != CommandResult.Proceed)
             {
                 ExecuteAfterScenarioCompletion(_executingScenario.Scenario, result, _executingScenario.ScenarioParams, _executingScenario.AdditionalParams);
                 _executingScenario = null;

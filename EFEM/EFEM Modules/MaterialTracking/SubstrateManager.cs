@@ -704,6 +704,14 @@ namespace EFEM.MaterialTracking
             s.Name = name;
             return true;
         }
+        public bool SetOriginNameByKey(string key, string name)
+        {
+            if (false == _substratesByKey.TryGetValue(key, out var s) || s == null)
+                return false;
+
+            s.OriginName = name;
+            return true;
+        }
         public bool SetCurrentCarrierKeyByKey(string key, string carrierKey)
         {
             if (false == _substratesByKey.TryGetValue(key, out var s) || s == null)

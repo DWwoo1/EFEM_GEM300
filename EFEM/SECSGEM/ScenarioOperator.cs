@@ -958,6 +958,10 @@ namespace FrameOfSystem3.SECSGEM
             }
             public void WriteLog(string message)
             {
+                if (string.IsNullOrWhiteSpace(message))
+                {
+
+                }
                 _runtime.WriteLog(message);
             }
             public void WriteScenarioLog(string message)

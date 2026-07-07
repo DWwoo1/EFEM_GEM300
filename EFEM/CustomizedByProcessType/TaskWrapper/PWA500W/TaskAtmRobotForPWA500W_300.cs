@@ -573,7 +573,7 @@ namespace FrameOfSystem3.Task
                                 //_substrateManager.SaveDataByKey(key);
                                 //substrate.SetAttribute(PWA500BINSubstrateAttributes.RingId, ringId);
 
-                                var scenarioParam = _functionsForPWA500.MakeScenarioParamToSendingAssignId(newSubstrateId, ringId);
+                                var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToSendingAssignId(newSubstrateId, ringId);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -630,7 +630,7 @@ namespace FrameOfSystem3.Task
                                 _substrateManager.SaveDataByKey(substrate.UniqueKey);
 
                                 // 매 장 BinFile Upload 발생이 필요하다.
-                                Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
+                                Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -1052,7 +1052,6 @@ namespace FrameOfSystem3.Task
 
             switch (scenario)
             {
-                // 2026.06.26 dwlim [ADD] Formatted Recipe Download 추가
                 case ScenarioCoreLotStart:
                     {
                         bool isManual = IsManual();
@@ -2469,17 +2468,16 @@ namespace FrameOfSystem3.Task
 
                         int targetPortId = 0, targetSlot = 0;
                         string description = string.Empty;
-
+                        
                         //bool isSeperatedWithBinAndEmpty = true;
                         //bool isSeperatedWithBinAndEmpty = false;
 
                         //hasCarrier = FindWellknownProtInfoBySubstrateType(substrate, convertedType, ref targetPortId, ref targetSlot, ref description);
-
                         var checkingResult = _functionsForPWA500.FindWellknownProtInfoBySubstrateType(
-                            substrate,
-                            convertedType,
-                            ref targetPortId,
-                            ref targetSlot,
+                            substrate, 
+                            convertedType, 
+                            ref targetPortId, 
+                            ref targetSlot, 
                             ref description);
 
                         if (checkingResult == CheckingCarrierCodeToUnload.Ok)

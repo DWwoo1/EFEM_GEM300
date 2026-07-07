@@ -1712,7 +1712,10 @@ namespace FrameOfSystem3.Task
                             var lotId = e.LotIds[i]; 
                             if (substrates.TryGetValue(i + 1, out var s))
                             {
-                                s.Name = id;
+                                //s.Name = id;
+                                //s.OriginName = id;
+                                _substrateManager.SetNameByKey(s.UniqueKey, id);
+                                _substrateManager.SetOriginNameByKey(s.UniqueKey, id);
                                 s.SetAttribute(PWA500SubstrateAttributes.SubstrateType, MySubstrateType.ToString());
                                 s.SetAttribute(PWA500SubstrateAttributes.SubstrateSize, MySubstrateSize.ToString());
                                 s.LotId = lotId;
@@ -1785,7 +1788,10 @@ namespace FrameOfSystem3.Task
                     bool changed = false;
                     if (slotIds.TryGetValue(item.Key, out var name))
                     {
-                        item.Value.Name = name;
+                        //item.Value.Name = name;
+                        //item.Value.OriginName = name;
+                        _substrateManager.SetNameByKey(item.Value.UniqueKey, name);
+                        _substrateManager.SetOriginNameByKey(item.Value.UniqueKey, name);
                         changed = true;
                     }
 

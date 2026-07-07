@@ -34,10 +34,19 @@ using System.Runtime.InteropServices;
 // 지정되도록 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("5.18.46.94")]
+[assembly: AssemblyFileVersion("6.18.46.96")]
 
 // Version : [호환성.추가.변경.개선]
 #region <VERSION HISTORY>
+
+#region <6.18.46.96>
+// 1. ADS 관련 슬롯매핑 관련 옵션처리
+// 2. Core Carrier 투입 조건 개선(완료된 포트 배출될 때까지 대기하던 현상 개선)
+#endregion </6.18.46.96>
+
+#region <6.18.46.95>
+// 1. GEM300 호환용 버전
+#endregion </6.18.46.95>
 
 #region <5.18.46.94>
 // 1. OHT 요청 시 LoadingMode에 따라 요청 랏 이름을 하드코딩 -> 파라메터 적용되도록 개선

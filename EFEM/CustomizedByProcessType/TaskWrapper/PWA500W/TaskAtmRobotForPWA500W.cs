@@ -284,7 +284,7 @@ namespace FrameOfSystem3.Task
                         {
                             case ScenarioRecipeDownload:
                                 {
-                                    Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToRecipeDownload(substrate);
+                                    Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToRecipeDownload(substrate);
                                     if (scenarioParam == null)
                                     {
                                         _commandResult.CommandResult = CommandResult.Error;
@@ -326,7 +326,7 @@ namespace FrameOfSystem3.Task
                                     //    return _commandResult;
                                     //}
 
-                                    Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToCoreTrackIn(portId, substrate);
+                                    Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToCoreTrackIn(portId, substrate);
                                     if (scenarioParam == null)
                                     {
                                         _commandResult.CommandResult = CommandResult.Error;
@@ -387,7 +387,7 @@ namespace FrameOfSystem3.Task
                         // 매 장 LotMatch 발생한다.
                         string lotId = _carrierServer.GetCarrierLotId(portId);
                         string carrierId = _carrierServer.GetCarrierId(portId);
-                        Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToLotMatch(portId, lotId, carrierId);
+                        Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToLotMatch(portId, lotId, carrierId);
                         if (scenarioParam == null)
                         {
                             _commandResult.CommandResult = CommandResult.Error;
@@ -610,7 +610,7 @@ namespace FrameOfSystem3.Task
                     {
                         case ScenarioProcessEnd:
                             {
-                                var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                                var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                                 InitResult(scenario);
                                 _executingScenario = new QueuedScenarioInfo
@@ -657,7 +657,7 @@ namespace FrameOfSystem3.Task
                             {
                                 #region <1. Id Assignment Event>
                                 Dictionary<string, string> scenarioParam
-                                    = _functionsForPWA500.MakeScenarioParamToAssignSubstrateId(portId, slot, substrateType, substrate);
+                                    = ScenarioParameterBuilder.MakeScenarioParamToAssignSubstrateId(portId, slot, substrateType, substrate);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -713,7 +713,7 @@ namespace FrameOfSystem3.Task
                                 _substrateManager.SaveDataByKey(key);
                                 //substrate.SetAttribute(PWA500WSubstrateAttributes.RingId, ringId);
 
-                                var scenarioParam = _functionsForPWA500.MakeScenarioParamToSendingAssignId(_newSubstrateId, ringId);
+                                var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToSendingAssignId(_newSubstrateId, ringId);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -747,7 +747,7 @@ namespace FrameOfSystem3.Task
                                 //string substrateId = substrate.Name;
                                 //string ringId = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
 
-                                var scenarioParam = _functionsForPWA500.MakeScenarioParamToBinWorkEnd(substrate.UniqueKey, true);
+                                var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToBinWorkEnd(substrate.UniqueKey, true);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -779,7 +779,7 @@ namespace FrameOfSystem3.Task
                             {
                                 #region <4. Bin Track Out Event : Bin Track Out Event를 발생시킨다.>
                                 //string substrateId = substrate.Name;
-                                var scenarioParam = _functionsForPWA500.MakeScenarioParamToTrackOut(substrate.UniqueKey, "AUTO", false);
+                                var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToTrackOut(substrate.UniqueKey, "AUTO", false);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -820,7 +820,7 @@ namespace FrameOfSystem3.Task
 
                                 string carrierId = _carrierServer.GetCarrierId(portId);
 
-                                var scenarioParam = _functionsForPWA500.MakeScenarioParamToRequestBinPartId(lotId, carrierId);
+                                var scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToRequestBinPartId(lotId, carrierId);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -867,7 +867,7 @@ namespace FrameOfSystem3.Task
                                 #region <6. Uploading Bin File Event>
 
                                 // 매 장 BinFile Upload 발생이 필요하다.
-                                Dictionary<string, string> scenarioParam = _functionsForPWA500.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
+                                Dictionary<string, string> scenarioParam = ScenarioParameterBuilder.MakeScenarioParamToUploadBinFile(portId, slot, MachineName, substrate);
                                 if (scenarioParam == null)
                                 {
                                     _commandResult.CommandResult = CommandResult.Error;
@@ -1007,7 +1007,7 @@ namespace FrameOfSystem3.Task
                         case ScenarioProcessStart:
                             {
                                 int portId = substrate.SourcePortId;
-                                var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                                var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                                 InitResult(scenario);
                                 _executingScenario = new QueuedScenarioInfo
@@ -1110,7 +1110,7 @@ namespace FrameOfSystem3.Task
                         if (IsFirstSubstrateAtLoadPort(sourceCarrierId, portId, substrate.UniqueKey))
                         {
                             #region <Process Start>
-                            var scenarioParam = _functionsForPWA500.MakeParamToProcessing(portId, substrate);
+                            var scenarioParam = ScenarioParameterBuilder.MakeParamToProcessing(portId, substrate);
 
                             InitResult(scenario);
                             _executingScenario = new QueuedScenarioInfo

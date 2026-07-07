@@ -1406,7 +1406,11 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 case EN_SCENARIO.SCENARIO_REQ_CORE_WAFER_SPLIT_LAST:
                 case EN_SCENARIO.SCENARIO_REQ_CORE_CHIP_MERGE:
                 case EN_SCENARIO.SCENARIO_CORE_WAFER_DETACH_END:
-                case EN_SCENARIO.SCENARIO_UPLOAD_SCRAP_DATA:
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_1:
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_2:
+                case EN_SCENARIO.SCENARIO_SCRAP_BIN_CHIP:
+                case EN_SCENARIO.SCENARIO_SCRAP_CORE_CHIP:
+                case EN_SCENARIO.SCENARIO_UPLOAD_WORK_RESULT:
                 case EN_SCENARIO.SCENARIO_BIN_WAFER_ID_READ:
                 case EN_SCENARIO.SCENARIO_BIN_SORTING_START_1:
                 case EN_SCENARIO.SCENARIO_BIN_SORTING_END_1:
@@ -3073,8 +3077,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 request.ScenarioParams,
                 resultData,
                 request.AdditionalParams,
-                messageResult,
-                false);
+                messageResult);
         }
         //private void EnqueueScenario(EN_SCENARIO scenario, Dictionary<string, string> scenarioParams, Dictionary<string, string> additionalParams = null)
         //{
@@ -3322,10 +3325,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         Dictionary<string, string> scenarioParam = new Dictionary<string, string>
                         {
                             [DetachingKeys.KeyParamCarrierId] = carrierId,
-                            [DetachingKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                            [DetachingKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                             [DetachingKeys.KeyParamLotId] = lotId,
                             [DetachingKeys.KeyParamPartId] = partId,
-                            [DetachingKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                            [DetachingKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                             [DetachingKeys.KeyParamWaferId] = substrateName,
                             [DetachingKeys.KeyParamSlotId] = slot.ToString(),
                             [DetachingKeys.KeyParamOperatorId] = userId
@@ -3386,10 +3389,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         Dictionary<string, string> scenarioParam = new Dictionary<string, string>
                         {
                             [DetachingKeys.KeyParamCarrierId] = carrierId,
-                            [DetachingKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                            [DetachingKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                             [DetachingKeys.KeyParamLotId] = lotId,
                             [DetachingKeys.KeyParamPartId] = partId,
-                            [DetachingKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                            [DetachingKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                             [DetachingKeys.KeyParamWaferId] = substrateName,
                             [DetachingKeys.KeyParamSlotId] = slot.ToString(),
                             [DetachingKeys.KeyParamOperatorId] = userId
@@ -3848,7 +3851,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                     if (prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.FINISHING) ||
                                         prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.EXECUTING))
                                     {
-                                        var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                                        var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                                         EnqueueScenario(EN_SCENARIO.SCENARIO_EQUIPMENT_END, param, null);
                                     }
                                 }
@@ -3859,7 +3862,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                     if (prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.IDLE) ||
                                         prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.READY))
                                     {
-                                        var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                                        var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                                         EnqueueScenario(EN_SCENARIO.SCENARIO_EQUIPMENT_START, param, null);
                                     }
                                 }
@@ -3889,7 +3892,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         #region
                         if (_queuedAlarmsFromPM.Count == 0)
                         {
-                            var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                            var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                             EnqueueScenario(EN_SCENARIO.SCENARIO_ERROR_START, param, null);
                         }
 
@@ -3920,7 +3923,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
                         if (_queuedAlarmsFromPM.Count == 0)
                         {
-                            var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                            var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                             EnqueueScenario(EN_SCENARIO.SCENARIO_ERROR_STOP, param, null);
                         }
 
@@ -4089,7 +4092,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         if (false == messagePairs.TryGetValue(UploadCoreOrBinFileKeys.KeyMapData, out string mapData))
                             return false;
 
-                        _functionsForPWA500.MakeBinDataToUpload(nameOfEq, substrateName, ringId, chipQty, waferAngle, countRow, countCol, nullBinCode, mapData, pmsBody, "AUTO", true);
+                        _functionsForPWA500.CreateBinDataToUpload(nameOfEq, substrateName, ringId, chipQty, waferAngle, countRow, countCol, nullBinCode, mapData, pmsBody, "AUTO", true);
 
 
                         if (IsScenarioRunning(EN_SCENARIO.SCENARIO_REQ_UPLOAD_BINFILE))
@@ -4474,7 +4477,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //        [AssignSubstrateLotIdKeys.KeyParamLotId] = substrate.LotId,
         //        [AssignSubstrateLotIdKeys.KeyParamWaferId] = substrateId,
         //        [AssignSubstrateLotIdKeys.KeyParamPartId] = substrate.GetAttribute(PWA500WSubstrateAttributes.PartId),
-        //        [AssignSubstrateLotIdKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+        //        [AssignSubstrateLotIdKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
         //        [AssignSubstrateLotIdKeys.KeyParamSlotId] = (substrate.SourceSlot).ToString(),
         //        [AssignSubstrateLotIdKeys.KeyParamOperatorId] = userId
         //    };
@@ -4817,7 +4820,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 string carrierId = _carrierServer.GetCarrierId(portId);
                 string lotId = substrate.LotId;
                 string partId = substrate.GetAttribute(PWA500SubstrateAttributes.PartId);
-                string recipeId = _functionsForPWA500.GetRecipeId();
+                string recipeId = EquipmentInfo.GetRecipeId();
 
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
@@ -4869,7 +4872,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         [RequestDownloadMapFileKeys.KeyParamPortId] = string.Empty,
                         [RequestDownloadMapFileKeys.KeyParamLotId] = string.Empty,
                         [RequestDownloadMapFileKeys.KeyParamPartId] = string.Empty,
-                        [RequestDownloadMapFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                        [RequestDownloadMapFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                         [RequestDownloadMapFileKeys.KeyParamOperatorId] = userId,
                         [RequestDownloadMapFileKeys.KeyParamWaferId] = substrateId,
                         [RequestDownloadMapFileKeys.KeyParamAngle] = waferAngle.ToString(),
@@ -4921,7 +4924,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //    string lotId = substrate.LotId;
         //    string partId = substrate.GetAttribute(PWA500WSubstrateAttributes.PartId);
         //    string stepId = substrate.GetAttribute(PWA500WSubstrateAttributes.StepSeq);
-        //    string recipeId = _functionsForPWA500.GetRecipeId();
+        //    string recipeId = EquipmentInfo.GetRecipeId();
         //    int portId;
         //    if (false == isCore)
         //    {
@@ -4963,7 +4966,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         //    Dictionary<string, string> scenarioParams = new Dictionary<string, string>();
         //    scenarioParams[TrackInOrOut.KeyParamCarrierId] = carrierId;
-        //    scenarioParams[TrackInOrOut.KeyParamPortId] = _functionsForPWA500.GetPortName(portId);
+        //    scenarioParams[TrackInOrOut.KeyParamPortId] = EquipmentInfo.GetPortName(portId);
         //    scenarioParams[TrackInOrOut.KeyParamLotId] = lotId;
         //    scenarioParams[TrackInOrOut.KeyParamPartId] = partId;
         //    scenarioParams[TrackInOrOut.KeyParamStepSeq] = stepId;
@@ -4991,7 +4994,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 EN_SCENARIO scenario;
                 int portId, slot;
                 string partId = substrate.GetAttribute(PWA500SubstrateAttributes.PartId);
-                string recipeId = _functionsForPWA500.GetRecipeId();
+                string recipeId = EquipmentInfo.GetRecipeId();
 
                 Dictionary<string, string> additionalParams = null;
                 if (false == isCore)
@@ -5028,7 +5031,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
                     [UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId,
-                    [UploadCoreOrBinFileKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                    [UploadCoreOrBinFileKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                     [UploadCoreOrBinFileKeys.KeyParamLotId] = lotId,
                     [UploadCoreOrBinFileKeys.KeyParamPartId] = partId,
                     [UploadCoreOrBinFileKeys.KeyParamRecipeId] = recipeId,
@@ -5076,7 +5079,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         [UploadCoreOrBinFileKeys.KeyParamPortId] = string.Empty,
                         [UploadCoreOrBinFileKeys.KeyParamLotId] = string.Empty,
                         [UploadCoreOrBinFileKeys.KeyParamPartId] = string.Empty,
-                        [UploadCoreOrBinFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                        [UploadCoreOrBinFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                         [UploadCoreOrBinFileKeys.KeyParamOperatorId] = userId,
                         [UploadCoreOrBinFileKeys.KeyChipQty] = chipQty.ToString(),
 
@@ -5128,7 +5131,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //    string pmsFileBody, string userId, bool useEventHandling)
         //{
         //    EN_SCENARIO scenario = EN_SCENARIO.SCENARIO_BIN_DATA_UPLOAD;
-        //    string recipeId = _functionsForPWA500.GetRecipeId();
+        //    string recipeId = EquipmentInfo.GetRecipeId();
 
         //    if (_functionsForPWA500.GetSubstrateByName(substrateId, out var substrate) ||
         //        _functionsForPWA500.GetSubstrateByName(ringId, out substrate))
@@ -5144,7 +5147,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         //        string fileName = _functionsForPWA500.GetPMSFileName(lotId, substrateId);
         //        string fullPath = string.Empty;
-        //        if (false == _functionsForPWA500.MakePMSFile(lotId, substrateId, fileName, pmsFileBody, ref fullPath))
+        //        if (false == ScenarioParameterBuilder.MakePMSFile(lotId, substrateId, fileName, pmsFileBody, ref fullPath))
         //            return false;
 
         //        additionalParams = new Dictionary<string, string>
@@ -5161,7 +5164,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //        Dictionary<string, string> scenarioParams = new Dictionary<string, string>
         //        {
         //            [UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId,
-        //            [UploadCoreOrBinFileKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+        //            [UploadCoreOrBinFileKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
         //            [UploadCoreOrBinFileKeys.KeyParamLotId] = lotId,
         //            [UploadCoreOrBinFileKeys.KeyParamPartId] = partId,
         //            [UploadCoreOrBinFileKeys.KeyParamRecipeId] = recipeId,
@@ -5208,7 +5211,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //                [UploadCoreOrBinFileKeys.KeyParamPortId] = string.Empty,
         //                [UploadCoreOrBinFileKeys.KeyParamLotId] = string.Empty,
         //                [UploadCoreOrBinFileKeys.KeyParamPartId] = string.Empty,
-        //                [UploadCoreOrBinFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+        //                [UploadCoreOrBinFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
 
         //                [UploadCoreOrBinFileKeys.KeyParamOperatorId] = userId,
         //                [UploadCoreOrBinFileKeys.KeyChipQty] = chipQty.ToString(),

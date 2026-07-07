@@ -21,6 +21,7 @@ namespace EFEM.MaterialTracking
         {
             UniqueKey = uniqueKey;
             Name = name;
+            OriginName = name;
 
             Extra = new Dictionary<string, string>();
 
@@ -53,6 +54,7 @@ namespace EFEM.MaterialTracking
         }
         public string UniqueKey { get; set; }
         public string Name { get; set; }
+        public string OriginName { get; set; }  // For traceability, the name of the material when it is created. It will not be changed even if the material is renamed.
         public string LocationId { get; set; }
         public int SourcePortId { get; set; }
         public int SourceSlot { get; set; }

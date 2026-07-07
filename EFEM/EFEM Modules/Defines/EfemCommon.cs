@@ -897,6 +897,16 @@ namespace EFEM.Defines.Common
     #endregion </Location Names>
 
     #endregion </Enumerations>
+
+    public static class NewVersionChecker
+    {
+        public static bool IsOldEvents()
+        {
+            var path = Path.Combine(Define.DefineConstant.FilePath.FILEPATH_EXE, "OldEvents.txt");
+
+            return File.Exists(path);
+        }
+    }
 }
 
 //namespace SerializableDictionary

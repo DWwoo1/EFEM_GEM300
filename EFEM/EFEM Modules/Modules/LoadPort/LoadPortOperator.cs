@@ -13,6 +13,7 @@ using EFEM.Modules.LoadPort.Recovery;
 using EFEM.Defines.CarrierManagement;
 using EFEM.Modules.LoadPort.Scheduler;
 using EFEM.Modules.LoadPort.LoadPortControllers;
+using EFEM.Modules.LoadPort.State;
 
 namespace EFEM.Modules.LoadPort
 {
@@ -116,12 +117,12 @@ namespace EFEM.Modules.LoadPort
         private static SubstrateManager _substrateManager = null;
 
         private int _seqCheckingPlacementStatus = 0;
-        private const uint PlacementTimeOver = 10000;
+        private const uint PlacementTimeOver = 15000;
         private const string PlacementError = "Placement Error";
         private readonly TickCounter_.TickCounter _placementStatusChecker = new TickCounter_.TickCounter();
 
         private int _seqCheckingCarrierOutStatus = 0;
-        private const uint CarrierOutTimeOver = 1000;
+        private const uint CarrierOutTimeOver = 15000;
         private const string CarrierOutError = "Carrier Out Error";
         private readonly TickCounter_.TickCounter _carrierOutStatusChecker = new TickCounter_.TickCounter();
 
@@ -189,9 +190,10 @@ namespace EFEM.Modules.LoadPort
         {
             get
             {
-                if (_functionToReadInput == null || Controller is LoadPortControllers.LoadPortControllerSimulator)
+                if (_functionToReadInput == null ||
+                    Controller is LoadPortControllerSimulator)
                 {
-                    return Controller.State.Equals(LoadPortActionStates.Busy);
+                    return Controller.State == LoadPortActionStates.Busy;
                 }
 
                 return _functionToReadInput();
@@ -255,6 +257,24 @@ namespace EFEM.Modules.LoadPort
                     return false;
 
                 return _state.DoorState;
+            }
+        }
+        public bool ReadyForWork
+        {
+            get
+            {
+                if (_stateModel == null)
+                    return false;
+
+                return
+                    !IsLoadPortBusy &&
+                    _state.Placed && 
+                    _state.Present && 
+                    /*_state.ClampState && */
+                    _state.DockState && 
+                    _state.DoorState && 
+                    _state.CarrierIdVerificationState == CarrierIdVerificationStates.VerificationOk &&
+                    _state.CarrierSlotMapVerificationState == CarrierSlotMapVerificationStates.VerificationOk;
             }
         }
         public bool PlacementErrorState
@@ -1210,7 +1230,10 @@ namespace EFEM.Modules.LoadPort
         private bool CheckPlaceStatus(bool enabled, bool present, bool placed)
         {
             if (!enabled)
+            {
+                _seqCheckingPlacementStatus = 0;
                 return true;
+            }
 
             switch (_seqCheckingPlacementStatus)
             {
@@ -1219,7 +1242,7 @@ namespace EFEM.Modules.LoadPort
                         if (present == placed)
                             break;
 
-                        _placementStatusChecker.SetTickCount(15000);
+                        _placementStatusChecker.SetTickCount(PlacementTimeOver);
                         ++_seqCheckingPlacementStatus;
                     }
                     break;
@@ -1256,22 +1279,26 @@ namespace EFEM.Modules.LoadPort
             bool clampState,
             bool doorState)
         {
-            if (!enabled)
-                return true;
-
             bool canCarrierOut = !dockState && !clampState && !doorState;
+
+            // Carrier가 정상 감지되거나, Carrier Out이 허용 가능한 기구 상태면
+            // 이전 CarrierOut 감시 상태를 해제한다.
+            if (false == enabled ||
+                (present && placed) ||
+                canCarrierOut)
+            {
+                _seqCheckingCarrierOutStatus = 0;
+                return true;
+            }
 
             switch (_seqCheckingCarrierOutStatus)
             {
                 case 0:
                     {
-                        if (!canCarrierOut)
+                        if (!present || !placed)
                         {
-                            if (!present || !placed)
-                            {
-                                _carrierOutStatusChecker.SetTickCount(15000);
-                                ++_seqCheckingCarrierOutStatus;
-                            }
+                            _carrierOutStatusChecker.SetTickCount(CarrierOutTimeOver);
+                            ++_seqCheckingCarrierOutStatus;
                         }
                     }
                     break;
@@ -1280,16 +1307,17 @@ namespace EFEM.Modules.LoadPort
                     {
                         if (_carrierOutStatusChecker.IsTickOver(true))
                         {
-                            if (present && placed)
-                            {
-                                _seqCheckingCarrierOutStatus = 0;
-                                break;
-                            }
+                            //if (present && placed)
+                            //{
+                            //    _seqCheckingCarrierOutStatus = 0;
+                            //    break;
+                            //}
 
                             return false;
                         }
 
-                        if (!present || !placed)
+                        if (false == present ||
+                            false == placed)
                             break;
 
                         --_seqCheckingCarrierOutStatus;
@@ -1331,6 +1359,7 @@ namespace EFEM.Modules.LoadPort
             observation.ClampState = Controller.ClampState;
             observation.DockState = Controller.DockState;
             observation.DoorState = Controller.DoorState;
+            observation.ReadyForWork = ReadyForWork;
             observation.AccessMode = Controller.AccessMode;
             observation.LoadingType = Controller.LoadingType;
             observation.CarrierAccessingState = _carrierServer.HasCarrier(PortId)
@@ -2018,7 +2047,11 @@ namespace EFEM.Modules.LoadPort
         {
             if (_recoveryRequired && _observationBuffer.Initialized)
             {
-                _stateModel.RecoverFromObservation(_pendingRecoveryData, _observationBuffer);
+                if (_pendingRecoveryData != null)
+                {
+                    _stateModel.RecoverFromObservation(_pendingRecoveryData, _observationBuffer);
+                }
+
                 _stateModel.CopyStateTo(_state);
 
                 _recoveryRequired = false;

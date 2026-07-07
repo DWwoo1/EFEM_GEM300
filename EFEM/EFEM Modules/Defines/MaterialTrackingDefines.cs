@@ -78,6 +78,7 @@ namespace EFEM.Defines.MaterialTracking
     {
         public const string UniqueKey = "UniqueKey";
         public const string Name = "Name";
+        public const string OriginName = "OriginName";
         public const string Location = "Location";
         public const string SourcePortId = "SourcePortId";
         public const string SourceSlot = "SourceSlot";

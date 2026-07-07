@@ -166,7 +166,8 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
                             // 1-1. Access된 캐리어가 있으면 작업이 가능한 상태인지 검사
                             int portId = _loadPortManager.GetLoadPortPortId(inAccessedCarrierIndex);
                             if (_carrierServer.HasCarrier(portId) && IsLoadPortTransferStatusBlocked(inAccessedCarrierIndex) &&
-                                false == _loadPortManager.IsLoadPortBusy(inAccessedCarrierIndex))
+                                _loadPortManager.IsLoadPortPrepared(inAccessedCarrierIndex)
+                                /*false == _loadPortManager.IsLoadPortBusy(inAccessedCarrierIndex)*/)
                             {
                                 lpIndex = inAccessedCarrierIndex;
                                 return true;
@@ -216,6 +217,9 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
                                     var parentLotId = item.GetAttribute(PWA500SubstrateAttributes.ParentLotId);
                                     foreach (var idx in preparedIndex)
                                     {
+                                        if (false == _loadPortManager.IsLoadPortPrepared(idx))
+                                            continue;
+
                                         var portId = _loadPortManager.GetLoadPortPortId(idx);
                                         var lotIdFromCarrier = _carrierServer.GetCarrierLotId(portId);
                                         if (string.Equals(parentLotId, lotIdFromCarrier, StringComparison.OrdinalIgnoreCase))
@@ -234,16 +238,20 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
                                 if (bins.Count > 0)
                                 {
                                     //  3) 있으면, 코어 포트 중 캐리어가 있는 임의의 포트를 선택
-                                    lpIndex = preparedIndex.First();
-                                    var portId = _loadPortManager.GetLoadPortPortId(lpIndex);
-                                    if (false == _carrierServer.HasCarrier(portId) ||
-                                        false == IsLoadPortTransferStatusBlocked(lpIndex) ||
-                                        _loadPortManager.IsLoadPortBusy(lpIndex))
+                                    foreach (var item in preparedIndex)
                                     {
-                                        return false;
+                                        lpIndex = item;
+                                        var portId = _loadPortManager.GetLoadPortPortId(lpIndex);
+                                        if (_carrierServer.HasCarrier(portId) &&
+                                            IsLoadPortTransferStatusBlocked(lpIndex)&&
+                                            _loadPortManager.IsLoadPortPrepared(lpIndex))
+                                        {
+                                            return true;
+                                        }
+
                                     }
 
-                                    return true;
+                                    return false;
                                 }
                                 else
                                 {
@@ -319,7 +327,7 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
 
                                 int portId = _loadPortManager.GetLoadPortPortId(i);
                                 if (false == _carrierServer.HasCarrier(portId) || false == IsLoadPortTransferStatusBlocked(i)
-                                    || _loadPortManager.IsLoadPortBusy(i))
+                                    || false == _loadPortManager.IsLoadPortPrepared(i))
                                     continue;
 
                                 if (_substrateManager.GetSubstratesAtProcessModule(processModuleName, ref _substratesAtProcessModule))
@@ -806,7 +814,7 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
                                             if (lpLoc.PortId > 0)
                                             {
                                                 int lpIndex = _loadPortManager.GetLoadPortIndexByPortId(lpLoc.PortId);
-                                                targetLocationPrepared = (_carrierServer.HasCarrier(lpLoc.PortId) && LoadPortInformations[lpIndex].DoorState);
+                                                targetLocationPrepared = _carrierServer.HasCarrier(lpLoc.PortId) && _loadPortManager.IsLoadPortPrepared(lpIndex);
                                             }
                                         }
                                     }
@@ -869,7 +877,8 @@ namespace EFEM.CustomizedByProcessType.PWA500BIN
                                 if (hasCarrier)
                                 {
                                     List<RobotArmTypes> arms = new List<RobotArmTypes>();
-                                    if (false == _robotManager.GetAvailableArm(Index, true, ref arms))
+                                    if (false == _robotManager.GetAvailableArm(Index, true, ref arms) ||
+                                        arms.Count == 0)
                                         return GetNotCompletedStatus();
 
                                     RobotArmTypes armToWork = arms.First();

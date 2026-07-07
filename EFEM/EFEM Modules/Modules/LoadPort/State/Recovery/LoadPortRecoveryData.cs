@@ -11,42 +11,39 @@ namespace EFEM.Modules.LoadPort.Recovery
     /// </summary>
     public sealed class LoadPortRecoveryData
     {
-        [JsonProperty("portId")]
+        [JsonProperty("PortId")]
         public int PortId { get; set; }
 
         // --- Logical State (핵심 복구 대상) ---
 
-        [JsonProperty("reservationState")]
+        [JsonProperty("ReservationState")]
         public ReservationStates ReservationState { get; set; }
 
-        [JsonProperty("associationState")]
+        [JsonProperty("AssociationState")]
         public AssociationStates AssociationState { get; set; }
 
-        [JsonProperty("associatedCarrierId")]
+        [JsonProperty("AssociatedCarrierId")]
         public string AssociatedCarrierId { get; set; }
 
         // --- Verification (정책에 따라 사용) ---
 
-        [JsonProperty("carrierIdVerificationState")]
+        [JsonProperty("CarrierIdVerificationState")]
         public CarrierIdVerificationStates CarrierIdVerificationState { get; set; }
 
-        [JsonProperty("slotMapVerificationState")]
+        [JsonProperty("SlotMapVerificationState")]
         public CarrierSlotMapVerificationStates SlotMapVerificationState { get; set; }
 
         // --- 참고용 (디버깅 / 정책용) ---
 
-        [JsonProperty("transferState")]
+        [JsonProperty("TransferState")]
         public LoadPortTransferStates TransferState { get; set; }
 
-        [JsonProperty("accessMode")]
+        [JsonProperty("AccessMode")]
         public LoadPortAccessMode AccessMode { get; set; }
 
         // --- Metadata ---
 
-        [JsonProperty("savedAtUtc")]
+        [JsonProperty("SavedAtUtc")]
         public DateTime SavedAtUtc { get; set; }
-
-        [JsonProperty("version")]
-        public int Version { get; set; } = 1;
     }
 }

@@ -21,6 +21,7 @@ namespace EFEM.MaterialTracking
         {
             BaseSubstrateAttributeKeys.UniqueKey,
             BaseSubstrateAttributeKeys.Name,
+            BaseSubstrateAttributeKeys.OriginName,
             BaseSubstrateAttributeKeys.Location,
             BaseSubstrateAttributeKeys.SourcePortId,
             BaseSubstrateAttributeKeys.SourceSlot,
@@ -145,6 +146,7 @@ namespace EFEM.MaterialTracking
             {
                 UniqueKey = s.UniqueKey ?? string.Empty,
                 Name = s.Name ?? s.UniqueKey ?? string.Empty,
+                OriginName = s.OriginName ?? s.Name ?? string.Empty,
                 LocationId = s.LocationId != null ? s.LocationId : string.Empty,
                 SourcePortId = s.SourcePortId,
                 SourceSlot = s.SourceSlot,
@@ -175,11 +177,12 @@ namespace EFEM.MaterialTracking
                 target.UniqueKey = dto.UniqueKey ?? string.Empty;
 
             target.Name = dto.Name ?? dto.UniqueKey ?? string.Empty;
+            target.OriginName = target.Name;
 
             //if (!string.IsNullOrEmpty(dto.LocationId))
             //    target.SetAttribute(BaseSubstrateAttributeKeys.Location, dto.LocationId);
-            
-            
+
+
             // TODO : 아래는 추후 제거될 코드
             if (dto.LocationId.Contains("PM"))
             {
@@ -255,6 +258,7 @@ namespace EFEM.MaterialTracking
             {
                 UniqueKey = uniqueKey,
                 Name = GetOrDefault(map, BaseSubstrateAttributeKeys.Name, uniqueKey).Trim(),
+                OriginName = GetOrDefault(map, BaseSubstrateAttributeKeys.OriginName, uniqueKey).Trim(),
                 LocationId = Get(map, BaseSubstrateAttributeKeys.Location).Trim(),
                 SourcePortId = GetInt(map, BaseSubstrateAttributeKeys.SourcePortId, 0),
                 SourceSlot = GetInt(map, BaseSubstrateAttributeKeys.SourceSlot, 0),
@@ -290,6 +294,7 @@ namespace EFEM.MaterialTracking
             {
                 [BaseSubstrateAttributeKeys.UniqueKey] = s.UniqueKey,
                 [BaseSubstrateAttributeKeys.Name] = s.Name,
+                [BaseSubstrateAttributeKeys.OriginName] = s.OriginName,
                 [BaseSubstrateAttributeKeys.Location] = s.LocationId,
                 [BaseSubstrateAttributeKeys.SourcePortId] = s.SourcePortId.ToString(),
                 [BaseSubstrateAttributeKeys.SourceSlot] = s.SourceSlot.ToString(),

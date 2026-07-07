@@ -537,6 +537,15 @@ namespace FrameOfSystem3.SECSGEM.DefineSecsGem
         SCENARIO_REQ_LOT_ID_MERGE_AND_CHANGE_BIN_1,
         SCENARIO_REQ_LOT_ID_MERGE_AND_CHANGE_BIN_2, // BIN Only
         SCENARIO_REQ_LOT_ID_MERGE_AND_CHANGE_BIN_3, // BIN Only
+
+        // 2026.06.22. jhlim [ADD] ADS Move 시나리오 추가
+        SCENARIO_ADS_MOVE_FLAG_1,
+        SCENARIO_ADS_MOVE_FLAG_2,
+        SCENARIO_SCRAP_BIN_CHIP,
+        SCENARIO_UPLOAD_BIN_SCRAP_INFO,     // Client to Client Message
+        SCENARIO_SCRAP_CORE_CHIP,
+        SCENARIO_UPLOAD_WORK_RESULT,
+
         SCENARIO_WORK_START,
         SCENARIO_WORK_END,
         SCENARIO_REQ_CORE_WAFER_SPLIT,
@@ -548,10 +557,6 @@ namespace FrameOfSystem3.SECSGEM.DefineSecsGem
         SCENARIO_REQ_CORE_CHIP_FULL_SPLIT_FIRST,    // BIN Only
         SCENARIO_REQ_CORE_CHIP_FULL_SPLIT,          // BIN Only
         SCENARIO_REQ_CORE_CHIP_MERGE,
-
-        #region 추후구현
-        SCENARIO_UPLOAD_SCRAP_DATA,
-        #endregion
 
         SCENARIO_BIN_WAFER_ID_READ,
         SCENARIO_BIN_WORK_END,
@@ -661,10 +666,10 @@ namespace FrameOfSystem3.SECSGEM.DefineSecsGem
     }
     public enum EN_SCENARIO_SEQ
     {
-        INIT                = 0,
-        SEND_EVENT          = 100,
+        INIT = 0,
+        SEND_EVENT = 100,
         WAIT_FOR_PERMISSION = 200,
-        AFTER_PERMISSION    = 300,
+        AFTER_PERMISSION = 300,
         FINISH,
     }
     public enum EN_SETTING_CONTROL_STATE
@@ -751,7 +756,7 @@ namespace FrameOfSystem3.SECSGEM.DefineSecsGem
         OUT_OF_RANGE,                   // 3 - one or more values out of range
     }
     public enum EN_CPACK_TYPE
-    { 
+    {
         OK = 0,
         UNKNOWN_CPNAME = 1,
         ILLEGAL_VALUE_FOR_CPVAL = 2,

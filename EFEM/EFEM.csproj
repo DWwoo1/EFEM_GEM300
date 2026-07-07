@@ -59,7 +59,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>false</Optimize>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
@@ -390,6 +390,7 @@
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\ProcessModule\ProcessModulePWA500W.cs" />
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\ProcessModule\PWA500WCommunicator.cs" />
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\Substrate\PWA500WSubstrateExtraAttributes.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\CommonFunctionsForPWA500.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\MapDataControl.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\MapDataDefines.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Functional\PMSControl.cs" />
@@ -398,12 +399,12 @@
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SeparatedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SharedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioBinWaferEndForGEM300.cs" />
-    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeHandlingRequest.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqBinMapUploadGEM300.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapDownload.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapUpload.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioUploadBinData.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioUploadBinDataGEM300.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioScrapCoreChips.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\Defines\DefinesForPWA500W_NRD.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\FunctionsForPWA500W_NRD_300.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500W\ProcessingScenario\ProcessingScenarioPWA500W_NRD_300.cs" />

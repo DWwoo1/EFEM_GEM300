@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using TickCounter_;
-
-using FrameOfSystem3.SECSGEM;
-using FrameOfSystem3.SECSGEM.Scenario;
-using FrameOfSystem3.SECSGEM.DefineSecsGem;
-
+﻿using Alarm_;
+using EFEM.CustomizedByProcessType.PWA500BIN;
+using EFEM.CustomizedByProcessType.PWA500Common;
 using EFEM.Defines.Common;
 using EFEM.Defines.LoadPort;
 using EFEM.MaterialTracking;
-using EFEM.CustomizedByProcessType.PWA500BIN;
-using EFEM.CustomizedByProcessType.PWA500Common;
 using EFEM.Modules.LoadPort.Scheduler;
-
-using Alarm_;
+using FrameOfSystem3.SECSGEM;
+using FrameOfSystem3.SECSGEM.DefineSecsGem;
+using FrameOfSystem3.SECSGEM.Scenario;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using TickCounter_;
 
 // ConfigTask에서 이 namespace를 가지고 클래스 타입을 가져오기 때문에 변경 불가
 namespace FrameOfSystem3.Task
@@ -38,6 +35,8 @@ namespace FrameOfSystem3.Task
 
                 ScenarioTypeToSlotMapping = EN_SCENARIO.SCENARIO_SLOT_WAFER_MAPPING_CORE_1 + coreIndex;
                 ScenarioTypeToLotMerge = EN_SCENARIO.SCENARIO_REQ_LOT_MERGE_CORE_1 + coreIndex;
+
+                ScenarioTypeToAdsMoveFlag = EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_1 + coreIndex;
             }
             else if (PortId == 4)
             {
@@ -117,6 +116,8 @@ namespace FrameOfSystem3.Task
             _lotHistoryLog = LotHistoryLog.Instance;
 
             _lotHistoryLog.AddLogInfo(PortId, LoadPortName);
+
+            IsOldEvents = NewVersionChecker.IsOldEvents();
         }
         #endregion </Constructors>
 
@@ -126,7 +127,7 @@ namespace FrameOfSystem3.Task
         private readonly EN_SCENARIO ScenarioTypeToSlotVerification;  // 4~6
         private readonly EN_SCENARIO ScenarioTypeToSlotMapping;       // 1~6
         private readonly EN_SCENARIO ScenarioTypeToLotMerge;          // 1~3, 5~6(1~3은 Change 포함)
-
+        private readonly EN_SCENARIO ScenarioTypeToAdsMoveFlag;
         private readonly EN_SCENARIO ScenarioTypeToCarrierLoad;
         private readonly EN_SCENARIO ScenarioTypeToCarrierUnload;
 
@@ -169,6 +170,7 @@ namespace FrameOfSystem3.Task
                 return _functionsForPWA500.GetSubstrateTypeByLoadPortIndex(LoadPortIndex);
             }
         }
+        private bool IsOldEvents { get; }
         #endregion </Properties>
 
         #region <Methods>
@@ -321,7 +323,7 @@ namespace FrameOfSystem3.Task
             {
                 [RFIDReadKeys.KeyParamLotId] = _carrierServer.GetCarrierLotId(PortId),
                 [RFIDReadKeys.KeyParamCarrierId] = carrierId,
-                [RFIDReadKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(PortId),
+                [RFIDReadKeys.KeyParamPortId] = EquipmentInfo.GetPortName(PortId),
                 [RFIDReadKeys.KeyParamOperatorId] = "AUTO"
             };
 
@@ -336,7 +338,8 @@ namespace FrameOfSystem3.Task
         }
         protected override bool UpdateParamToIdVarification()
         {
-            if (PortId < 4)
+            //if (PortId < 4)
+            if (IsBinType(MySubstrateType))
                 return false;
 
             if (false == _scenarioOperator.UseScenario)
@@ -359,7 +362,8 @@ namespace FrameOfSystem3.Task
         }
         protected override CommandResults ExecuteScenarioToIdVarification()
         {
-            if (PortId < 4)
+            //if (PortId < 4)
+            if (IsBinType(MySubstrateType))
             {
                 _commandResult.ActionName = "Idle";
                 _commandResult.CommandResult = CommandResult.Completed;
@@ -380,17 +384,24 @@ namespace FrameOfSystem3.Task
         }
         protected override bool UpdateParamToSlotMapVarification()
         {
-            if (PortId < 4 && _carrierServer.GetCarrierAccessingStatus(PortId).Equals(CarrierAccessStates.NotAccessed))
+            //if (PortId < 4 && _carrierServer.GetCarrierAccessingStatus(PortId).Equals(CarrierAccessStates.NotAccessed))
+            //{
+            //    // 1~3 포트의 경우, 작업하지 않았으면 비어있어야함
+            //    if (_loadPortManager.IsLoadPortSimulationMode(LoadPortIndex))
+            //    {
+            //        _substrateManager.RemoveSubstrateAtLoadPortAll(PortId);
+            //    }
+            //}
+            if (_loadPortManager.IsLoadPortSimulationMode(LoadPortIndex))
             {
-                // 1~3 포트의 경우, 작업하지 않았으면 비어있어야함
-                if (_loadPortManager.IsLoadPortSimulationMode(LoadPortIndex))
-                {
-                    _substrateManager.RemoveSubstrateAtLoadPortAll(PortId);
-                }
+                InitializeSlotInfoAtSimulationMode();
             }
 
-            if (PortId < 4)
+            //if (PortId < 4)
+            if (IsBinType(MySubstrateType))
+            {
                 return false;
+            }
 
             if (false == _carrierServer.HasCarrier(PortId))
                 return false;
@@ -418,11 +429,13 @@ namespace FrameOfSystem3.Task
         }
         protected override CommandResults ExecuteToSlotMapVarification()
         {
-            if (PortId < 4)
+            //if (PortId < 4)
+            if (IsBinType(MySubstrateType))
             {
                 _commandResult.ActionName = "Idle";
                 _commandResult.CommandResult = CommandResult.Completed;
                 _commandResult.Description = string.Empty;
+
                 return _commandResult;
             }
 
@@ -478,7 +491,7 @@ namespace FrameOfSystem3.Task
             if (false == needExecuteMerge)
             {
                 // 터미네이트 되는 경우 History Log가 넘어가지 않는다..
-                var isCore = MySubstrateType.Equals(SubstrateType.Empty);
+                var isCore = MySubstrateType.Equals(SubstrateType.Core);
                 var carrierId = _carrierServer.GetCarrierId(PortId);
                 var lotId = _carrierServer.GetCarrierLotId(PortId);
                 var subs = _substrateManager.GetSubstratesAtLoadPort(PortId);
@@ -590,6 +603,18 @@ namespace FrameOfSystem3.Task
                                 _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.SlotMappingCompleted).ToString());
                                 _carrierServer.SaveCarrierData(PortId);
 
+                                if (MySubstrateType == SubstrateType.Core)
+                                {
+                                    // ADS Move Flag 이벤트 발생
+                                    ExecuteMovingAdsScenario();
+                                }
+                                else
+                                {
+                                    // ADS MOVE FLAG 이벤트 완료 처리
+                                    _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.MovingAdsCompleted).ToString());
+                                    _carrierServer.SaveCarrierData(PortId);
+                                }
+                                    
                                 return;
                             }
                             #endregion </슬롯매핑 실행 조건 체크>
@@ -628,10 +653,8 @@ namespace FrameOfSystem3.Task
                         _carrierServer.SaveCarrierData(PortId);
 
                         #region <히스토리 정리>
-                        _recovery.LotCompleted = true;
                         string carrierId = _carrierServer.GetCarrierId(PortId);
                         List<string> substrates = null;
-                        //if (PortId != 4)
                         if (MySubstrateType != SubstrateType.Empty)
                         {
                             var temporarySubstrates = _substrateManager.GetSubstratesAtLoadPort(PortId);
@@ -648,7 +671,6 @@ namespace FrameOfSystem3.Task
                         //bool isCore = scenario.Equals(EN_SCENARIO.SCENARIO_SLOT_WAFER_MAPPING_CORE_1) ||
                         //    scenario.Equals(EN_SCENARIO.SCENARIO_SLOT_WAFER_MAPPING_CORE_2);
                         bool isCore = MySubstrateType == SubstrateType.Core;
-
                         string lotId = _carrierServer.GetCarrierLotId(PortId);
                         if (false == isCore)
                         {
@@ -657,14 +679,33 @@ namespace FrameOfSystem3.Task
                         _lotHistoryLog.BackupCarrierHistory(PortId, carrierId, lotId, substrates, isCore);
                         #endregion </히스토리 정리>
 
-                        // 중요하지 않은 이벤트니 비동기 실행한다.
-                        if (MySubstrateType.Equals(SubstrateType.Core))
+                        if (MySubstrateType == SubstrateType.Core)
                         {
-                            string partId = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyPartId);
-                            string stepId = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyStepSeq);
-                            string lotType = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyLotType);
-                            _functionsForPWA500.ExecuteScenarioAsyncToCarrierUnload(lotId, partId, stepId, lotType);
+                            if (false == result.Equals(EN_SCENARIO_RESULT.COMPLETED))
+                                return;
+
+                            // ADS Move Flag 이벤트 발생
+                            ExecuteMovingAdsScenario();
                         }
+                    }
+                    break;
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_1:
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_2:
+                    {
+                        if (false == result.Equals(EN_SCENARIO_RESULT.COMPLETED))
+                            return;
+
+                        // ADS MOVE FLAG 이벤트 완료 처리
+                        _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.MovingAdsCompleted).ToString());
+                        _carrierServer.SaveCarrierData(PortId);
+
+                        // 중요하지 않은 이벤트니 비동기 실행한다.
+                        string lotId = _carrierServer.GetCarrierLotId(PortId);
+                        string partId = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyPartId);
+                        string stepId = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyStepSeq);
+                        string lotType = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyLotType);
+
+                        _functionsForPWA500.ExecuteScenarioAsyncToCarrierUnload(lotId, partId, stepId, lotType);
                     }
                     break;
 
@@ -685,7 +726,7 @@ namespace FrameOfSystem3.Task
 
                         _functionsForPWA500.EnqueueScenarioCarrierHandlingAsync(PortId, loadingMode, string.Empty, typeOfScenario);
                         return true;
-                        //var param = _functionsForPWA500.MakeParamToOHTHandling(PortId, _loadingMode, string.Empty, typeOfScenario);
+                        //var param = ScenarioParameterBuilder.MakeParamToOHTHandling(PortId, _loadingMode, string.Empty, typeOfScenario);
                         //return _scenarioOperator.UpdateScenarioParam(GetTaskName(), ScenarioTypeToCarrierLoad, param);
                     }
 
@@ -779,7 +820,7 @@ namespace FrameOfSystem3.Task
             EN_SCENARIO typeOfScenario = ScenarioTypeToCarrierUnload;
             string carrierLotId = _carrierServer.GetCarrierLotId(PortId);
 
-            var param = _functionsForPWA500.MakeParamToOHTHandling(PortId, loadingMode, carrierLotId, typeOfScenario);
+            var param = ScenarioParameterBuilder.MakeParamToOHTHandling(PortId, loadingMode, carrierLotId, typeOfScenario);
 
             return UpdateScenarioParam(ScenarioTypeToCarrierUnload, param);
         }
@@ -1058,7 +1099,6 @@ namespace FrameOfSystem3.Task
                                         _carrierServer.SaveCarrierData(PortId);
 
                                         #region <히스토리 정리>
-                                        _recovery.LotCompleted = true;
                                         string carrierId = _carrierServer.GetCarrierId(PortId);
                                         List<string> substrates = null;
                                         if (MySubstrateType != SubstrateType.Empty)
@@ -1578,6 +1618,153 @@ namespace FrameOfSystem3.Task
             return _commandResult;
         }
 
+        private void ExecuteMovingAdsScenario()
+        {
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            if (false == MakeScenarioParamForMovingAdsFlag(ref param))
+                return;
+            
+            EnqueueScenario(ScenarioTypeToAdsMoveFlag, param, null);
+        }
+        private bool MakeScenarioParamForMovingAdsFlag(ref Dictionary<string, string> scenarioParam)
+        {
+            if (scenarioParam == null)
+                scenarioParam = new Dictionary<string, string>();
+
+            scenarioParam.Clear();
+
+            // TODO : 전량소팅된 경우는..? 랏 아이디를 뭐로 올려야하지..?
+            string lotId = _carrierServer.GetCarrierLotId(PortId);
+            string carrierId = _carrierServer.GetCarrierId(PortId);
+            scenarioParam[MovingAdsKeys.KeyParamLotId] = lotId;
+            scenarioParam[MovingAdsKeys.KeyParamCarrierId] = carrierId;
+            
+            var substrates = _substrateManager.GetSubstratesAtLoadPort(PortId);
+
+            int fullSortedSubstrateCount = 0;
+            int waferQty = 0;
+            string[] substrateIds = new string[CarrierMaxCapacity];
+            for (int i = 1; i <= CarrierMaxCapacity; ++i)
+            {
+                string id = string.Empty;
+                if (substrates.TryGetValue(i, out Substrate substrate))
+                {
+                    id = substrate.Name;
+                    var qty = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
+                    if (string.Equals(qty, "0", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // 2025.03.17. jhlim [END]
+                        qty = string.Empty;
+                        
+                        ++fullSortedSubstrateCount;
+                    }
+                    else
+                    {
+                        waferQty++;
+                    }
+                }
+
+                substrateIds[i - 1] = id;
+            }
+
+            scenarioParam[MovingAdsKeys.KeyParamAdsMoveFlag] = IsFullSortedSubstrateAllOrNone(substrates.Count, fullSortedSubstrateCount) ? "N" : "Y";
+            for (int i = 1; i <= CarrierMaxCapacity; ++i)
+            {
+                string keyForId = BuildSlotMappingWaferIdKey(i);
+                scenarioParam[keyForId] = substrateIds[i - 1];
+            }
+
+            // 2025.05.08. jhlim [ADD] 고객사 요청으로 캐리어내 웨이퍼 수량 추가
+            scenarioParam[MovingAdsKeys.KeyParamWaferQty] = waferQty.ToString();
+            // 2025.05.08. jhlim [END]
+
+            //_lotHistoryLog.WriteHistoryForSlotMapping(PortId, carrierId, substratesToMapping, waferQty);
+
+            return true;
+        }
+
+        private void InitializeSlotInfoAtSimulationMode()
+        {
+            if (_carrierServer.GetCarrierAccessingStatus(PortId) != CarrierAccessStates.NotAccessed)
+                return;
+
+            var slots = _carrierServer.GetCarrierSlotMap(PortId);
+            var newSlots = new Dictionary<int, CarrierSlotMapStates>();
+            switch (MySubstrateType)
+            {
+                case SubstrateType.Core:
+                case SubstrateType.Empty:
+                    {
+                        int capa = 7;
+                        List<string> targets = new List<string>();
+                        foreach (var item in slots)
+                        {                           
+                            var isTargetSlot = (item.Key % 2 == 1);
+                            if (isTargetSlot || item.Key > capa)
+                            {
+                                newSlots[item.Key] = CarrierSlotMapStates.Empty;
+                                var key = _substrateManager.GetSubstrateKeyAtLoadPort(PortId, item.Key);
+                                if (false == string.IsNullOrWhiteSpace(key))
+                                {
+                                    targets.Add(key);
+                                }
+                            }
+                            else
+                            {
+                                newSlots[item.Key] = CarrierSlotMapStates.CorrectlyOccupied;
+                            }
+                        }
+
+                        foreach (var item in targets)
+                        {
+                            _substrateManager.RemoveSubstrateByKey(item);
+                        }
+                    }
+                    break;
+                case SubstrateType.Bin1:
+                case SubstrateType.Bin2:
+                case SubstrateType.Bin3:
+                    {
+                        _substrateManager.RemoveSubstrateAtLoadPortAll(PortId);
+                        foreach (var item in slots)
+                        {
+                            newSlots[item.Key] = CarrierSlotMapStates.Empty;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            _carrierServer.SetCarrierSlotMap(PortId, newSlots);
+            _carrierServer.SaveCarrierData(PortId);
+        }
+        private static bool IsBinType(SubstrateType type)
+        {
+            return type == SubstrateType.Bin1 ||
+                   type == SubstrateType.Bin2 ||
+                   type == SubstrateType.Bin3;
+        }
+
+        private static string BuildSlotMappingWaferIdKey(int slotIndex)
+        {
+            return $"{SlotMappingKeys.KeyParamSlotNamePre}{slotIndex}_{SlotMappingKeys.KeyParamSlotNamePost}";
+        }
+        private static string BuildSlotMappingQtyKey(int slotIndex)
+        {
+            return $"{SlotMappingKeys.KeyParamSlotQtyPre}{slotIndex}_{SlotMappingKeys.KeyParamSlotQtyPost}";
+        }
+        // 전량 소진된 자재가 0개이거나, 모든 자재가 전량 소진된 경우 true : ADS_MOVE_FLAG = N
+        // 전량 소진된 자재가 1개 이상인 경우 false : ADS_MOVE_FLAG = Y
+        private bool IsFullSortedSubstrateAllOrNone(int substrateCount, int fullSortedSubstrateCount)
+        {
+            if (fullSortedSubstrateCount == 0 ||
+                fullSortedSubstrateCount == substrateCount)
+                return true;
+            
+            return false;
+        }
+
         // 1. 모든 코어가 전량 소진된 경우 머지 진행하지 않음
         // 2. 전량 소진된 자재가 없는 경우 머지 진행
         // 3. 공존하는 경우
@@ -1613,6 +1800,45 @@ namespace FrameOfSystem3.Task
             {
                 return substrates.Count > 1;
             }
+        }
+
+        // SlotMapping 시 웨이퍼 총 수량과 웨이퍼 이름, 칩 수량을 얻어오기 위한 함수
+        // Old : 전량소팅된 자재는 웨이퍼 수량과 이름을 포함시키지 않음
+        // New : 전량소팅된 자재도 웨이퍼 수량과 이름을 포함시킨다.
+        private void GetTotalQtyAndWaferInfoAtSlot(
+            Substrate substrate,
+            out string waferId, 
+            out string qty,
+            ref int totalQty)
+        {
+            waferId = substrate.Name;
+            qty = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
+            if (IsOldEvents)
+            {
+                if (qty.Equals("0"))
+                {
+                    // 2025.03.17. jhlim [MOD] 슬롯매핑 또한 자재 수량이 0이면 올리지 않는다.
+                    waferId = string.Empty;                        
+                    // 2025.03.17. jhlim [END]
+                    qty = string.Empty;
+                }
+                else
+                {
+                    // 잔여수량이 있는 웨이퍼만 수량에 포함시킨다.
+                    totalQty++;
+                }
+            }
+            else
+            {
+                if (qty.Equals("0"))
+                {                    
+                    qty = string.Empty;
+                }
+
+                // 전량소팅된 자재도 수량에 포함시켜야 한다고 한다.
+                totalQty++;
+            }
+
         }
         private bool MakeScenarioParamForSlotMapping(ref Dictionary<string, string> scenarioParam)
         {
@@ -1660,19 +1886,22 @@ namespace FrameOfSystem3.Task
                 string qty = "";
                 if (substrates.TryGetValue(i, out Substrate substrate))
                 {
-                    id = substrate.Name;
-                    qty = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
-                    if (qty.Equals("0"))
-                    {
-                        // 2025.03.17. jhlim [MOD] 슬롯매핑 또한 자재 수량이 0이면 올리지 않는다.
-                        id = string.Empty;
-                        // 2025.03.17. jhlim [END]
-                        qty = string.Empty;
-                    }
-                    else
-                    {
-                        waferQty++;
-                    }
+                    GetTotalQtyAndWaferInfoAtSlot(substrate, out id, out qty, ref waferQty);
+                    //id = substrate.Name;
+                    //qty = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
+                    //if (qty.Equals("0"))
+                    //{
+                    //    // 2026.06.25. jhlim [DEL] 자재 수량이 0이면 올리지 않았으나, ADS 이벤트 추가됨으로써 올리도록 변경되었다.
+                    //    // 2025.03.17. jhlim [MOD] 슬롯매핑 또한 자재 수량이 0이면 올리지 않는다.
+                    //    //id = string.Empty;                        
+                    //    // 2025.03.17. jhlim [END]
+                    //    // 2026.06.25. jhlim [END]
+                    //    qty = string.Empty;
+                    //}
+                    //else
+                    //{
+                    //    waferQty++;
+                    //}
 
                     substratesToMapping[i] = Tuple.Create(id, qty);
                 }
@@ -1683,13 +1912,15 @@ namespace FrameOfSystem3.Task
 
             for (int i = 1; i <= CarrierMaxCapacity; ++i)
             {
-                string keyForId = string.Format("{0}{1}_{2}", SlotMappingKeys.KeyParamSlotNamePre, i, SlotMappingKeys.KeyParamSlotNamePost);
+                string keyForId = BuildSlotMappingWaferIdKey(i);
+                    //string.Format("{0}{1}_{2}", SlotMappingKeys.KeyParamSlotNamePre, i, SlotMappingKeys.KeyParamSlotNamePost);
                 scenarioParam[keyForId] = substrateIds[i - 1];
             }
 
             for (int i = 1; i <= CarrierMaxCapacity; ++i)
             {
-                string keyForQty = string.Format("{0}{1}_{2}", SlotMappingKeys.KeyParamSlotQtyPre, i, SlotMappingKeys.KeyParamSlotQtyPost);
+                string keyForQty = BuildSlotMappingQtyKey(i);
+                    //string.Format("{0}{1}_{2}", SlotMappingKeys.KeyParamSlotQtyPre, i, SlotMappingKeys.KeyParamSlotQtyPost);
                 scenarioParam[keyForQty] = substrateQtys[i - 1];
             }
 
@@ -1856,9 +2087,8 @@ namespace FrameOfSystem3.Task
             scenarioParam[LotMergeKeys.KeyParamLotId] = lotId;
             scenarioParam[LotMergeKeys.KeyParamCarrierId] = carrierId;
 
-
             string partId = firstSubstrate.Value.GetAttribute(PWA500SubstrateAttributes.PartId);
-            string recipeId = _functionsForPWA500.GetRecipeId();
+            string recipeId = EquipmentInfo.GetRecipeId();
 
             scenarioParam[LotMergeKeys.KeyParamPartId] = partId;
             scenarioParam[LotMergeKeys.KeyParamRecipeId] = recipeId;
@@ -1879,9 +2109,10 @@ namespace FrameOfSystem3.Task
 
             // Change를 위함
             //if (PortId < 4)
-            if (MySubstrateType.Equals(SubstrateType.Bin1) ||
-                MySubstrateType.Equals(SubstrateType.Bin2) ||
-                MySubstrateType.Equals(SubstrateType.Bin3))
+            //if (MySubstrateType.Equals(SubstrateType.Bin1) ||
+            //    MySubstrateType.Equals(SubstrateType.Bin2) ||
+            //    MySubstrateType.Equals(SubstrateType.Bin3))
+            if (IsBinType(MySubstrateType))
             {
                 string[] substrateIds = new string[CarrierMaxCapacity];
                 string[] substrateQtys = new string[CarrierMaxCapacity];
@@ -2353,61 +2584,61 @@ namespace FrameOfSystem3.Task
         }
 
         #region <Fields>
-        private const string KeyAccessStatus = "AccessStatus";
-        private CarrierAccessStates _accessStatus;
+        //private const string KeyAccessStatus = "AccessStatus";
+        //private CarrierAccessStates _accessStatus;
 
-        private bool _lotCompletionFlag;
+        //private bool _lotCompletionFlag;
         #endregion </Fields>
 
         #region <Properties>
-        public CarrierAccessStates AccessStatus
-        {
-            get
-            {
-                return _accessStatus;
-            }
-            set
-            {
-                if (false == _accessStatus.Equals(value))
-                {
-                    _accessStatus = value;
-                    //Save();
-                }
-            }
-        }
-        public bool LotCompleted
-        {
-            get
-            {
-                return _lotCompletionFlag;
-            }
-            set
-            {
-                if (false == _lotCompletionFlag.Equals(value))
-                {
-                    _lotCompletionFlag = value;
-                    //Save();
-                }
-            }
-        }
+        //public CarrierAccessStates AccessStatus
+        //{
+        //    get
+        //    {
+        //        return _accessStatus;
+        //    }
+        //    set
+        //    {
+        //        if (false == _accessStatus.Equals(value))
+        //        {
+        //            _accessStatus = value;
+        //            //Save();
+        //        }
+        //    }
+        //}
+        //public bool LotCompleted
+        //{
+        //    get
+        //    {
+        //        return _lotCompletionFlag;
+        //    }
+        //    set
+        //    {
+        //        if (false == _lotCompletionFlag.Equals(value))
+        //        {
+        //            _lotCompletionFlag = value;
+        //            //Save();
+        //        }
+        //    }
+        //}
         #endregion </Properties>
 
         protected override void LoadData(ref FileComposite_.FileComposite fComp, string sRootName)
         {
-            string value = string.Empty;
-            fComp.GetValue(sRootName, KeyAccessStatus, ref value);
-            if (false == Enum.TryParse(value, out _accessStatus))
-            {
-                AccessStatus = CarrierAccessStates.NotAccessed;
-            }
-            else
-            {
-                AccessStatus = _accessStatus;
-            }
+            //string value = string.Empty;
+            //fComp.GetValue(sRootName, KeyAccessStatus, ref value);
+            //if (false == Enum.TryParse(value, out _accessStatus))
+            //{
+            //    AccessStatus = CarrierAccessStates.NotAccessed;
+            //}
+            //else
+            //{
+            //    AccessStatus = _accessStatus;
+            //}
         }
         protected override void SaveData(ref FileComposite_.FileComposite fComp, string sRootName)
         {
-            fComp.AddItem(sRootName, KeyAccessStatus, AccessStatus.ToString());
+            //fComp.AddItem(sRootName, KeyAccessStatus, AccessStatus.ToString());
         }
     }
 }

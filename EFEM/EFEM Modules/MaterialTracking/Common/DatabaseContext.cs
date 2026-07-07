@@ -299,6 +299,7 @@ CREATE TABLE IF NOT EXISTS CarrierSlotMap (
 CREATE TABLE IF NOT EXISTS Substrate (
     UniqueKey           TEXT PRIMARY KEY,
     Name                TEXT,
+    OriginName          TEXT,
     LocationId          TEXT,
     SourcePortId        INTEGER,
     SourceSlot          INTEGER,
@@ -490,6 +491,7 @@ CREATE TABLE IF NOT EXISTS archive.CarrierSlotMap (
 CREATE TABLE IF NOT EXISTS archive.Substrate (
     UniqueKey           TEXT PRIMARY KEY,
     Name                TEXT,
+    OriginName          TEXT,
     LocationId          TEXT,
     SourcePortId        INTEGER,
     SourceSlot          INTEGER,

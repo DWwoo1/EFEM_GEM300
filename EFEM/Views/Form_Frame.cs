@@ -68,6 +68,7 @@ namespace FrameOfSystem3.Views
         MainMenu  m_viewMainMenu      = new MainMenu();
 
         private Dictionary<EN_BUTTONEVENT_MAINMENU, List<string>> m_dicOfSubMenus       = new Dictionary<EN_BUTTONEVENT_MAINMENU, List<string>>();
+        private Dictionary<EN_BUTTONEVENT_MAINMENU, Dictionary<int, EN_BUTTONEVENT_SUBMENU>> _subMenuEventByDisplayIndex = new Dictionary<EN_BUTTONEVENT_MAINMENU, Dictionary<int, EN_BUTTONEVENT_SUBMENU>>();
 
         EN_BUTTONEVENT_MAINMENU m_enClickedMainMenu     = EN_BUTTONEVENT_MAINMENU.OPERATION;
         EN_BUTTONEVENT_SUBMENU m_enClickedSubMenu       = EN_BUTTONEVENT_SUBMENU.OPERATION_MAIN;
@@ -301,6 +302,7 @@ namespace FrameOfSystem3.Views
             foreach(EN_BUTTONEVENT_MAINMENU enMainMenu in Enum.GetValues(typeof(EN_BUTTONEVENT_MAINMENU)))
             {
                 m_dicOfSubMenus.Add(enMainMenu, new List<string>());
+                _subMenuEventByDisplayIndex.Add(enMainMenu, new Dictionary<int, EN_BUTTONEVENT_SUBMENU>());
             }
 
             foreach(EN_BUTTONEVENT_SUBMENU enSubMenu in Enum.GetValues(typeof(EN_BUTTONEVENT_SUBMENU)))
@@ -317,13 +319,13 @@ namespace FrameOfSystem3.Views
                     if (Enum.TryParse(strMainMenu, out enMainMenu))
                     {
                         string strButtonName    = strSubMenu.Substring(nIndexOfToken + 1).Replace('_', ' ');
-                        
+
                         if (string.Equals(strButtonName, "JOB INFO", StringComparison.OrdinalIgnoreCase) &&
-                            false == Work.AppConfigManager.Instance.ProcessType.Equals(Define.DefineEnumProject.AppConfig.EN_PROCESS_TYPE.DIE_TRANSFER_300))
+                            Work.AppConfigManager.Instance.GemSpecification != Define.DefineEnumProject.AppConfig.EN_SECSGEM_SPEC.GEM300)
                         {
                             continue;
                         }
-                        
+
                         if (strButtonName.Equals("EFEM SIMULATOR"))
                         {
                             if (false == Debugger.IsAttached && false == Work.AppConfigManager.Instance.LoadPortControllerType.Equals(Define.DefineEnumProject.AppConfig.EN_LOADPORT_CONTROLLER.NONE))
@@ -349,14 +351,19 @@ namespace FrameOfSystem3.Views
                             }
                         }
 
+                        int nDisplayIndex = m_dicOfSubMenus[enMainMenu].Count;
+
                         m_dicOfSubMenus[enMainMenu].Add(strButtonName);
+                        _subMenuEventByDisplayIndex[enMainMenu].Add(nDisplayIndex, enSubMenu);
                         m_mappingForButtonName.Add(enSubMenu, strButtonName);
                     }
                 }
             }
 
             // 5. set initialization state
-            m_viewSubMenu.SetButtons(m_dicOfSubMenus[m_enClickedMainMenu]);
+            m_viewSubMenu.SetButtons(
+                m_dicOfSubMenus[m_enClickedMainMenu],
+                _subMenuEventByDisplayIndex[m_enClickedMainMenu]);
         }
         #endregion
 
@@ -758,7 +765,11 @@ namespace FrameOfSystem3.Views
 
                 m_enClickedMainMenu     = enButtonEvent;
 
-                m_viewSubMenu.SetButtons(m_dicOfSubMenus[enButtonEvent]);
+                //m_viewSubMenu.SetButtons(m_dicOfSubMenus[enButtonEvent]);
+                m_viewSubMenu.SetButtons(
+                    m_dicOfSubMenus[enButtonEvent],
+                    _subMenuEventByDisplayIndex[enButtonEvent]);
+
                 m_viewSubMenu.SetClickedButton(m_mappingForButtonName[m_dicOfMainViewByMainButtonEvent[enButtonEvent]]);
 
                 var enSubmenuEvent      = m_dicOfMainViewByMainButtonEvent[enButtonEvent];
@@ -769,70 +780,99 @@ namespace FrameOfSystem3.Views
         }
         /// <summary>
         /// 2020.02.05 by yjlee [ADD] When a user click the sub menu, this function will be called.
-		///	2024.06.13 by junho [MOD] 한글화를 위해 tabindex를 받아서 처리하도록 변경
+        ///	2024.06.13 by junho [MOD] 한글화를 위해 tabindex를 받아서 처리하도록 변경
         /// </summary>
-        private bool ReceiveEventFromSubMenu(int tabIndex)
+        //     private bool ReceiveEventFromSubMenu(int tabIndex)
+        //     {
+        //	int enumNo = (int)m_enClickedMainMenu * 100 + tabIndex;
+        //if (false == Enum.IsDefined(typeof(EN_BUTTONEVENT_SUBMENU), enumNo))
+        //	return false;
+
+        //EN_BUTTONEVENT_SUBMENU enButtonEvent = (EN_BUTTONEVENT_SUBMENU)enumNo;			
+
+        ////if (EN_BUTTONEVENT_SUBMENU.SETUP_JOG == enButtonEvent)
+        ////{
+        ////	Functional.Jog.Form_Jog.GetInstance().CreateForm();
+        ////	return false;
+        ////}
+
+        //         if (EN_BUTTONEVENT_SUBMENU.OPERATION_EFEM_SIMULATOR == enButtonEvent)
+        //         {
+        //             EFEM_Simulator.Form_EFEMSimulator.Instance.CreateForm();
+        //             return false;
+        //         }
+
+        //         //if (Enum.TryParse(strSubMenu, out enButtonEvent))
+        //         {
+        //             if (m_enClickedSubMenu == enButtonEvent) { return false; }
+
+        //             m_enClickedSubMenu      = enButtonEvent;
+
+        //             m_dicOfMainViewByMainButtonEvent[m_enClickedMainMenu]   = m_enClickedSubMenu;
+
+        //             SetMainView(m_dicOfMainView[m_enClickedSubMenu], m_dicOfTimerInterval[m_enClickedSubMenu]);
+
+        //             return true;
+        //         }
+
+        //         //else
+        //         //{
+        //             // 메뉴 이름이 Enum과 다른 경우
+        //             //foreach (var item in m_mappingForButtonName)
+        //             //{
+        //             //    if (item.Value.Equals(strEnum))
+        //             //    {
+        //             //        enButtonEvent = item.Key;
+        //             //        break;
+        //             //    }
+        //             //}
+
+        //             //if (m_enClickedSubMenu == enButtonEvent) { return false; }
+
+        //             //m_enClickedSubMenu = enButtonEvent;
+
+        //             //m_dicOfMainViewByMainButtonEvent[m_enClickedMainMenu] = m_enClickedSubMenu;
+
+        //             //SetMainView(m_dicOfMainView[m_enClickedSubMenu], m_dicOfTimerInterval[m_enClickedSubMenu]);
+
+        //             //return true;
+        //         //}
+        //     }
+        private bool ReceiveEventFromSubMenu(int subMenuValue)
         {
- 			int enumNo = (int)m_enClickedMainMenu * 100 + tabIndex;
-			if (false == Enum.IsDefined(typeof(EN_BUTTONEVENT_SUBMENU), enumNo))
-				return false;
+            if (false == Enum.IsDefined(typeof(EN_BUTTONEVENT_SUBMENU), subMenuValue))
+                return false;
 
-			EN_BUTTONEVENT_SUBMENU enButtonEvent = (EN_BUTTONEVENT_SUBMENU)enumNo;			
+            EN_BUTTONEVENT_SUBMENU enButtonEvent = (EN_BUTTONEVENT_SUBMENU)subMenuValue;
 
-			//if (EN_BUTTONEVENT_SUBMENU.SETUP_JOG == enButtonEvent)
-			//{
-			//	Functional.Jog.Form_Jog.GetInstance().CreateForm();
-			//	return false;
-			//}
+            if (false == m_mappingForButtonName.ContainsKey(enButtonEvent))
+                return false;
 
             if (EN_BUTTONEVENT_SUBMENU.OPERATION_EFEM_SIMULATOR.Equals(enButtonEvent))
             {
                 EFEM_Simulator.Form_EFEMSimulator.Instance.CreateForm();
                 return false;
             }
-           
-            //if (Enum.TryParse(strSubMenu, out enButtonEvent))
-            {
-                if (m_enClickedSubMenu == enButtonEvent) { return false; }
 
-                m_enClickedSubMenu      = enButtonEvent;
+            if (false == m_dicOfMainView.ContainsKey(enButtonEvent))
+                return false;
 
-                m_dicOfMainViewByMainButtonEvent[m_enClickedMainMenu]   = m_enClickedSubMenu;
+            if (m_enClickedSubMenu == enButtonEvent)
+                return false;
 
-                SetMainView(m_dicOfMainView[m_enClickedSubMenu], m_dicOfTimerInterval[m_enClickedSubMenu]);
+            m_enClickedSubMenu = enButtonEvent;
+            m_dicOfMainViewByMainButtonEvent[m_enClickedMainMenu] = m_enClickedSubMenu;
 
-                return true;
-            }
-            
-            //else
-            //{
-                // 메뉴 이름이 Enum과 다른 경우
-                //foreach (var item in m_mappingForButtonName)
-                //{
-                //    if (item.Value.Equals(strEnum))
-                //    {
-                //        enButtonEvent = item.Key;
-                //        break;
-                //    }
-                //}
+            SetMainView(m_dicOfMainView[m_enClickedSubMenu], m_dicOfTimerInterval[m_enClickedSubMenu]);
 
-                //if (m_enClickedSubMenu == enButtonEvent) { return false; }
-
-                //m_enClickedSubMenu = enButtonEvent;
-
-                //m_dicOfMainViewByMainButtonEvent[m_enClickedMainMenu] = m_enClickedSubMenu;
-
-                //SetMainView(m_dicOfMainView[m_enClickedSubMenu], m_dicOfTimerInterval[m_enClickedSubMenu]);
-
-                //return true;
-            //}
+            return true;
         }
         #endregion
-		
-		/// <summary>
-		/// 2020.07.10 by twkang [ADD] AlamMessage Form 을 위한 상태를 바꿔준다.
-		/// </summary>
-		public void SetAlarmMessageForm(bool bShow)
+
+        /// <summary>
+        /// 2020.07.10 by twkang [ADD] AlamMessage Form 을 위한 상태를 바꿔준다.
+        /// </summary>
+        public void SetAlarmMessageForm(bool bShow)
 		{
 			m_RWLock.EnterWriteLock();
 			queueState.Enqueue(bShow ? EN_ALARM_FORM_STATE.DISPLAYING : EN_ALARM_FORM_STATE.OFF);

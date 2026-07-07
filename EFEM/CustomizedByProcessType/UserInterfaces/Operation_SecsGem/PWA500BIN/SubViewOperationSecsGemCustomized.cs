@@ -522,8 +522,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                                 DataToSend, 
                                 scenarioResult,
                                 null,
-                                EN_MESSAGE_RESULT.OK,
-                                true);
+                                EN_MESSAGE_RESULT.OK);
                         }
                         break;
                     default:
@@ -761,7 +760,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
         {
             string lotId = _carrierServer.GetCarrierLotId(_selectedPortId);
             string carrierId = _carrierServer.GetCarrierId(_selectedPortId);
-            string portName = _functionsForPWA500.GetPortName(_selectedPortId);
+            string portName = EquipmentInfo.GetPortName(_selectedPortId);
             string operatorId = "AUTO";
 
             switch (scenario)
@@ -835,7 +834,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                         }
 
                         string partId = string.Empty;
-                        string recipeId = _functionsForPWA500.GetRecipeId();
+                        string recipeId = EquipmentInfo.GetRecipeId();
                         var substrates = _substrateManager.GetSubstratesAtLoadPort(_selectedPortId);
 
                         bool isFisrtSubstrate = false;
@@ -901,11 +900,11 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
             string substrateName = substrate1.Name;
             string ringId = substrate1.GetAttribute(PWA500SubstrateAttributes.RingId);
             string carrierId = _carrierServer.GetCarrierId(portId);
-            string portName = _functionsForPWA500.GetPortName(portId);
+            string portName = EquipmentInfo.GetPortName(portId);
             string lotId = substrate1.LotId;
             string partId = substrate1.GetAttribute(PWA500SubstrateAttributes.PartId);
             string stepSeq = substrate1.GetAttribute(PWA500SubstrateAttributes.StepSeq);
-            string recipeId = _functionsForPWA500.GetRecipeId();
+            string recipeId = EquipmentInfo.GetRecipeId();
             string operatorId = "AUTO";
             string chipQty = substrate1.GetAttribute(PWA500SubstrateAttributes.ChipQty);
             
@@ -1065,7 +1064,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                         string binCode = substrate1.GetAttribute(PWA500SubstrateAttributes.BinCode);
 
                         carrierId = _carrierServer.GetCarrierId(destPortId);
-                        portName = _functionsForPWA500.GetPortName(destPortId);                        
+                        portName = EquipmentInfo.GetPortName(destPortId);                        
 
                         DataToSend[TrackInOrOut.KeyParamCarrierId] = carrierId;
                         DataToSend[TrackInOrOut.KeyParamPortId] = portName;
@@ -1090,7 +1089,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                     {
                         portId = substrate1.DestinationPortId;
                         carrierId = _carrierServer.GetCarrierId(portId);
-                        portName = _functionsForPWA500.GetPortName(portId);
+                        portName = EquipmentInfo.GetPortName(portId);
 
                         DataToSend[UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId;
                         DataToSend[UploadCoreOrBinFileKeys.KeyParamPortId] = portName;
@@ -1119,7 +1118,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                     {
                         portId = substrate1.DestinationPortId;
                         carrierId = _carrierServer.GetCarrierId(portId);
-                        portName = _functionsForPWA500.GetPortName(portId);
+                        portName = EquipmentInfo.GetPortName(portId);
 
                         DataToSend[UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId;
                         DataToSend[UploadCoreOrBinFileKeys.KeyParamPortId] = portName;
@@ -1199,7 +1198,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                         string stepId = substrate1.GetAttribute(PWA500SubstrateAttributes.StepSeq);
 
                         // 2024.10.29. jhlim [MOD] StepSeq가 설정값과 다르면 값을 셋한다.
-                        string stepSeqFromParam = _functionsForPWA500.GetStepIdForBinWafer();
+                        string stepSeqFromParam = EquipmentInfo.GetStepIdForBinWafer();
                         if (stepId.Equals(stepSeqFromParam))
                         {
                             _substrateManager.SetAttributeByKey(substrate1.UniqueKey, PWA500SubstrateAttributes.StepSeq, stepSeqFromParam);

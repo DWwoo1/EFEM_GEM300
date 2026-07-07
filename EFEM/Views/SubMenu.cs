@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Define.DefineEnumProject.ButtonEvent;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,29 +85,59 @@ namespace FrameOfSystem3.Views
         /// <summary>
         /// 2020.02.05 by yjlee [ADD] Set the button's text and state.
         /// </summary>
-        public void SetButtons(List<string> listOfButtonNames)
+        //     public void SetButtons(List<string> listOfButtonNames)
+        //     {
+        //         foreach(var btn in m_listOfButtons)
+        //         {
+        //             btn.Visible     = false;
+        //         }
+
+        //         int nCountOfItem    = listOfButtonNames.Count > m_listOfButtons.Count
+        //             ? m_listOfButtons.Count : listOfButtonNames.Count;
+
+        //var language = Language_.Language.GetInstance();
+
+        //         for(int i = 0 ; i < listOfButtonNames.Count ; ++ i)
+        //         {
+        //             // 2021.04.30. by shkim. [ADD] FAKE BUTTON 숨김
+        //             if (listOfButtonNames[i].Contains("FAKE")) continue;
+
+        //             m_listOfButtons[i].Text     = language.TranslateWord(listOfButtonNames[i]);
+        //             m_listOfButtons[i].Visible  = true;
+        //         }
+
+        //         SetButtonClicked(ref m_btn1);
+        //     }
+        public void SetButtons(List<string> listOfButtonNames, Dictionary<int, EN_BUTTONEVENT_SUBMENU> dicOfSubMenuEventByDisplayIndex)
         {
-            foreach(var btn in m_listOfButtons)
+            foreach (var btn in m_listOfButtons)
             {
-                btn.Visible     = false;
+                btn.Visible = false;
+                btn.Tag = null;
             }
 
-            int nCountOfItem    = listOfButtonNames.Count > m_listOfButtons.Count
+            int nCountOfItem = listOfButtonNames.Count > m_listOfButtons.Count
                 ? m_listOfButtons.Count : listOfButtonNames.Count;
 
-			var language = Language_.Language.GetInstance();
-			
-            for(int i = 0 ; i < listOfButtonNames.Count ; ++ i)
-            {
-                // 2021.04.30. by shkim. [ADD] FAKE BUTTON 숨김
-                if (listOfButtonNames[i].Contains("FAKE")) continue;
+            var language = Language_.Language.GetInstance();
 
-                m_listOfButtons[i].Text     = language.TranslateWord(listOfButtonNames[i]);
-                m_listOfButtons[i].Visible  = true;
+            for (int i = 0; i < nCountOfItem; ++i)
+            {
+                if (listOfButtonNames[i].Contains("FAKE"))
+                    continue;
+
+                EN_BUTTONEVENT_SUBMENU enSubMenu;
+                if (false == dicOfSubMenuEventByDisplayIndex.TryGetValue(i, out enSubMenu))
+                    continue;
+
+                m_listOfButtons[i].Text = language.TranslateWord(listOfButtonNames[i]);
+                m_listOfButtons[i].Tag = enSubMenu;
+                m_listOfButtons[i].Visible = true;
             }
 
             SetButtonClicked(ref m_btn1);
         }
+
         /// <summary>
         /// 2020.05.15 by yjlee [ADD] Set the clicked button by the string name.
         /// </summary>
@@ -133,16 +164,30 @@ namespace FrameOfSystem3.Views
         /// <summary>
         /// 2020.05.15 by twkang [MOD] Set the state of button clicked.
         /// </summary>
+        //     private void ClickButtons(object sender, EventArgs e)
+        //     {
+        //         Sys3Controls.Sys3button btn = (Sys3Controls.Sys3button)sender;
+
+        //// 2024.06.13 by junho [MOD] Text번역을 위해 tab index로 변경
+        ////if (evtButtonClick(btn.Text))
+        //if (evtButtonClick(btn.TabIndex))
+        //{
+        //	SetButtonClicked(ref btn);
+        //}
+        //     }
         private void ClickButtons(object sender, EventArgs e)
         {
             Sys3Controls.Sys3button btn = (Sys3Controls.Sys3button)sender;
 
-			// 2024.06.13 by junho [MOD] Text번역을 위해 tab index로 변경
-			//if (evtButtonClick(btn.Text))
-			if (evtButtonClick(btn.TabIndex))
-			{
-				SetButtonClicked(ref btn);
-			}
+            if (false == (btn.Tag is EN_BUTTONEVENT_SUBMENU))
+                return;
+
+            EN_BUTTONEVENT_SUBMENU enSubMenu = (EN_BUTTONEVENT_SUBMENU)btn.Tag;
+
+            if (evtButtonClick != null && evtButtonClick((int)enSubMenu))
+            {
+                SetButtonClicked(ref btn);
+            }
         }
         #endregion
     }

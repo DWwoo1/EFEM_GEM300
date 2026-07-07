@@ -298,10 +298,10 @@ namespace FrameOfSystem3.Functional
 
             // 1) DB 컨텍스트 생성 (스키마/트리거 포함)
             _databaseContext = new EFEM.Database.MaterialDbContext(
-                _dbFilePath, 
-                EFEM.Defines.Common.AsyncLoggerForEfem.Instance.WriteDebugLog, 
-                funcForCarrier, 
-                funcForSubstrate, 
+                _dbFilePath,
+                EFEM.Defines.Common.AsyncLoggerForEfem.Instance.WriteDebugLog,
+                funcForCarrier,
+                funcForSubstrate,
                 migrationSteps);
 
             // 2) 저장소들 생성
@@ -379,16 +379,112 @@ namespace EFEM.Migrations
         public static IEnumerable<Database.IDbMigrationStep> GetMigrationSteps()
         {
             var extraMigrations = new List<EFEM.Database.IDbMigrationStep>
-                {
-                    new Database.DelegateDbMigrationStep(
-                        2,
-                        "Rename CarrierExtra.KeyLotQty to LotQty",
-                        (conn, tx, schemaName) =>
-                        {
-                            const string tableNameOnly = "CarrierExtra";
-                            const string oldColumnName = "KeyLotQty";
-                            const string newColumnName = "LotQty";
+            {
+                new Database.DelegateDbMigrationStep(
+                    2,
+                    "Rename Location.Name to Id and add Location.Name",
+                    (conn, tx, schemaName) =>
+                    {
+                        const string tableNameOnly = "Location";
 
+                        const string oldColumnName = "Name";
+                        const string newColumnName = "Id";
+
+                        string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
+                            ? "\"" + tableNameOnly + "\""
+                            : "\"" + schemaName + "\".\"" + tableNameOnly + "\"";
+
+                        bool tableExists;
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText =
+                                "SELECT 1 FROM "
+                                + (string.IsNullOrWhiteSpace(schemaName)
+                                    ? "sqlite_master"
+                                    : "\"" + schemaName + "\".sqlite_master")
+                                + " WHERE type = 'table' AND name = $name LIMIT 1;";
+                            cmd.Parameters.AddWithValue("$name", tableNameOnly);
+
+                            var result = cmd.ExecuteScalar();
+                            tableExists = result != null && result != DBNull.Value;
+                        }
+
+                        if (!tableExists)
+                            return;
+
+                        bool hasOldNameColumn = false;
+                        bool hasIdColumn = false;
+
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
+                                ? "PRAGMA table_info(\"" + tableNameOnly + "\");"
+                                : "PRAGMA \"" + schemaName + "\".table_info(\"" + tableNameOnly + "\");";
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var currentName = Convert.ToString(reader["name"]);
+
+                                    if (string.Equals(currentName, oldColumnName, StringComparison.OrdinalIgnoreCase))
+                                        hasOldNameColumn = true;
+
+                                    if (string.Equals(currentName, newColumnName, StringComparison.OrdinalIgnoreCase))
+                                        hasIdColumn = true;
+                                }
+                            }
+                        }
+                    
+                        /*
+                            * 기존 Location.Name은 식별자 역할이므로 Id로 변경한다.
+                            *
+                            * 기존:
+                            *   Name TEXT PRIMARY KEY
+                            *
+                            * 변경:
+                            *   Id   TEXT PRIMARY KEY
+                            */
+                        if (hasOldNameColumn && !hasIdColumn)
+                        {
+                            using (var cmd = conn.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText =
+                                    "ALTER TABLE " + qualifiedTableName +
+                                    " RENAME COLUMN \"" + oldColumnName + "\" TO \"" + newColumnName + "\";";
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            hasOldNameColumn = false;
+                            hasIdColumn = true;
+                        }
+                    
+                        /*
+                            * Id 변경 후, 표시용 Name 컬럼을 새로 추가한다.
+                            * TEXT만 지정하므로 NULL 허용 컬럼이다.
+                            */
+                        if (!hasOldNameColumn)
+                        {
+                            using (var cmd = conn.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText =
+                                    "ALTER TABLE " + qualifiedTableName +
+                                    " ADD COLUMN \"" + oldColumnName + "\" TEXT;";
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }),
+                new Database.DelegateDbMigrationStep(
+                    3,
+                    "Add Substrate.OriginName and SubstrateExtra.ScrapInfo",
+                    (conn, tx, schemaName) =>
+                    {
+                        Func<string, string, bool> addTextColumnIfMissing = (tableNameOnly, columnName) =>
+                        {
                             string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
                                 ? "\"" + tableNameOnly + "\""
                                 : "\"" + schemaName + "\".\"" + tableNameOnly + "\"";
@@ -410,11 +506,9 @@ namespace EFEM.Migrations
                             }
 
                             if (!tableExists)
-                                return;
+                                return false;
 
-                            bool hasOldColumn = false;
-                            bool hasNewColumn = false;
-
+                            bool hasColumn = false;
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
@@ -427,141 +521,148 @@ namespace EFEM.Migrations
                                     while (reader.Read())
                                     {
                                         var currentName = Convert.ToString(reader["name"]);
-
-                                        if (string.Equals(currentName, oldColumnName, StringComparison.OrdinalIgnoreCase))
-                                            hasOldColumn = true;
-
-                                        if (string.Equals(currentName, newColumnName, StringComparison.OrdinalIgnoreCase))
-                                            hasNewColumn = true;
+                                        if (string.Equals(currentName, columnName, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            hasColumn = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }
 
-                            if (hasOldColumn && !hasNewColumn)
+                            if (!hasColumn)
                             {
                                 using (var cmd = conn.CreateCommand())
                                 {
                                     cmd.Transaction = tx;
                                     cmd.CommandText =
                                         "ALTER TABLE " + qualifiedTableName +
-                                        " RENAME COLUMN " + oldColumnName + " TO " + newColumnName + ";";
-                                    cmd.ExecuteNonQuery();
-                                }
-
-                                return;
-                            }
-
-                            if (hasOldColumn && hasNewColumn)
-                            {
-                                using (var cmd = conn.CreateCommand())
-                                {
-                                    cmd.Transaction = tx;
-                                    cmd.CommandText =
-                                        "UPDATE " + qualifiedTableName + " " +
-                                        "SET LotQty = COALESCE(LotQty, KeyLotQty) " +
-                                        "WHERE LotQty IS NULL;";
+                                        " ADD COLUMN \"" + columnName + "\" TEXT;";
                                     cmd.ExecuteNonQuery();
                                 }
                             }
-                        }),
-                    new Database.DelegateDbMigrationStep(
-                        3,
-                        "Rename Location.Name to Id and add Location.Name",
-                        (conn, tx, schemaName) =>
+
+                            return true;
+                        };
+
+                        if (addTextColumnIfMissing("Substrate", "OriginName"))
                         {
-                            const string tableNameOnly = "Location";
-                    
-                            const string oldColumnName = "Name";
-                            const string newColumnName = "Id";
-                    
                             string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
-                                ? "\"" + tableNameOnly + "\""
-                                : "\"" + schemaName + "\".\"" + tableNameOnly + "\"";
-                    
-                            bool tableExists;
+                                ? "\"Substrate\""
+                                : "\"" + schemaName + "\".\"Substrate\"";
+
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
                                 cmd.CommandText =
-                                    "SELECT 1 FROM "
-                                    + (string.IsNullOrWhiteSpace(schemaName)
-                                        ? "sqlite_master"
-                                        : "\"" + schemaName + "\".sqlite_master")
-                                    + " WHERE type = 'table' AND name = $name LIMIT 1;";
-                                cmd.Parameters.AddWithValue("$name", tableNameOnly);
-                    
-                                var result = cmd.ExecuteScalar();
-                                tableExists = result != null && result != DBNull.Value;
+                                    "UPDATE " + qualifiedTableName + " " +
+                                    "SET \"OriginName\" = COALESCE(\"OriginName\", \"Name\") " +
+                                    "WHERE \"OriginName\" IS NULL;";
+                                cmd.ExecuteNonQuery();
                             }
-                    
-                            if (!tableExists)
-                                return;
-                    
-                            bool hasOldNameColumn = false;
-                            bool hasIdColumn = false;
-                    
+                        }
+
+                        if (addTextColumnIfMissing("SubstrateExtra", "ScrapInfo"))
+                        {
+                            string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
+                                ? "\"SubstrateExtra\""
+                                : "\"" + schemaName + "\".\"SubstrateExtra\"";
+
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
-                                cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
-                                    ? "PRAGMA table_info(\"" + tableNameOnly + "\");"
-                                    : "PRAGMA \"" + schemaName + "\".table_info(\"" + tableNameOnly + "\");";
-                    
-                                using (var reader = cmd.ExecuteReader())
-                                {
-                                    while (reader.Read())
-                                    {
-                                        var currentName = Convert.ToString(reader["name"]);
-                    
-                                        if (string.Equals(currentName, oldColumnName, StringComparison.OrdinalIgnoreCase))
-                                            hasOldNameColumn = true;
-                    
-                                        if (string.Equals(currentName, newColumnName, StringComparison.OrdinalIgnoreCase))
-                                            hasIdColumn = true;
-                                    }
-                                }
+                                cmd.CommandText =
+                                    "UPDATE " + qualifiedTableName + " " +
+                                    "SET \"ScrapInfo\" = '' " +
+                                    "WHERE \"ScrapInfo\" IS NULL;";
+                                cmd.ExecuteNonQuery();
                             }
-                    
-                            /*
-                             * 기존 Location.Name은 식별자 역할이므로 Id로 변경한다.
-                             *
-                             * 기존:
-                             *   Name TEXT PRIMARY KEY
-                             *
-                             * 변경:
-                             *   Id   TEXT PRIMARY KEY
-                             */
-                            if (hasOldNameColumn && !hasIdColumn)
+                        }
+                    }),
+                new Database.DelegateDbMigrationStep(
+                    4,
+                    "Rename CarrierExtra.KeyLotQty to LotQty",
+                    (conn, tx, schemaName) =>
+                    {
+                        const string tableNameOnly = "CarrierExtra";
+                        const string oldColumnName = "KeyLotQty";
+                        const string newColumnName = "LotQty";
+
+                        string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
+                            ? "\"" + tableNameOnly + "\""
+                            : "\"" + schemaName + "\".\"" + tableNameOnly + "\"";
+
+                        bool tableExists;
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText =
+                                "SELECT 1 FROM "
+                                + (string.IsNullOrWhiteSpace(schemaName)
+                                    ? "sqlite_master"
+                                    : "\"" + schemaName + "\".sqlite_master")
+                                + " WHERE type = 'table' AND name = $name LIMIT 1;";
+                            cmd.Parameters.AddWithValue("$name", tableNameOnly);
+
+                            var result = cmd.ExecuteScalar();
+                            tableExists = result != null && result != DBNull.Value;
+                        }
+
+                        if (!tableExists)
+                            return;
+
+                        bool hasOldColumn = false;
+                        bool hasNewColumn = false;
+
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
+                                ? "PRAGMA table_info(\"" + tableNameOnly + "\");"
+                                : "PRAGMA \"" + schemaName + "\".table_info(\"" + tableNameOnly + "\");";
+
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                using (var cmd = conn.CreateCommand())
+                                while (reader.Read())
                                 {
-                                    cmd.Transaction = tx;
-                                    cmd.CommandText =
-                                        "ALTER TABLE " + qualifiedTableName +
-                                        " RENAME COLUMN \"" + oldColumnName + "\" TO \"" + newColumnName + "\";";
-                                    cmd.ExecuteNonQuery();
+                                    var currentName = Convert.ToString(reader["name"]);
+
+                                    if (string.Equals(currentName, oldColumnName, StringComparison.OrdinalIgnoreCase))
+                                        hasOldColumn = true;
+
+                                    if (string.Equals(currentName, newColumnName, StringComparison.OrdinalIgnoreCase))
+                                        hasNewColumn = true;
                                 }
-                    
-                                hasOldNameColumn = false;
-                                hasIdColumn = true;
                             }
-                    
-                            /*
-                             * Id 변경 후, 표시용 Name 컬럼을 새로 추가한다.
-                             * TEXT만 지정하므로 NULL 허용 컬럼이다.
-                             */
-                            if (!hasOldNameColumn)
+                        }
+
+                        if (hasOldColumn && !hasNewColumn)
+                        {
+                            using (var cmd = conn.CreateCommand())
                             {
-                                using (var cmd = conn.CreateCommand())
-                                {
-                                    cmd.Transaction = tx;
-                                    cmd.CommandText =
-                                        "ALTER TABLE " + qualifiedTableName +
-                                        " ADD COLUMN \"" + oldColumnName + "\" TEXT;";
-                                    cmd.ExecuteNonQuery();
-                                }
+                                cmd.Transaction = tx;
+                                cmd.CommandText =
+                                    "ALTER TABLE " + qualifiedTableName +
+                                    " RENAME COLUMN " + oldColumnName + " TO " + newColumnName + ";";
+                                cmd.ExecuteNonQuery();
                             }
-                        })
+
+                            return;
+                        }
+
+                        if (hasOldColumn && hasNewColumn)
+                        {
+                            using (var cmd = conn.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText =
+                                    "UPDATE " + qualifiedTableName + " " +
+                                    "SET LotQty = COALESCE(LotQty, KeyLotQty) " +
+                                    "WHERE LotQty IS NULL;";
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }),
                 };
 
             return extraMigrations;

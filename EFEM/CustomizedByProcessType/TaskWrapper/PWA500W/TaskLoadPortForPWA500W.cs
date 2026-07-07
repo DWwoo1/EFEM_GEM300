@@ -208,7 +208,7 @@ namespace FrameOfSystem3.Task
             {
                 [RFIDReadKeys.KeyParamLotId] = _carrierServer.GetCarrierLotId(PortId),
                 [RFIDReadKeys.KeyParamCarrierId] = carrierId,
-                [RFIDReadKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(PortId),
+                [RFIDReadKeys.KeyParamPortId] = EquipmentInfo.GetPortName(PortId),
                 [RFIDReadKeys.KeyParamOperatorId] = "AUTO"
             };
 
@@ -286,6 +286,7 @@ namespace FrameOfSystem3.Task
             {
                 _commandResult.CommandResult = CommandResult.Error;
                 _commandResult.Description = "Does not have carrier";
+
                 return _commandResult;
             }
 
@@ -502,7 +503,7 @@ namespace FrameOfSystem3.Task
             EN_SCENARIO typeOfScenario = ScenarioTypeToCarrierUnload;
             string carrierLotId = _carrierServer.GetCarrierLotId(PortId);
 
-            var param = _functionsForPWA500.MakeParamToOHTHandling(PortId, LoadingMode, carrierLotId, typeOfScenario);
+            var param = ScenarioParameterBuilder.MakeParamToOHTHandling(PortId, LoadingMode, carrierLotId, typeOfScenario);
 
             return _scenarioOperator.UpdateScenarioParam(GetTaskName(), ScenarioTypeToCarrierUnload, param);
         }
@@ -1286,7 +1287,7 @@ namespace FrameOfSystem3.Task
 
 
             string partId = firstSubstrate.Value.GetAttribute(PWA500SubstrateAttributes.PartId);
-            string recipeId = _functionsForPWA500.GetRecipeId();
+            string recipeId = EquipmentInfo.GetRecipeId();
 
             scenarioParam[LotMergeKeys.KeyParamPartId] = partId;
             scenarioParam[LotMergeKeys.KeyParamRecipeId] = recipeId;

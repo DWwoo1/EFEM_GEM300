@@ -1,32 +1,30 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Diagnostics;
-
+﻿using AnalogIO_;
+using Define.DefineConstant;
+using Define.DefineEnumProject.AnalogIO.PWA500BIN;
+using Define.DefineEnumProject.Mail;
+using EFEM.CustomizedByProcessType.PWA500BIN;
+using EFEM.CustomizedByProcessType.PWA500Common;
+using EFEM.Defines.Common;
+using EFEM.Defines.MaterialTracking;
+using EFEM.MaterialTracking;
+using EFEM.Modules;
+using FrameOfSystem3.ExternalDevice.Serial.FanFilterUnit;
+using FrameOfSystem3.Functional;
 using FrameOfSystem3.Recipe;
 using FrameOfSystem3.SECSGEM.DefineSecsGem;
 using FrameOfSystem3.SECSGEM.Scenario.Common.Auto;
-using FrameOfSystem3.Functional;
-using Define.DefineEnumProject.AnalogIO.PWA500BIN;
-
-using AnalogIO_;
-using WCFManager_;
-
-using Define.DefineEnumProject.Mail;
-using Define.DefineConstant;
-
-using EFEM.Modules;
-using EFEM.MaterialTracking;
-using EFEM.Defines.MaterialTracking;
-using EFEM.CustomizedByProcessType.PWA500BIN;
-using EFEM.CustomizedByProcessType.PWA500Common;
-
-using FrameOfSystem3.ExternalDevice.Serial.FanFilterUnit;
 using FrameOfSystem3.SECSGEM.Trace;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using WCFManager_;
 
 namespace FrameOfSystem3.SECSGEM.Scenario
 {
@@ -84,6 +82,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
             _functionsForPWA500.AssignFunctionToExecuteScenario(ExecuteScenario);
 
             _lotHistoryLog = LotHistoryLog.Instance;
+
+            IsOldEvents = NewVersionChecker.IsOldEvents();
         }
 
         WCFManager _wcfManager;
@@ -138,6 +138,69 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         private ConcurrentDictionary<string, string> _myEcidListForCommon = new ConcurrentDictionary<string, string>();
         private ConcurrentDictionary<string, string> _myEcidListForEquipment = new ConcurrentDictionary<string, string>();
+
+        private static readonly string[] PbiWorkResultKeys =
+        {
+            PBIDataKeys.KeyPickUpWaferID,
+            PBIDataKeys.KeyPickIndexX,
+            PBIDataKeys.KeyPickIndexY,
+            PBIDataKeys.KeyWaferVisionX,
+            PBIDataKeys.KeyWaferVisionY,
+            PBIDataKeys.KeyWaferVisionT,
+            PBIDataKeys.KeyToolNum,
+            PBIDataKeys.KeyPickUpForce,
+            PBIDataKeys.KeyULCResultX,
+            PBIDataKeys.KeyULCResultY,
+            PBIDataKeys.KeyULCResultT,
+            PBIDataKeys.KeySortingWaferID,
+            PBIDataKeys.KeySortingIndexX,
+            PBIDataKeys.KeySortingIndexY,
+            PBIDataKeys.KeyPlaceForce,
+
+            PBIDataKeys.KeyGap_LeftTop_X,
+            PBIDataKeys.KeyGap_LeftBottom_X,
+            PBIDataKeys.KeyGap_RightTop_X,
+            PBIDataKeys.KeyGap_RightBottom_X,
+            PBIDataKeys.KeyGap_LeftTop_Y,
+            PBIDataKeys.KeyGap_LeftBottom_Y,
+            PBIDataKeys.KeyGap_RightTop_Y,
+            PBIDataKeys.KeyGap_RightBottom_Y,
+        };
+
+        private static readonly string[] PbiWorkResultDefaultValues =
+        {
+            nameof(EN_SVID_LIST.PBI_CORE_WAFER_ID),
+            nameof(EN_SVID_LIST.PBI_PICK_INDEX_X),
+            nameof(EN_SVID_LIST.PBI_PICK_INDEX_Y),
+            nameof(EN_SVID_LIST.PBI_WAFER_VISION_X),
+            nameof(EN_SVID_LIST.PBI_WAFER_VISION_Y),
+            nameof(EN_SVID_LIST.PBI_WAFER_VISION_T),
+            nameof(EN_SVID_LIST.PBI_TOOL_NUM),
+            nameof(EN_SVID_LIST.PBI_PICK_UP_FORCE),
+            nameof(EN_SVID_LIST.PBI_ULC_RESULT_X),
+            nameof(EN_SVID_LIST.PBI_ULC_RESULT_Y),
+            nameof(EN_SVID_LIST.PBI_ULC_RESULT_T),
+            nameof(EN_SVID_LIST.PBI_SORTING_WAFER_ID),
+            nameof(EN_SVID_LIST.PBI_SORTING_INDEX_X),
+            nameof(EN_SVID_LIST.PBI_SORTING_INDEX_Y),
+            nameof(EN_SVID_LIST.PBI_PLACE_FORCE),
+
+            nameof(EN_SVID_LIST.PBI_GAP_LEFT_TOP_X),
+            nameof(EN_SVID_LIST.PBI_GAP_LEFT_BOTTOM_X),
+            nameof(EN_SVID_LIST.PBI_GAP_RIGHT_TOP_X),
+            nameof(EN_SVID_LIST.PBI_GAP_RIGHT_BOTTOM_X),
+            nameof(EN_SVID_LIST.PBI_GAP_LEFT_TOP_Y),
+            nameof(EN_SVID_LIST.PBI_GAP_LEFT_BOTTOM_Y),
+            nameof(EN_SVID_LIST.PBI_GAP_RIGHT_TOP_Y),
+            nameof(EN_SVID_LIST.PBI_GAP_RIGHT_BOTTOM_Y),
+        };
+
+        private static readonly Dictionary<string, int> PbiWorkResultIndexByKey =
+            CreatePbiWorkResultIndexByKey();
+
+        private readonly string[] _pbiWorkResultValues = new string[PbiWorkResultKeys.Length];
+
+        private bool IsOldEvents { get; }
         #region interface
 
         #region <Init, Exit>
@@ -180,6 +243,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     UpdateVariable(snapshot.Keys.ToArray(), snapshot.Values.ToArray());
                 }
             }
+
+            InitWorkResultData();
 
             return result;
         }
@@ -470,14 +535,57 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                 false, 10000, true));
                         }
                         break;
-                    case EN_SCENARIO.SCENARIO_UPLOAD_SCRAP_DATA:
+                    // 2026.06.22. jhlim [ADD] 신규 시나리오 추가(ADS 이동 플래그, 스크랩 빈/코어 칩, 작업 결과 업로드)
+                    case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_1:
                         {
+                            if (IsOldEvents)
+                                break;
+
                             MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
-                                CollectionEventList[EN_EVENT_LIST.UPLOAD_SCRAP_DATA.ToString()].Id,
-                                CollectionEventList[EN_EVENT_LIST.UPLOAD_SCRAP_DATA.ToString()].VariableIds,
+                                CollectionEventList[EN_EVENT_LIST.ADS_MOVE_FLAG_1.ToString()].Id,
+                                CollectionEventList[EN_EVENT_LIST.ADS_MOVE_FLAG_1.ToString()].VariableIds,
                                 true, 10000, true));
                         }
                         break;
+                    case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_2:
+                        {
+                            if (IsOldEvents)
+                                break;
+
+                            MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
+                                CollectionEventList[EN_EVENT_LIST.ADS_MOVE_FLAG_2.ToString()].Id,
+                                CollectionEventList[EN_EVENT_LIST.ADS_MOVE_FLAG_2.ToString()].VariableIds,
+                                true, 10000, true));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_SCRAP_BIN_CHIP:
+                        {
+                            if (IsOldEvents)
+                                break;
+
+                            MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
+                                CollectionEventList[EN_EVENT_LIST.SCRAP_BIN_CHIP.ToString()].Id,
+                                CollectionEventList[EN_EVENT_LIST.SCRAP_BIN_CHIP.ToString()].VariableIds,
+                                true, 10000, true));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_SCRAP_CORE_CHIP:
+                        {
+                            MakeScenario(scenario, new ScenarioScrapCoreChips(scenario.ToString(),
+                                CollectionEventList[EN_EVENT_LIST.SCRAP_CORE_CHIP.ToString()].Id,
+                                CollectionEventList[EN_EVENT_LIST.SCRAP_CORE_CHIP.ToString()].VariableIds,
+                                true, 10000, true));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_UPLOAD_WORK_RESULT:
+                        {
+                            MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
+                                CollectionEventList[EN_EVENT_LIST.UPLOAD_WORK_RESULT.ToString()].Id,
+                                CollectionEventList[EN_EVENT_LIST.UPLOAD_WORK_RESULT.ToString()].VariableIds,
+                                false, 10000, true));
+                        }
+                        break;
+                    // 2026.06.22. jhlim [END]
                     case EN_SCENARIO.SCENARIO_BIN_WAFER_ID_READ:
                         {
                             MakeScenario(scenario, new SendingEventScenario(scenario.ToString(),
@@ -561,6 +669,13 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         break;
                     case EN_SCENARIO.SCENARIO_ASSIGN_SUBSTRATE_ID:
                         {
+                            MakeScenario(scenario, new ClientToClientCommunicationScenario(scenario.ToString()));
+                        }
+                        break;
+                    case EN_SCENARIO.SCENARIO_UPLOAD_BIN_SCRAP_INFO:
+                        {
+                            if (IsOldEvents)
+                                break;
                             MakeScenario(scenario, new ClientToClientCommunicationScenario(scenario.ToString()));
                         }
                         break;
@@ -981,6 +1096,23 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     }
                 }
             }
+            else  if (scen is ScenarioScrapCoreChips)
+            {
+                var convertedScen = scen as ScenarioScrapCoreChips;
+
+                foreach (var item in CollectionEventList)
+                {
+                    if (item.Value.Id.Equals(convertedScen.EventId))
+                    {
+                        parameterList = new List<string>();
+                        foreach (var kvp in item.Value.Variables)
+                        {
+                            parameterList.Add(kvp.Value.Name);
+                        }
+                        break;
+                    }
+                }
+            }
             else if (scen is ScenarioReqLotInfo)
             {
                 var convertedScen = scen as ScenarioReqLotInfo;
@@ -1223,7 +1355,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 case EN_SCENARIO.SCENARIO_REQ_CORE_WAFER_SPLIT_LAST:
                 case EN_SCENARIO.SCENARIO_REQ_CORE_CHIP_MERGE:
                 case EN_SCENARIO.SCENARIO_CORE_WAFER_DETACH_END:
-                case EN_SCENARIO.SCENARIO_UPLOAD_SCRAP_DATA:
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_1:
+                case EN_SCENARIO.SCENARIO_ADS_MOVE_FLAG_2:
+                case EN_SCENARIO.SCENARIO_SCRAP_BIN_CHIP:
+                case EN_SCENARIO.SCENARIO_UPLOAD_WORK_RESULT:
                 case EN_SCENARIO.SCENARIO_BIN_WAFER_ID_READ:
                 case EN_SCENARIO.SCENARIO_BIN_SORTING_START_1:
                 case EN_SCENARIO.SCENARIO_BIN_SORTING_END_1:
@@ -1240,6 +1375,50 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         ScenarioList[scenario].UpdateParamValues(new SendingEventParamValues(param.Values.ToList()));
                     }
                     break;
+                case EN_SCENARIO.SCENARIO_SCRAP_CORE_CHIP:
+                    {
+                        if (false == param.TryGetValue(ScrapInfoKeys.KeyParamScrapInfo, out var info) ||
+                            string.IsNullOrWhiteSpace(info))
+                            return false;
+
+                        if (false == param.TryGetValue(ScrapInfoKeys.KeyParamLotId, out var lotId))
+                            return false;
+
+                        if (false == param.TryGetValue(ScrapInfoKeys.KeyParamWaferId, out var waferId))
+                            return false;
+
+                        if (false == TryParseScrapCoreInfos(param, info, out var scrapCoreInfos))
+                            return false;
+
+                        const int IndexOfQty = 2;
+                        const int IndexOfInfo = 3;
+
+                        List<string> variablesToUpdate = new List<string>
+                            {
+                                lotId,
+                                waferId,
+                                string.Empty,    // qty
+                                string.Empty,    // info
+                                "1"             // wafer qty
+                            };
+
+                        Queue<List<string>> infosToUpdate = new Queue<List<string>>();
+
+                        foreach (var scrapCoreInfo in scrapCoreInfos)
+                        {
+                            variablesToUpdate[IndexOfQty] = scrapCoreInfo.Qty;
+                            variablesToUpdate[IndexOfInfo] = scrapCoreInfo.Info;
+
+                            infosToUpdate.Enqueue(new List<string>(variablesToUpdate));
+                        }
+
+                        ScenarioList[scenario].UpdateParamValues(
+                            new ScenarioScrapCoreChipsParamValues(infosToUpdate));
+
+                        return true;
+                    }
+                    break;
+
                 case EN_SCENARIO.SCENARIO_CORE_WAFER_DETACH_START:
                     {
                         List<string> variablesToUpdate = new List<string>();
@@ -1690,6 +1869,14 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                             param));
                     }
                     break;
+                case EN_SCENARIO.SCENARIO_UPLOAD_BIN_SCRAP_INFO:
+                    {
+                        ScenarioList[scenario].UpdateParamValues(new ClientToClientCommunicationParamValues(
+                            NameOfClient,
+                            MessagesToSend.RequestUploadBinScrapInfo.ToString(),
+                            param));
+                    }
+                    break;
 
                 //////////////////////////////////////////////////
                 default:
@@ -1797,6 +1984,15 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                     if (item.Value is ScenarioReqLotInfo)
                     {
                         var lotInfoScenario = item.Value as ScenarioReqLotInfo;
+                        if (lotInfoScenario.EventId.Equals(ceid))
+                        {
+                            item.Value.UpdatePermission(permission);
+                            return true;
+                        }
+                    }
+                    else if (item.Value is ScenarioScrapCoreChips)
+                    {
+                        var lotInfoScenario = item.Value as ScenarioScrapCoreChips;
                         if (lotInfoScenario.EventId.Equals(ceid))
                         {
                             item.Value.UpdatePermission(permission);
@@ -1944,6 +2140,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
             requestOnlyMessage |= (messageTypeToReceive.Equals(MessagesToReceive.RequestMaterialMoved));
             requestOnlyMessage |= (messageTypeToReceive.Equals(MessagesToReceive.RequestFinishPicking));
             requestOnlyMessage |= (messageTypeToReceive.Equals(MessagesToReceive.RequestFinishPlacing));
+            requestOnlyMessage |= (messageTypeToReceive.Equals(MessagesToReceive.RequestUploadPBIData));
 
             Dictionary<string, string> messagePairs = new Dictionary<string, string>();
             for (int i = 0; i < contentNames.Length; ++i)
@@ -2834,8 +3031,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 request.ScenarioParams,
                 resultData,
                 request.AdditionalParams,
-                messageResult,
-                false);
+                messageResult);
         }
         //private void EnqueueScenario(EN_SCENARIO scenario, Dictionary<string, string> scenarioParams, Dictionary<string, string> additionalParams = null)
         //{
@@ -3090,10 +3286,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         Dictionary<string, string> scenarioParam = new Dictionary<string, string>
                         {
                             [DetachingKeys.KeyParamCarrierId] = carrierId,
-                            [DetachingKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                            [DetachingKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                             [DetachingKeys.KeyParamLotId] = lotId,
                             [DetachingKeys.KeyParamPartId] = partId,
-                            [DetachingKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                            [DetachingKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                             [DetachingKeys.KeyParamWaferId] = substrateName,
                             [DetachingKeys.KeyParamSlotId] = slot.ToString(),
                             [DetachingKeys.KeyParamOperatorId] = userId
@@ -3154,10 +3350,10 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         Dictionary<string, string> scenarioParam = new Dictionary<string, string>
                         {
                             [DetachingKeys.KeyParamCarrierId] = carrierId,
-                            [DetachingKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                            [DetachingKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                             [DetachingKeys.KeyParamLotId] = lotId,
                             [DetachingKeys.KeyParamPartId] = partId,
-                            [DetachingKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                            [DetachingKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                             [DetachingKeys.KeyParamWaferId] = substrateName,
                             [DetachingKeys.KeyParamSlotId] = slot.ToString(),
                             [DetachingKeys.KeyParamOperatorId] = userId
@@ -3502,8 +3698,28 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         }
                         //
 
+                        string substrateKey = string.Empty, scrapQty = string.Empty, scrapInfo = string.Empty;
+                        if (messagePairs.TryGetValue(ScrapInfoKeys.KeyScrapQty, out scrapQty) &&
+                            messagePairs.TryGetValue(ScrapInfoKeys.KeyScrapData, out scrapInfo))
+                        {
+                            
+                        }
+
                         bool useEventHandling = !UseCoreMapHandlingOnly;
-                        return ExecuteScenarioToWorkEnd(nameOfEq, substrateName, ringId, chipQty, waferAngle, countRow, countCol, nullBinCode, mapData, userId, true, useEventHandling);
+                        return ExecuteScenarioToWorkEnd(
+                            nameOfEq, 
+                            substrateName, 
+                            ringId, 
+                            chipQty, 
+                            waferAngle, 
+                            countRow, 
+                            countCol, 
+                            nullBinCode, 
+                            mapData, 
+                            userId,
+                            scrapInfo,
+                            scrapQty,
+                            useEventHandling);
                         #endregion
 
                     }
@@ -3647,7 +3863,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                     if (prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.FINISHING) ||
                                         prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.EXECUTING))
                                     {
-                                        var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                                        var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                                         EnqueueScenario(EN_SCENARIO.SCENARIO_EQUIPMENT_END, param, null);
                                     }
                                 }
@@ -3658,7 +3874,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                                     if (prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.IDLE) ||
                                         prevEquipmentStatus.Equals(EquipmentState_.EQUIPMENT_STATE.READY))
                                     {
-                                        var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                                        var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                                         EnqueueScenario(EN_SCENARIO.SCENARIO_EQUIPMENT_START, param, null);
                                     }
                                 }
@@ -3688,7 +3904,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         #region
                         if (_queuedAlarmsFromPM.Count == 0)
                         {
-                            var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                            var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                             EnqueueScenario(EN_SCENARIO.SCENARIO_ERROR_START, param, null);
                         }
 
@@ -3719,7 +3935,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
                         if (_queuedAlarmsFromPM.Count == 0)
                         {
-                            var param = _functionsForPWA500.MakeParamToEquipmentStatus();
+                            var param = ScenarioParameterBuilder.MakeParamToEquipmentStatus(_functionsForPWA500.GetSubstrateTypeByLoadPortIndex);
                             EnqueueScenario(EN_SCENARIO.SCENARIO_ERROR_STOP, param, null);
                         }
 
@@ -3831,6 +4047,74 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         return false;
                     }
 
+                case MessagesToReceive.ResponseUploadBinScrapInfo:
+                    {
+                        bool scenarioPermission = true;
+                        // TODO : 이렇게하면 데이터가 안 들어오는 경우가 생김
+                        string substrateName = string.Empty, backupRingId = string.Empty, scrapQtyString = string.Empty, scrapData = string.Empty, userId = string.Empty;
+                        if (false == messagePairs.TryGetValue(ResultKeys.KeyResult, out string resultFromClient) ||
+                            false == messagePairs.TryGetValue(ResultKeys.KeyDescription, out _) ||
+                            false == messagePairs.TryGetValue(ScrapInfoKeys.KeySubstrateName, out substrateName) ||
+                            false == messagePairs.TryGetValue(ScrapInfoKeys.KeyBackUpRingId, out backupRingId) ||
+                            false == messagePairs.TryGetValue(ScrapInfoKeys.KeyScrapQty, out scrapQtyString) ||
+                            false == messagePairs.TryGetValue(ScrapInfoKeys.KeyScrapData, out scrapData) ||
+                            false == messagePairs.TryGetValue(ScrapInfoKeys.KeyUserId, out userId))
+                            scenarioPermission = false;
+
+
+                        #region <Find Substrate>
+                        string description = null;
+                        if (false == _substrateManager.GetSubstrateByKey(backupRingId, out var substrate) ||
+                            false == _functionsForPWA500.FindSubstrateByNameOrRingIdAtProcessModule(
+                            substrateName,
+                            backupRingId,
+                            out substrate,
+                            out description))
+                        {
+                            WriteLog(description ?? "Cannot find substrate by name or key");
+                            scenarioPermission = false;
+                        }
+                        #endregion </Find Substrate>
+
+                        // 아래는 로봇에서 발생하기 때문에 제거한다.
+                        //string lotId = substrate.LotId;
+                        //string ringId = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
+                        //Dictionary<string, string> scenarioParam = null;
+                        //if (scenarioPermission &&
+                        //    false == ScenarioParameterBuilder.MakeScenarioParamToScrapInfo(
+                        //        false,
+                        //        lotId,
+                        //        ringId,
+                        //        scrapQtyString, 
+                        //        scrapData, 
+                        //        userId, 
+                        //        out scenarioParam) ||
+                        //        scenarioParam == null)
+                        //{
+                        //    scenarioPermission = false;
+                        //}
+
+                        if (resultFromClient.Equals(EN_MESSAGE_RESULT.OK.ToString()))
+                            scenarioPermission = true;
+                        else
+                            scenarioPermission = false;
+
+                        var currentScenario = EN_SCENARIO.SCENARIO_UPLOAD_BIN_SCRAP_INFO;
+                        if (IsScenarioRunning(currentScenario))
+                        {
+                            _functionsForPWA500.CreateScrapInfoForBin(scrapData, scrapQtyString, userId);
+
+                            ScenarioList[currentScenario].UpdatePermission(scenarioPermission);
+                            return true;
+                        }
+
+                        //EnqueueScenario(
+                        //    EN_SCENARIO.SCENARIO_SCRAP_BIN_CHIP,
+                        //    scenarioParam, null);
+
+                        return false;
+                    }
+
                 case MessagesToReceive.ResponseAssignLotId:
                     {
                         return true;
@@ -3888,7 +4172,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         if (false == messagePairs.TryGetValue(UploadCoreOrBinFileKeys.KeyMapData, out string mapData))
                             return false;
 
-                        _functionsForPWA500.MakeBinDataToUpload(nameOfEq, substrateName, ringId, chipQty, waferAngle, countRow, countCol, nullBinCode, mapData, pmsBody, "AUTO", true);
+                        _functionsForPWA500.CreateBinDataToUpload(nameOfEq, substrateName, ringId, chipQty, waferAngle, countRow, countCol, nullBinCode, mapData, pmsBody, "AUTO", true);
 
 
                         if (IsScenarioRunning(EN_SCENARIO.SCENARIO_REQ_UPLOAD_BINFILE))
@@ -3923,6 +4207,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                             WriteLog("Invalid Location Name");
                             return false;
                         }
+
                         return UpdateVariablesForMaterialMovementInProcessModule(locationName, false);
                         #endregion
                     }
@@ -3944,6 +4229,8 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                             return false;
 
                         EnqueueScenario(EN_SCENARIO.SCENARIO_PICK_UP_END, _finishPickingParams);
+
+                        return true;
                         #endregion
                     }
                     break;
@@ -3964,7 +4251,23 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                             return false;
 
                         EnqueueScenario(EN_SCENARIO.SCENARIO_PLACE_END, _finishPlacingParams);
+
+                        return true;
                         #endregion
+                    }
+                    break;
+                case MessagesToReceive.RequestUploadPBIData:
+                    {
+                        useLogging = false;
+
+                        if (false == TryApplyPbiWorkResultFromPM(messagePairs, _pbiWorkResultValues))
+                        {
+                            return false;
+                        }
+
+                        EnqueueScenario(EN_SCENARIO.SCENARIO_UPLOAD_WORK_RESULT, CreatePbiWorkResultParamSnapshot());
+                        
+                        return true;
                     }
                     break;
 
@@ -3973,6 +4276,69 @@ namespace FrameOfSystem3.SECSGEM.Scenario
             }
             return false;
         }
+        private Dictionary<string, string> CreatePbiWorkResultParamSnapshot()
+        {
+            var result = new Dictionary<string, string>(
+                PbiWorkResultKeys.Length,
+                StringComparer.Ordinal);
+
+            for (int i = 0; i < PbiWorkResultKeys.Length; ++i)
+            {
+                result.Add(PbiWorkResultKeys[i], _pbiWorkResultValues[i]);
+            }
+
+            return result;
+        }
+        private static bool TryApplyPbiWorkResultFromPM(
+            Dictionary<string, string> receivedMessage,
+            string[] targetValues)
+        {
+            if (receivedMessage == null)
+                return false;
+
+            if (targetValues == null)
+                return false;
+
+            foreach (KeyValuePair<string, string> item in receivedMessage)
+            {
+                int index;
+                if (PbiWorkResultIndexByKey.TryGetValue(item.Key, out index))
+                {
+                    targetValues[index] = item.Value ?? string.Empty;
+                }
+            }
+
+            return true;
+        }
+        private static Dictionary<string, int> CreatePbiWorkResultIndexByKey()
+        {
+            var result = new Dictionary<string, int>(
+                PbiWorkResultKeys.Length,
+                StringComparer.Ordinal);
+
+            for (int i = 0; i < PbiWorkResultKeys.Length; ++i)
+            {
+                result.Add(PbiWorkResultKeys[i], i);
+            }
+
+            return result;
+        }
+
+        private void InitWorkResultData()
+        {
+            ResetPbiWorkResultValues();
+        }
+
+        private void ResetPbiWorkResultValues()
+        {
+            Array.Copy(
+                PbiWorkResultDefaultValues,
+                0,
+                _pbiWorkResultValues,
+                0,
+                PbiWorkResultDefaultValues.Length);
+        }
+
         private bool UpdateVariablesForMaterialMovementInProcessModule(string locationName, bool isStarted)
         {
             if (false == Enum.TryParse(locationName, out MaterialMovingLocationsAtProcessModule loc))
@@ -4230,6 +4596,51 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
             return false;
         }
+        private bool TryParseScrapCoreInfos(
+            Dictionary<string, string> param,
+            string scrapInfo,
+            out List<ScrapCoreInfo> scrapCoreInfos)
+        {
+            scrapCoreInfos = new List<ScrapCoreInfo>();
+
+            if (string.IsNullOrWhiteSpace(scrapInfo))
+                return false;
+
+            var scrapDataList = scrapInfo.Split(',');
+
+            foreach (var item in scrapDataList)
+            {
+                var data = item.Split(':');
+
+                if (data.Length != 2)
+                    continue;
+
+                var info = data[0].Trim();
+                var qty = data[1].Trim();
+
+                if (string.IsNullOrWhiteSpace(info) ||
+                    string.IsNullOrWhiteSpace(qty))
+                    continue;
+
+                scrapCoreInfos.Add(new ScrapCoreInfo(info, qty));
+            }
+
+            if (scrapCoreInfos.Count > 0)
+                return true;
+
+            if (scrapInfo.IndexOf(',') >= 0 || scrapInfo.IndexOf(':') >= 0)
+                return false;
+
+            if (false == param.TryGetValue(ScrapInfoKeys.KeyParamScrapQty, out var scrapQty))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(scrapQty))
+                return false;
+
+            scrapCoreInfos.Add(new ScrapCoreInfo(scrapInfo.Trim(), scrapQty.Trim()));
+
+            return true;
+        }
         private bool ExecuteToSendSimpleResultToClient(EN_MESSAGE_RESULT result, string messageNameToSend, string nameOfEq, string description = "")
         {
             if (messageNameToSend == null || string.IsNullOrEmpty(messageNameToSend))
@@ -4275,7 +4686,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //        [AssignSubstrateLotIdKeys.KeyParamLotId] = substrate.LotId,
         //        [AssignSubstrateLotIdKeys.KeyParamWaferId] = substrateId,
         //        [AssignSubstrateLotIdKeys.KeyParamPartId] = substrate.GetAttribute(PWA500BINSubstrateAttributes.PartId),
-        //        [AssignSubstrateLotIdKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+        //        [AssignSubstrateLotIdKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
         //        [AssignSubstrateLotIdKeys.KeyParamSlotId] = (substrate.SourceSlot).ToString(),
         //        [AssignSubstrateLotIdKeys.KeyParamOperatorId] = userId
         //    };
@@ -4618,7 +5029,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 string carrierId = _carrierServer.GetCarrierId(portId);
                 string lotId = substrate.LotId;
                 string partId = substrate.GetAttribute(PWA500SubstrateAttributes.PartId);
-                string recipeId = _functionsForPWA500.GetRecipeId();
+                string recipeId = EquipmentInfo.GetRecipeId();
 
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
@@ -4670,7 +5081,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         [RequestDownloadMapFileKeys.KeyParamPortId] = string.Empty,
                         [RequestDownloadMapFileKeys.KeyParamLotId] = string.Empty,
                         [RequestDownloadMapFileKeys.KeyParamPartId] = string.Empty,
-                        [RequestDownloadMapFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                        [RequestDownloadMapFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                         [RequestDownloadMapFileKeys.KeyParamOperatorId] = userId,
                         [RequestDownloadMapFileKeys.KeyParamWaferId] = substrateId,
                         [RequestDownloadMapFileKeys.KeyParamAngle] = waferAngle.ToString(),
@@ -4722,7 +5133,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //    string lotId = substrate.LotId;
         //    string partId = substrate.GetAttribute(PWA500BINSubstrateAttributes.PartId);
         //    string stepId = substrate.GetAttribute(PWA500BINSubstrateAttributes.StepSeq);
-        //    string recipeId = _functionsForPWA500.GetRecipeId();
+        //    string recipeId = EquipmentInfo.GetRecipeId();
         //    int portId;
         //    if (false == isCore)
         //    {
@@ -4764,7 +5175,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         //    Dictionary<string, string> scenarioParams = new Dictionary<string, string>();
         //    scenarioParams[TrackInOrOut.KeyParamCarrierId] = carrierId;
-        //    scenarioParams[TrackInOrOut.KeyParamPortId] = _functionsForPWA500.GetPortName(portId);
+        //    scenarioParams[TrackInOrOut.KeyParamPortId] = EquipmentInfo.GetPortName(portId);
         //    scenarioParams[TrackInOrOut.KeyParamLotId] = lotId;
         //    scenarioParams[TrackInOrOut.KeyParamPartId] = partId;
         //    scenarioParams[TrackInOrOut.KeyParamStepSeq] = stepId;
@@ -4781,9 +5192,20 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //    return true;
         //}
 
-        private bool ExecuteScenarioToWorkEnd(string nameOfEq, string substrateId, string ringId,
-            int chipQty, double angle, int countRow, int countCol, string nullBinCode, string mapData,
-            string userId, bool isCore, bool useEventHandling)
+        private bool ExecuteScenarioToWorkEnd(
+            string nameOfEq, 
+            string substrateId, 
+            string ringId,
+            int chipQty, 
+            double angle, 
+            int countRow, 
+            int countCol, 
+            string nullBinCode, 
+            string mapData,
+            string userId,
+            string scrapInfo,
+            string scrapQty,            
+            bool useEventHandling)
         {
             if (_functionsForPWA500.FindSubstrateByNameOrRingIdAtProcessModule(substrateId, ringId, out var substrate, out _))
             {
@@ -4792,44 +5214,29 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                 EN_SCENARIO scenario;
                 int portId, slot;
                 string partId = substrate.GetAttribute(PWA500SubstrateAttributes.PartId);
-                string recipeId = _functionsForPWA500.GetRecipeId();
+                string recipeId = EquipmentInfo.GetRecipeId();
 
-                Dictionary<string, string> additionalParams = null;
-                if (false == isCore)
-                {
-                    portId = substrate.DestinationPortId;
-                    slot = substrate.DestinationSlot;
-                    scenario = EN_SCENARIO.SCENARIO_BIN_WORK_END;
-
-                    additionalParams = new Dictionary<string, string>
-                    {
-                        [AdditionalParamKeys.KeySubstrateId] = substrateId,
-                        [AdditionalParamKeys.KeyChipQty] = chipQty.ToString(),
-                        [AdditionalParamKeys.KeyUserId] = userId,
-                    };
-                }
-                else
-                {
-                    portId = substrate.SourcePortId;
-                    slot = substrate.SourceSlot;
-                    scenario = EN_SCENARIO.SCENARIO_WORK_END;
-                    additionalParams = new Dictionary<string, string>
-                    {
-                        [AdditionalParamKeys.KeyNameOfEq] = nameOfEq,
-                        [AdditionalParamKeys.KeySubstrateId] = substrateId,
-                        [AdditionalParamKeys.KeyChipQty] = chipQty.ToString(),
-                        [AdditionalParamKeys.KeyUserId] = userId,
-                    };
-                }
-
+                portId = substrate.SourcePortId;
+                slot = substrate.SourceSlot;
                 if (portId <= 0 || slot < 0)
                     return false;
+
+                scenario = EN_SCENARIO.SCENARIO_WORK_END;
+                var additionalParams = new Dictionary<string, string>
+                {
+                    [AdditionalParamKeys.KeyNameOfEq] = nameOfEq,
+                    [AdditionalParamKeys.KeySubstrateId] = substrateId,
+                    [AdditionalParamKeys.KeyChipQty] = chipQty.ToString(),
+                    [AdditionalParamKeys.KeyUserId] = userId,
+                    [ScrapInfoKeys.KeyScrapData] = scrapInfo,
+                    [ScrapInfoKeys.KeyScrapQty] = scrapQty,
+                };
 
                 string carrierId = _carrierServer.GetCarrierId(portId);
                 Dictionary<string, string> scenarioParams = new Dictionary<string, string>
                 {
                     [UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId,
-                    [UploadCoreOrBinFileKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+                    [UploadCoreOrBinFileKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
                     [UploadCoreOrBinFileKeys.KeyParamLotId] = lotId,
                     [UploadCoreOrBinFileKeys.KeyParamPartId] = partId,
                     [UploadCoreOrBinFileKeys.KeyParamRecipeId] = recipeId,
@@ -4878,7 +5285,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         [UploadCoreOrBinFileKeys.KeyParamPortId] = string.Empty,
                         [UploadCoreOrBinFileKeys.KeyParamLotId] = string.Empty,
                         [UploadCoreOrBinFileKeys.KeyParamPartId] = string.Empty,
-                        [UploadCoreOrBinFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+                        [UploadCoreOrBinFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
                         [UploadCoreOrBinFileKeys.KeyParamOperatorId] = userId,
                         [UploadCoreOrBinFileKeys.KeyChipQty] = chipQty.ToString(),
 
@@ -4908,17 +5315,9 @@ namespace FrameOfSystem3.SECSGEM.Scenario
                         [AdditionalParamKeys.KeyUserId] = userId,
                     };
 
-                    if (isCore)
-                    {
-                        EnqueueScenario(EN_SCENARIO.SCENARIO_WORK_END, scenarioParams, additionalParams);
-                    }
-                    else
-                    {
-                        EnqueueScenario(EN_SCENARIO.SCENARIO_BIN_WORK_END, scenarioParams, additionalParams);
-                    }
+                    EnqueueScenario(EN_SCENARIO.SCENARIO_WORK_END, scenarioParams, additionalParams);
+                    
                     return true;
-
-                    // 2024.08.18 : [END]
                 }
             }
 
@@ -4930,7 +5329,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //    string pmsFileBody, string userId, bool useEventHandling)
         //{
         //    EN_SCENARIO scenario = EN_SCENARIO.SCENARIO_BIN_DATA_UPLOAD;
-        //    string recipeId = _functionsForPWA500.GetRecipeId();
+        //    string recipeId = EquipmentInfo.GetRecipeId();
 
         //    if (_functionsForPWA500.GetSubstrateByName(substrateId, out var substrate) ||
         //        _functionsForPWA500.GetSubstrateByName(ringId, out substrate))
@@ -4946,7 +5345,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         //        string fileName = _functionsForPWA500.GetPMSFileName(lotId, substrateId);
         //        string fullPath = string.Empty;
-        //        if (false == _functionsForPWA500.MakePMSFile(lotId, substrateId, fileName, pmsFileBody, ref fullPath))
+        //        if (false == ScenarioParameterBuilder.MakePMSFile(lotId, substrateId, fileName, pmsFileBody, ref fullPath))
         //            return false;
 
         //        additionalParams = new Dictionary<string, string>
@@ -4963,7 +5362,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //        Dictionary<string, string> scenarioParams = new Dictionary<string, string>
         //        {
         //            [UploadCoreOrBinFileKeys.KeyParamCarrierId] = carrierId,
-        //            [UploadCoreOrBinFileKeys.KeyParamPortId] = _functionsForPWA500.GetPortName(portId),
+        //            [UploadCoreOrBinFileKeys.KeyParamPortId] = EquipmentInfo.GetPortName(portId),
         //            [UploadCoreOrBinFileKeys.KeyParamLotId] = lotId,
         //            [UploadCoreOrBinFileKeys.KeyParamPartId] = partId,
         //            [UploadCoreOrBinFileKeys.KeyParamRecipeId] = recipeId,
@@ -5010,7 +5409,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //                [UploadCoreOrBinFileKeys.KeyParamPortId] = string.Empty,
         //                [UploadCoreOrBinFileKeys.KeyParamLotId] = string.Empty,
         //                [UploadCoreOrBinFileKeys.KeyParamPartId] = string.Empty,
-        //                [UploadCoreOrBinFileKeys.KeyParamRecipeId] = _functionsForPWA500.GetRecipeId(),
+        //                [UploadCoreOrBinFileKeys.KeyParamRecipeId] = EquipmentInfo.GetRecipeId(),
 
         //                [UploadCoreOrBinFileKeys.KeyParamOperatorId] = userId,
         //                [UploadCoreOrBinFileKeys.KeyChipQty] = chipQty.ToString(),

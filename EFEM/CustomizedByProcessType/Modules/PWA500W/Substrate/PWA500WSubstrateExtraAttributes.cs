@@ -39,7 +39,8 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 PWA500SubstrateAttributes.BinUnloadingStep,
                 PWA500SubstrateAttributes.CoreLotId,
                 PWA500SubstrateAttributes.CorePartId,
-                PWA500SubstrateAttributes.SplittedHistory
+                PWA500SubstrateAttributes.SplittedHistory,
+                PWA500SubstrateAttributes.ScrapInfo,
             };
         }
 
@@ -71,6 +72,7 @@ namespace EFEM.CustomizedByProcessType.PWA500W
             extra[PWA500SubstrateAttributes.CoreLotId] = string.Empty;
             extra[PWA500SubstrateAttributes.CorePartId] = string.Empty;
             extra[PWA500SubstrateAttributes.SplittedHistory] = string.Empty;
+            extra[PWA500SubstrateAttributes.ScrapInfo] = string.Empty;
         }
 
         public void InitializeToPublish(Dictionary<string, string> extra, IMaterial material)

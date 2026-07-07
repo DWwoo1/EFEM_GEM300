@@ -516,6 +516,13 @@ namespace EFEM.Modules
 
             return LoadPorts[lpIndex].HasActivePIOInputs;
         }
+        public bool IsLoadPortPrepared(int lpIndex)
+        {
+            if (false == LoadPorts.ContainsKey(lpIndex))
+                return false;
+
+            return LoadPorts[lpIndex].ReadyForWork;
+        }
         public bool IsLoadPortSimulationMode(int lpIndex)
         {
             if (false == LoadPorts.ContainsKey(lpIndex))

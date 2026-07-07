@@ -17,48 +17,6 @@ using XGEM300PRO.Library;
 
 namespace FrameOfSystem3.SECSGEM.SecsGemDll
 {
-    public sealed class EventInfo
-    {
-        public EventInfo() { }
-        public EventInfo(long eventId, long[] vids, string[] values, bool useCheckSecondaryAck)
-        {
-            EventId = eventId;
-            VariableIds = new long[vids.Length];
-            VariableValues = new string[values.Length];
-
-            Array.Copy(vids, VariableIds, vids.Length);
-            Array.Copy(values, VariableValues, values.Length);
-
-            UseCheckSecondaryAck = useCheckSecondaryAck;
-
-            SystemByte = -1;
-        }
-        public long EventId { get; set; }
-        public long[] VariableIds { get; set; }
-        public string[] VariableValues { get; set; }
-        public long SystemByte { get; set; }
-        public bool UseCheckSecondaryAck { get; set; }
-        public int GetVariableCount()
-        {
-            if (VariableIds == null || VariableValues == null)
-                return 0;
-
-            return VariableIds.Length;
-        }
-        public bool HasAnyLinkedVariable()
-        {
-            if (VariableIds == null ||
-               VariableValues == null)
-                return false;
-
-            if (VariableIds.Length == 0 ||
-                VariableValues.Length == 0)
-                return false;
-
-            return true;
-        }
-    }
-
     class XGemPro300 : SecsGem300
     {
         #region <Fields>
@@ -73,9 +31,10 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
         private const int DelayTimeForClosing = 1000;
 
         private const uint DelayTimeForUpdateVariables = 200;
-        private const uint TimeoutCheckEvents = 1000;
+        private const uint DelayTimeForCompleteAfterSetEvent = 50;
+        //private const uint TimeoutCheckEvents = 1000;
         private readonly TickCounter_.TickCounter _delayForEvent = new TickCounter_.TickCounter();
-        private readonly TickCounter_.TickCounter _timeCheckerEvent = new TickCounter_.TickCounter();
+        //private readonly TickCounter_.TickCounter _timeCheckerEvent = new TickCounter_.TickCounter();
         private ConcurrentQueue<EventInfo> _queuedEvents = new ConcurrentQueue<EventInfo>();
         private EventInfo _currentEventInfo = null;
         private int _stepForSendingEvent;
@@ -102,6 +61,50 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
         #endregion </Gem300>
 
         #endregion </Fields>
+
+        #region <Types>
+        private sealed class EventInfo
+        {
+            public EventInfo() { }
+            public EventInfo(long eventId, long[] vids, string[] values, bool useCheckSecondaryAck)
+            {
+                EventId = eventId;
+                VariableIds = new long[vids.Length];
+                VariableValues = new string[values.Length];
+
+                Array.Copy(vids, VariableIds, vids.Length);
+                Array.Copy(values, VariableValues, values.Length);
+
+                UseCheckSecondaryAck = useCheckSecondaryAck;
+
+                SystemByte = -1;
+            }
+            public long EventId { get; set; }
+            public long[] VariableIds { get; set; }
+            public string[] VariableValues { get; set; }
+            public long SystemByte { get; set; }
+            public bool UseCheckSecondaryAck { get; set; }
+            public int GetVariableCount()
+            {
+                if (VariableIds == null || VariableValues == null)
+                    return 0;
+
+                return VariableIds.Length;
+            }
+            public bool HasAnyLinkedVariable()
+            {
+                if (VariableIds == null ||
+                   VariableValues == null)
+                    return false;
+
+                if (VariableIds.Length == 0 ||
+                    VariableValues.Length == 0)
+                    return false;
+
+                return true;
+            }
+        }
+        #endregion </Types>
 
         #region <Properties>
         internal override ICarrierManagementDriver CmsDriver
@@ -170,6 +173,8 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
         public override void Close()
         {
             if (_gemDriver == null) return;
+
+            Thread.Sleep(DelayTimeForClosing);
 
             long nResult = _gemDriver.Stop();
             if (0 != nResult)
@@ -1249,7 +1254,7 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
             #region Received Secs/Gem Messages
             _gemDriver.OnSECSMessageReceived += new OnSECSMessageReceived(OnSECSMessageReceived);
             _gemDriver.OnGEMReqRemoteCommand += new OnGEMReqRemoteCommand(OnGEMReqRemoteCommand);
-            _gemDriver.OnGEMSecondaryMsgReceived += new OnGEMSecondaryMsgReceived(OnGEMSecondaryMsgReceived);
+            //_gemDriver.OnGEMSecondaryMsgReceived += new OnGEMSecondaryMsgReceived(OnGEMSecondaryMsgReceived);
             _gemDriver.OnGEMReportedEvent2 += new OnGEMReportedEvent2(OnGEMReportedEvent);
             #endregion
 
@@ -2356,19 +2361,6 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
             {
                 case 0:
                     {
-                        //EventInfo cur;
-                        //lock (_eventLock) 
-                        //{
-                        //    cur = _currentEventInfo; 
-                        //}
-                        //if (cur == null)
-                        //    return true;
-
-                        //_gemDriver.GEMSetVariable(
-                        //    cur.GetVariableCount(),
-                        //    cur.VariableIds,
-                        //    cur.VariableValues);
-
                         _delayForEvent.SetTickCount(DelayTimeForUpdateVariables);
                         _stepForSendingEvent = 1;
                         break;
@@ -2376,8 +2368,7 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
 
                 case 1:
                     {
-                        // Variable Update Delay : 200 ms 대기
-                        if (false == _delayForEvent.IsTickOver(true)) 
+                        if (false == _delayForEvent.IsTickOver(true))
                             break;
 
                         EventInfo cur;
@@ -2385,132 +2376,214 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
                         {
                             cur = _currentEventInfo;
                         }
+
                         if (cur == null)
                             return true;
 
-                        _gemDriver.GEMSetEventEx(cur.EventId,
+                        long result = _gemDriver.GEMSetEventEx(
+                            cur.EventId,
                             cur.GetVariableCount(),
                             cur.VariableIds,
                             cur.VariableValues);
 
-                        // 아래 구문으로 인해 체크하지 않는데 실제로는 S6F12가 오는데 끝나버려서 경고성로그가 계속 남게 된다.
-                        // 따라서 지워버리고 Ack를 체크하지 않는 옵션은 별도의 기능을 추가해야할 듯 하다.
-                        // ACK를 체크하지 않는 이벤트는
-                        // 실제 전송(GEMSetEventEx) 시점을 완료로 본다.
-                        //if (false == cur.UseCheckSecondaryAck)
-                        //{
-                        //    _eventToSend[cur.EventId] = true;
-                        //    _stepForSendingEvent = 0;
-                            
-                        //    return true;
-                        //}
+                        if (result != 0)
+                        {
+                            WriteLog(string.Format(
+                                "[EQ ==> XGEM] GEMSetEventEx Failed. CEID:{0}, Result:{1}",
+                                cur.EventId,
+                                result));
+                        }
 
-                        _timeCheckerEvent.SetTickCount(TimeoutCheckEvents);
-                        _stepForSendingEvent = 2; // SetEvent 후 콜백 대기
+                        _delayForEvent.SetTickCount(DelayTimeForCompleteAfterSetEvent);
+                        _stepForSendingEvent = 2;
                         break;
                     }
 
                 case 2:
                     {
-                        // 최대 1초간 타입아웃 후 강제 완료 처리(실제 전송 이후 타임아웃 체크)
-                        if (_timeCheckerEvent.IsTickOver(false))
-                        {
-                            long ceid = -1;
-                            lock (_eventLock)
-                            {
-                                if (_currentEventInfo != null)
-                                    ceid = _currentEventInfo.EventId;
+                        if (false == _delayForEvent.IsTickOver(true))
+                            break;
 
-                            }
-
-                            // timeout이어도 외부에서는 done=true로 본다.
-                            if (ceid > 0)
-                            {
-                                _eventToSend[ceid] = true;
-                            }
-
-                            WriteLog($"[Timeout] Event wait exceeded (CEID:{ceid})");
-                            _stepForSendingEvent = 0;
-                            return true;
-                        }
-
-                        // 완료 조건: 콜백에서 _currentEventInfo가 null로 해제됨
-                        bool done;
+                        EventInfo cur;
                         lock (_eventLock)
                         {
-                            done = (_currentEventInfo == null);
+                            cur = _currentEventInfo;
                         }
 
-                        if (done)
+                        if (cur != null)
                         {
-                            _stepForSendingEvent = 0;
-                            return true;
+                            _eventToSend[cur.EventId] = true;
                         }
 
-                        //if (_currentEventInfo == null)
-                        //{
-                        //    _stepForSendingEvent = 0;
-                        //    return true; // 하나 완료
-                        //}
-                        break;
+                        _stepForSendingEvent = 0;
+                        return true;
                     }
             }
 
             return false;
         }
-        private void OnGEMSecondaryMsgReceived(long nS, long nF, long nSysbyte, string sParam1, string sParam2, string sParam3)
-        {
-            long eventId = -1;
-            bool matched = false;
-            bool buffered = false;
-            bool noInflight = false;
-            bool useCheckSecondaryAck = false;
+        //private bool ExecuteEventStep()
+        //{
+        //    switch (_stepForSendingEvent)
+        //    {
+        //        case 0:
+        //            {
+        //                //EventInfo cur;
+        //                //lock (_eventLock) 
+        //                //{
+        //                //    cur = _currentEventInfo; 
+        //                //}
+        //                //if (cur == null)
+        //                //    return true;
 
-            lock (_eventLock)
-            {
-                var cur = _currentEventInfo;
-                if (cur == null)
-                {
-                    noInflight = true; // (원샷 완료 후 지각 ACK일 수 있음)
-                }
-                else if (cur.SystemByte < 0)
-                {
-                    // Reported 전에 Secondary가 먼저 왔으면 sysbyte들을 임시 보관
-                    _earlySecondarySysbytes.Add(nSysbyte);
-                    buffered = true;
-                }
-                else if (cur.SystemByte == nSysbyte)
-                {
-                    // 정상 매칭
-                    eventId = cur.EventId;
-                    useCheckSecondaryAck = cur.UseCheckSecondaryAck;
-                    matched = true;
-                    InitCurrentEventInfo();
-                }
-            }
+        //                //_gemDriver.GEMSetVariable(
+        //                //    cur.GetVariableCount(),
+        //                //    cur.VariableIds,
+        //                //    cur.VariableValues);
 
-            if (matched)
-            {
-                _eventToSend[eventId] = true;
+        //                _delayForEvent.SetTickCount(DelayTimeForUpdateVariables);
+        //                _stepForSendingEvent = 1;
+        //                break;
+        //            }
 
-                if (useCheckSecondaryAck)
-                {
-                    WriteLog($"[XGEM ==> EQ] S6F12 : {eventId}, SystemByte : 0x{nSysbyte.ToString("X")}");
-                }
-            }
-            else if (buffered)
-            {
-                WriteLog($"[Info] Early S6F12 buffered (SystemByte : 0x{nSysbyte.ToString("X")}).");
-            }
-            else if (noInflight)
-            {
-                WriteLog("[Info] S6F12 with no inflight (likely late ACK of one-shot).");
-            }
-            else
-            {
-                WriteLog($"[Info] S6F12 received (SystemByte : 0x{nSysbyte.ToString("X")}), waiting for Reported.");
-            }
-        }
+        //        case 1:
+        //            {
+        //                // Variable Update Delay : 200 ms 대기
+        //                if (false == _delayForEvent.IsTickOver(true)) 
+        //                    break;
+
+        //                EventInfo cur;
+        //                lock (_eventLock)
+        //                {
+        //                    cur = _currentEventInfo;
+        //                }
+        //                if (cur == null)
+        //                    return true;
+
+        //                _gemDriver.GEMSetEventEx(cur.EventId,
+        //                    cur.GetVariableCount(),
+        //                    cur.VariableIds,
+        //                    cur.VariableValues);
+
+        //                // 아래 구문으로 인해 체크하지 않는데 실제로는 S6F12가 오는데 끝나버려서 경고성로그가 계속 남게 된다.
+        //                // 따라서 지워버리고 Ack를 체크하지 않는 옵션은 별도의 기능을 추가해야할 듯 하다.
+        //                // ACK를 체크하지 않는 이벤트는
+        //                // 실제 전송(GEMSetEventEx) 시점을 완료로 본다.
+        //                //if (false == cur.UseCheckSecondaryAck)
+        //                //{
+        //                //    _eventToSend[cur.EventId] = true;
+        //                //    _stepForSendingEvent = 0;
+
+        //                //    return true;
+        //                //}
+
+        //                _timeCheckerEvent.SetTickCount(TimeoutCheckEvents);
+        //                _stepForSendingEvent = 2; // SetEvent 후 콜백 대기
+        //                break;
+        //            }
+
+        //        case 2:
+        //            {
+        //                // 최대 1초간 타입아웃 후 강제 완료 처리(실제 전송 이후 타임아웃 체크)
+        //                if (_timeCheckerEvent.IsTickOver(false))
+        //                {
+        //                    long ceid = -1;
+        //                    lock (_eventLock)
+        //                    {
+        //                        if (_currentEventInfo != null)
+        //                            ceid = _currentEventInfo.EventId;
+
+        //                    }
+
+        //                    // timeout이어도 외부에서는 done=true로 본다.
+        //                    if (ceid > 0)
+        //                    {
+        //                        _eventToSend[ceid] = true;
+        //                    }
+
+        //                    WriteLog($"[Timeout] Event wait exceeded (CEID:{ceid})");
+        //                    _stepForSendingEvent = 0;
+        //                    return true;
+        //                }
+
+        //                // 완료 조건: 콜백에서 _currentEventInfo가 null로 해제됨
+        //                bool done;
+        //                lock (_eventLock)
+        //                {
+        //                    done = (_currentEventInfo == null);
+        //                }
+
+        //                if (done)
+        //                {
+        //                    _stepForSendingEvent = 0;
+        //                    return true;
+        //                }
+
+        //                //if (_currentEventInfo == null)
+        //                //{
+        //                //    _stepForSendingEvent = 0;
+        //                //    return true; // 하나 완료
+        //                //}
+        //                break;
+        //            }
+        //    }
+
+        //    return false;
+        //}
+        
+        //private void OnGEMSecondaryMsgReceived(long nS, long nF, long nSysbyte, string sParam1, string sParam2, string sParam3)
+        //{
+        //    long eventId = -1;
+        //    bool matched = false;
+        //    bool buffered = false;
+        //    bool noInflight = false;
+        //    bool useCheckSecondaryAck = false;
+
+        //    lock (_eventLock)
+        //    {
+        //        var cur = _currentEventInfo;
+        //        if (cur == null)
+        //        {
+        //            noInflight = true; // (원샷 완료 후 지각 ACK일 수 있음)
+        //        }
+        //        else if (cur.SystemByte < 0)
+        //        {
+        //            // Reported 전에 Secondary가 먼저 왔으면 sysbyte들을 임시 보관
+        //            _earlySecondarySysbytes.Add(nSysbyte);
+        //            buffered = true;
+        //        }
+        //        else if (cur.SystemByte == nSysbyte)
+        //        {
+        //            // 정상 매칭
+        //            eventId = cur.EventId;
+        //            useCheckSecondaryAck = cur.UseCheckSecondaryAck;
+        //            matched = true;
+        //            InitCurrentEventInfo();
+        //        }
+        //    }
+
+        //    if (matched)
+        //    {
+        //        _eventToSend[eventId] = true;
+
+        //        if (useCheckSecondaryAck)
+        //        {
+        //            WriteLog($"[XGEM ==> EQ] S6F12 : {eventId}, SystemByte : 0x{nSysbyte.ToString("X")}");
+        //        }
+        //    }
+        //    else if (buffered)
+        //    {
+        //        WriteLog($"[Info] Early S6F12 buffered (SystemByte : 0x{nSysbyte.ToString("X")}).");
+        //    }
+        //    else if (noInflight)
+        //    {
+        //        WriteLog("[Info] S6F12 with no inflight (likely late ACK of one-shot).");
+        //    }
+        //    else
+        //    {
+        //        WriteLog($"[Info] S6F12 received (SystemByte : 0x{nSysbyte.ToString("X")}), waiting for Reported.");
+        //    }
+        //}
 
         //private void OnGEMSecondaryMsgReceived(long nS, long nF, long nSysbyte, string sParam1, string sParam2, string sParam3)
         //{
@@ -2530,9 +2603,16 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
         private void OnGEMReportedEvent(long eventId, long systemByte)
         {
             EventInfo cur;
-            lock (_eventLock) { cur = _currentEventInfo; }
+            lock (_eventLock) 
+            {
+                cur = _currentEventInfo; 
+            }
 
-            if (cur == null) { WriteLog("[Warn] ReportedEvent with no inflight."); return; }
+            if (cur == null) 
+            {
+                WriteLog("[Warn] ReportedEvent with no inflight."); 
+                return; 
+            }
             if (cur.EventId != eventId)
             {
                 WriteLog($"[XGEM ==> EQ] [Warn] ReportedEvent mismatched. inflight:{cur.EventId}, reported:{eventId}");
@@ -2545,11 +2625,13 @@ namespace FrameOfSystem3.SECSGEM.SecsGemDll
             if (enabled.Length < 1 || enabled[0] == 0 || result < 0)
             {
                 _eventToSend[eventId] = true;
+                
                 WriteLog($"[Warn] Event not enabled : {eventId}");
                 lock (_eventLock)
                 {
                     InitCurrentEventInfo(true);
                 }
+
                 return;
             }
 

@@ -534,7 +534,6 @@ namespace EFEM.CustomizedByProcessType.PWA500W
                 controlJob,
                 portId);
         }
-
         private static bool HasMaterialOutputSpecification(ControlJob controlJob)
         {
             if (controlJob == null)
