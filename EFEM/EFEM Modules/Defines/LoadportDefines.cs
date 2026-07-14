@@ -44,7 +44,7 @@ namespace EFEM.Defines.LoadPort
 
     public enum CarrierAccessStates
     {
-        //Unknown,
+        Unknown,
         NotAccessed,
         InAccessed,
         CarrierCompleted,

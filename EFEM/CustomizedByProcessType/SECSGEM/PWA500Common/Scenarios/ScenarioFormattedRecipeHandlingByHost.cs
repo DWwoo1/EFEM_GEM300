@@ -9,19 +9,26 @@ using FrameOfSystem3.SECSGEM.Scenario;
 
 namespace EFEM.CustomizedByProcessType.PWA500Common
 {
-    public class ScenarioFormattedRecipeUploadParamValues : ScenarioParamValues
+    public class ScenarioFormattedRecipeHandlingByHostParamValues : ScenarioParamValues
     {
-        public ScenarioFormattedRecipeUploadParamValues(List<string> values) : base(values)
+        public ScenarioFormattedRecipeHandlingByHostParamValues(bool useCommunicationToPM, string recipeId, string recipeBody)
         {
-            //UseEventHandling = useEventHandling;
+            UseCommunicationToPM = useCommunicationToPM;
+            RecipeID = recipeId;
+            RecipeBody = recipeBody;
         }
-        //public readonly bool UseEventHandling;
+
+        #region <Properties>
+        public bool UseCommunicationToPM { get; private set; }
+        public string RecipeID { get; private set; }
+        public string RecipeBody { get; private set; }
+        #endregion </Properties>
     }
 
-    public class ScenarioFormattedRecipeUpload : AutoScenarioBase
+    public class ScenarioFormattedRecipeHandlingByHost : AutoScenarioBase
     {
         #region <Constructor>
-        public ScenarioFormattedRecipeUpload(string name, long streamToSend, long funcToSend, uint timeOut = 10000)
+        public ScenarioFormattedRecipeHandlingByHost(string name, long streamToSend, long funcToSend, bool isUpload, uint timeOut = 10000)
             : base(name, timeOut)
         {
             _messageFormatToSend = new List<SemiObject>();
@@ -32,13 +39,12 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             StreamToSend = streamToSend;
             FunctionToSend = funcToSend;
 
-            //_eventId = eventId;
-            //_variables = variables;
+            HandlingType = isUpload ? HandlingTypes .Upload : HandlingTypes.Download;
         }
         #endregion </Constructor>
 
         #region <Fields>
-        ScenarioFormattedRecipeUploadParamValues _paramValue = null;
+        ScenarioFormattedRecipeHandlingByHostParamValues _paramValue = null;
         private List<SemiObject> _messageFormatToSend = null;
 
         private const string ProcessProgramFieldName = "PPID";
@@ -53,15 +59,21 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         private const int FieldIndexCCODE = 6;
         private const int FieldIndexPPARM = 8;
 
+        private readonly HandlingTypes HandlingType;
         #endregion </Fields>
 
         #region <Types>
         private enum EN_SCENARIO_SEQ
         {
             INIT = 0,
-            SEND_SECSMESSAGE_MAPDATA_REQUEST = 100,
+            SEND_SECSMESSAGE = 100,
             WAIT_FOR_PERMISSION = 200,
             FINISH,
+        }
+        private enum HandlingTypes
+        {
+            Upload,
+            Download
         }
         #endregion </Types>
 
@@ -84,12 +96,12 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                         {
                             return ReturnScenarioResult(EN_SCENARIO_RESULT.ERROR);
                         }
-                        _seqNum = (int)EN_SCENARIO_SEQ.SEND_SECSMESSAGE_MAPDATA_REQUEST;
+                        _seqNum = (int)EN_SCENARIO_SEQ.SEND_SECSMESSAGE;
                         break;
                     }
-                case (int)EN_SCENARIO_SEQ.SEND_SECSMESSAGE_MAPDATA_REQUEST:
+                case (int)EN_SCENARIO_SEQ.SEND_SECSMESSAGE:
                     {
-                        if (false == SendSecsMessageReqRecipeDownload())
+                        if (false == SendSecsMessageRecipeDownload())
                         {
                             return ReturnScenarioResult(EN_SCENARIO_RESULT.TIMEOUT_ERROR);
                         }
@@ -99,6 +111,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                         }
                         SetTickCount(TimeOut);
                         _seqNum = (int)EN_SCENARIO_SEQ.WAIT_FOR_PERMISSION;
+                        break;
                         break;
                     }
                 case (int)EN_SCENARIO_SEQ.WAIT_FOR_PERMISSION:
@@ -119,7 +132,6 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                         }
                         break;
                     }
-
                 default:
                     return ReturnScenarioResult(EN_SCENARIO_RESULT.ERROR);
             }
@@ -128,7 +140,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         }
         public override void UpdateParamValues(ScenarioParamValues paramValues)
         {
-            _paramValue = paramValues as ScenarioFormattedRecipeUploadParamValues;
+            _paramValue = paramValues as ScenarioFormattedRecipeHandlingByHostParamValues;
         }
         public override bool UpdateReceiveMessage(List<SemiObject> listOfReceive)
         {
@@ -144,42 +156,25 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             if (!(ReceiveMessageFormat[3] is SemiObjectAscii softrev))
                 return false;
 
-
-            // CCODE와 PPARM 다수이므로 따로 뺀다.
-            //// CCODE - Command Code
-            //if (!(ReceiveMessageFormat[6] is SemiObjectAscii ccode))
-            //    return false;
-            //// PPARM - Process Parameter
-            //if (!(ReceiveMessageFormat[7] is SemiObjectAscii pparm))
-            //    return false;
-
-
-            SemiObjectList resultRecipe = ReceiveMessageFormat[FieldIndexListForRecipeWrapper] as SemiObjectList;
-            long listCount = resultRecipe.GetValue();
-
-            Dictionary<string, string> recipe = new Dictionary<string, string>();
-
-            for (int i = 0; i < (int)listCount; i++)
-            {
-                recipe.Add(ReceiveMessageFormat[FieldIndexCCODE + i].GetValueString(), ReceiveMessageFormat[FieldIndexCCODE + i + 2].GetValueString());
-            }
-
             Permission = EN_SCENARIO_PERMISSION_RESULT.OK;
             return true;
         }
 
-        private bool SendSecsMessageReqRecipeDownload()
+        private bool SendSecsMessageRecipeDownload()
         {
             if (_paramValue == null)
                 return false;
 
-            if (!(_paramValue is ScenarioFormattedRecipeUploadParamValues value))
+            if (!(_paramValue is ScenarioFormattedRecipeHandlingByHostParamValues value))
                 return false;
 
             _messageFormatToSend.Clear();
 
             _messageFormatToSend = new List<SemiObject>();
-            _messageFormatToSend.Add(new SemiObjectAscii(ProcessProgramFieldName, string.Empty));
+            _messageFormatToSend.Add(new SemiObjectList(4));
+            _messageFormatToSend.Add(new SemiObjectAscii(ProcessProgramFieldName, _paramValue.RecipeID));
+            _messageFormatToSend.Add(new SemiObjectAscii(ModelTypeFieldName, string.Empty));
+            _messageFormatToSend.Add(new SemiObjectAscii(SoftwareRevisionFieldName, string.Empty));
 
             Receiving = true;
             return true;
@@ -187,7 +182,13 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public override Dictionary<string, string> GetResultData()
         {
             Dictionary<string, string> resultData = new Dictionary<string, string>();
+            SemiObjectList resultRecipe = ReceiveMessageFormat[FieldIndexListForRecipeWrapper] as SemiObjectList;
+            long listCount = resultRecipe.GetValue();
 
+            for (int i = 0; i < (int)listCount; i++)
+            {
+                resultData.Add(ReceiveMessageFormat[FieldIndexCCODE + (i * 3)].GetValueString(), ReceiveMessageFormat[FieldIndexCCODE + (i * 3) + 2].GetValueString());
+            }
             return resultData;
         }
         #endregion </Methods>

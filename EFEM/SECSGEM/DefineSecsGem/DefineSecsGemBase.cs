@@ -519,6 +519,8 @@ namespace FrameOfSystem3.SECSGEM.DefineSecsGem
 
         SCENARIO_REQ_RECIPE_DOWNLOAD,
         SCENARIO_REQ_RECIPE_UPLOAD,
+        SCENARIO_RECIPE_DOWNLOAD_BY_HOST,               // 2026.07.09 dwlim [ADD] Host, PM 중 누가 요청했냐에 따라 처리순서 다름
+        SCENARIO_RECIPE_UPLOAD_BY_HOST,                 // 2026.07.09 dwlim [ADD] Host, PM 중 누가 요청했냐에 따라 처리순서 다름
 
         SCENARIO_REQ_TRACK_IN,
         SCENARIO_REQ_CORE_WAFER_TRACK_OUT,

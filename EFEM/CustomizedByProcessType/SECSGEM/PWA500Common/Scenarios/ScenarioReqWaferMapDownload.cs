@@ -168,6 +168,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 return false;
 
             SemiObjectAscii resultAsciiObjectForXml = ReceiveMessageFormat[7] as SemiObjectAscii;
+			string[] xmlDatas = resultAsciiObjectForXml.GetValues();
             string xmlData = resultAsciiObjectForXml.GetValue();
             MapData mapdata = new MapData();
             MapDataControl xmlControl = new MapDataControl();

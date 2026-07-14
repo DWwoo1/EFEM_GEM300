@@ -413,6 +413,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
     {
         public static readonly string KeyRecipeId = "RecipeId";
         public static readonly string KeyRecipeBody = "RecipeBody";
+        public static readonly string KeyUseCommunicationToPM = "UseCommunicationToPM";
 
         public static readonly string KeyProcessProgramId = "PPID";
         public static readonly string KeyCommandCode = "CCODE";

@@ -400,8 +400,7 @@
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SeparatedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\PortRole\SharedBinAndEmptyPortProfile.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioBinWaferEndForGEM300.cs" />
-    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeDownloadRequest.cs" />
-    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeUpload.cs" />
+    <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioFormattedRecipeHandlingByHost.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqBinMapUploadGEM300.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapDownload.cs" />
     <Compile Include="CustomizedByProcessType\SECSGEM\PWA500Common\Scenarios\ScenarioReqWaferMapUpload.cs" />
