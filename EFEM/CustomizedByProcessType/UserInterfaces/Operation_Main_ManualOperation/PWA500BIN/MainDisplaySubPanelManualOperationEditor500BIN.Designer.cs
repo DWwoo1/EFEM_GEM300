@@ -841,9 +841,9 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
             this.btnCreate.UserHoverEmpahsize = true;
             this.btnCreate.UseSubFont = false;
             this.btnCreate.Click += new System.EventHandler(this.BtnEditClicked);
-            // 
+            //
             // tableLayoutPanel19
-            // 
+            //
             this.tableLayoutPanel19.ColumnCount = 2;
             this.tableLayoutPanel19.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel19.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));

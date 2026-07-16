@@ -84,7 +84,6 @@ namespace FrameOfSystem3.Task
         string _recipeId = string.Empty;
 
         private string _toWrite = string.Empty;
-        //private StepsBeforeSendingCarrier _currentStepBeforeSendingCarrier;
 
         private static FunctionsForPWA500W_NRD_300 _functionsForPWA500 = null;
 

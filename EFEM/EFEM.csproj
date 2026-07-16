@@ -467,65 +467,56 @@
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryRobotInfo.Designer.cs">
       <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\CarrierDetailView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\CarrierDetailView.Designer.cs">
+      <DependentUpon>CarrierDetailView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\FormProductionSummary.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.Designer.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\FormProductionSummary.Designer.cs">
       <DependentUpon>FormProductionSummary.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SafeMonthCalendar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SafeMonthCalendar.Designer.cs">
-      <DependentUpon>SafeMonthCalendar.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.Designer.cs">
-      <DependentUpon>SubViewOperationHistoryLotHistory500BIN.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.Designer.cs">
-      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.Designer.cs">
-      <DependentUpon>SubViewOperationHistoryCurruntWorking500BIN.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\FormSubstrateInspectionDetail.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.Designer.cs">
-      <DependentUpon>FormProductionSummary.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\MainDisplaySubPanelLotHistoryDisplayer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.Designer.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\MainDisplaySubPanelLotHistoryDisplayer.Designer.cs">
       <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SafeMonthCalendar.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SafeMonthCalendar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SafeMonthCalendar.Designer.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SafeMonthCalendar.Designer.cs">
       <DependentUpon>SafeMonthCalendar.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubstrateDetailView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.Designer.cs">
-      <DependentUpon>SubViewOperationHistoryCurruntWorking500W.cs</DependentUpon>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubstrateDetailView.Designer.cs">
+      <DependentUpon>SubstrateDetailView.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.cs">
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryCurrentWorking.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.Designer.cs">
-      <DependentUpon>SubViewOperationHistoryLotHistory500W.cs</DependentUpon>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryCurrentWorking.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryCurrentWorking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryDatabase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryDatabase.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryDatabase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryLotHistory.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryLotHistory.Designer.cs">
+      <DependentUpon>SubViewOperationHistoryLotHistory.cs</DependentUpon>
     </Compile>
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperation500BIN.cs">
       <SubType>UserControl</SubType>
@@ -545,6 +536,8 @@
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperationEditor500BIN.Designer.cs">
       <DependentUpon>MainDisplaySubPanelManualOperationEditor500BIN.cs</DependentUpon>
     </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\PWA500BINSubstrateFieldLayoutProvider.cs" />
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500Common\PWA500CarrierFieldLayoutProvider.cs" />
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperation500W.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -563,6 +556,7 @@
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\MainDisplaySubPanelManualOperationEditor500W.Designer.cs">
       <DependentUpon>MainDisplaySubPanelManualOperationEditor500W.cs</DependentUpon>
     </Compile>
+    <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500W\PWA500WSubstrateFieldLayoutProvider.cs" />
     <Compile Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Monitoring\PWA500BIN\MainMonitoringSubPanel500BINAnalogs.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -647,12 +641,28 @@
     <Compile Include="DynamicLink\NodeLink.cs" />
     <Compile Include="DynamicLink\PortLink.cs" />
     <Compile Include="CustomizedByProcessType\Modules\PWA500W\ActionScheduler\Robot\PWA500WRobotActionSchedulerGEM300.cs" />
+    <Compile Include="EFEM Modules\History\CompositeHistoryQuery.cs" />
+    <Compile Include="EFEM Modules\History\FileHistoryQuery.cs" />
+    <Compile Include="EFEM Modules\History\FileHistoryStore.cs" />
+    <Compile Include="EFEM Modules\History\HistoryConsistencyChecker.cs" />
+    <Compile Include="EFEM Modules\History\HistoryRecord.cs" />
+    <Compile Include="EFEM Modules\History\IHistoryQuery.cs" />
+    <Compile Include="EFEM Modules\History\IHistoryStore.cs" />
+    <Compile Include="EFEM Modules\History\LotHistoryEngine.cs" />
+    <Compile Include="EFEM Modules\History\ParallelHistoryStore.cs" />
+    <Compile Include="EFEM Modules\History\SqliteHistoryQuery.cs" />
+    <Compile Include="EFEM Modules\History\SqliteHistoryStore.cs" />
     <Compile Include="EFEM Modules\Jobs\Binding\IJobBindingTargetIndex.cs" />
     <Compile Include="EFEM Modules\Jobs\Completion\IJobCompletionEvaluator.cs" />
     <Compile Include="EFEM Modules\Jobs\Completion\JobCompletionEvaluator.cs" />
     <Compile Include="EFEM Modules\Jobs\Binding\InMemoryJobBindingTargetIndex.cs" />
     <Compile Include="EFEM Modules\Jobs\Binding\JobBindingTarget.cs" />
     <Compile Include="EFEM Modules\Jobs\Completion\JobCompletionService.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\EnumPersistence.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Common\LegacyRecoveryConverter.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Inspection\MaterialDatabaseQuery.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Inspection\MaterialDatabaseQueryProvider.cs" />
+    <Compile Include="EFEM Modules\MaterialTracking\Inspection\MaterialInspectionModels.cs" />
     <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\CarrierCompletionWriter.cs" />
     <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\DefaultCarrierCompletionCondition.cs" />
     <Compile Include="EFEM Modules\Modules\LoadPort\Scheduler\DefaultCarrierCompletionHandlingPolicy.cs" />
@@ -1298,18 +1308,22 @@
     <Compile Include="Views\Operation\Operation_Main_ManualOperation\LoadPort\MainDisplaySubPanelManualOperationLoadPort.Designer.cs">
       <DependentUpon>MainDisplaySubPanelManualOperationLoadPort.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.Designer.cs">
-      <DependentUpon>FormMaterialEdit.cs</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operation\Operation_Main.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Views\Operation\Operation_Main.Designer.cs">
       <DependentUpon>Operation_Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\CarrierFieldLayout.cs" />
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\CarrierFieldLayoutCommon.cs" />
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialAttributeEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialAttributeEdit.Designer.cs">
+      <DependentUpon>FormMaterialAttributeEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\SubstrateFieldLayout.cs" />
+    <Compile Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\SubstrateFieldLayoutCommon.cs" />
     <Compile Include="Views\Operation\Operation_RAMMetrics.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1520,29 +1534,26 @@
     <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_Display\PWA500W\SummaryRobotInfo.resx">
       <DependentUpon>SummaryRobotInfo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\FormProductionSummary.resx">
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\CarrierDetailView.resx">
+      <DependentUpon>CarrierDetailView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\FormProductionSummary.resx">
       <DependentUpon>FormProductionSummary.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryLotHistory500BIN.resx">
-      <DependentUpon>SubViewOperationHistoryLotHistory500BIN.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\MainDisplaySubPanelLotHistoryDisplayer.resx">
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\MainDisplaySubPanelLotHistoryDisplayer.resx">
       <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500BIN\SubViewOperationHistoryCurruntWorking500BIN.resx">
-      <DependentUpon>SubViewOperationHistoryCurruntWorking500BIN.cs</DependentUpon>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubstrateDetailView.resx">
+      <DependentUpon>SubstrateDetailView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\FormProductionSummary.resx">
-      <DependentUpon>FormProductionSummary.cs</DependentUpon>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryCurrentWorking.resx">
+      <DependentUpon>SubViewOperationHistoryCurrentWorking.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\MainDisplaySubPanelLotHistoryDisplayer.resx">
-      <DependentUpon>MainDisplaySubPanelLotHistoryDisplayer.cs</DependentUpon>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryDatabase.resx">
+      <DependentUpon>SubViewOperationHistoryDatabase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryCurruntWorking500W.resx">
-      <DependentUpon>SubViewOperationHistoryCurruntWorking500W.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500W\SubViewOperationHistoryLotHistory500W.resx">
-      <DependentUpon>SubViewOperationHistoryLotHistory500W.cs</DependentUpon>
+    <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_History\PWA500Common\SubViewOperationHistoryLotHistory.resx">
+      <DependentUpon>SubViewOperationHistoryLotHistory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CustomizedByProcessType\UserInterfaces\Operation_Main_ManualOperation\PWA500BIN\MainDisplaySubPanelManualOperation500BIN.resx">
       <DependentUpon>MainDisplaySubPanelManualOperation500BIN.cs</DependentUpon>
@@ -1816,11 +1827,11 @@
     <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\LoadPort\MainDisplaySubPanelManualOperationLoadPort.resx">
       <DependentUpon>MainDisplaySubPanelManualOperationLoadPort.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialEdit.resx">
-      <DependentUpon>FormMaterialEdit.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Views\Operation\Operation_Main.resx">
       <DependentUpon>Operation_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Operation\Operation_Main_ManualOperation\MaterialEdit\FormMaterialAttributeEdit.resx">
+      <DependentUpon>FormMaterialAttributeEdit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Operation\Operation_RAMMetrics.resx">
       <DependentUpon>Operation_RAMMetrics.cs</DependentUpon>

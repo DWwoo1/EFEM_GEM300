@@ -218,8 +218,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             //if (!(_receiveMessageFormat[13] is SemiObjectUInt2 processDies))
             //    return false;
             //_paramValue.WaferDataToHandling.CountOfProcessDies = processDies.GetValue();
-            if (false == xmlControl.GetDieCount(mapDataSubstrate, out int dieCount))
-                return false;
+            //if (false == xmlControl.GetDieCount(mapDataSubstrate, out int dieCount))
+            //    return false;
 
             // BCEQU
             //if (!(_receiveMessageFormat[14] is SemiObjectAscii bceQu))
@@ -243,7 +243,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             _paramValue.WaferDataToHandling.IndexOfRefY = /*refDevice_FDI.AttributeCoordinates.LogicalCoordinateY*/0;
             _paramValue.WaferDataToHandling.CountOfCol = mapDataLayout.AttributeDimension.LogicalCoordinateX;
             _paramValue.WaferDataToHandling.CountOfRow = mapDataLayout.AttributeDimension.LogicalCoordinateY;
-            _paramValue.WaferDataToHandling.CountOfProcessDies = dieCount;
+            _paramValue.WaferDataToHandling.CountOfProcessDies = /*dieCount*/0;
             _paramValue.WaferDataToHandling.MapData = binCodeMap;
             _paramValue.WaferDataToHandling.IndexOfStartingX = /*refDevice_First.AttributeCoordinates.LogicalCoordinateX*/0;
             _paramValue.WaferDataToHandling.IndexOfStartingX = /*refDevice_First.AttributeCoordinates.LogicalCoordinateY*/0;

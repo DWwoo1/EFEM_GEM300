@@ -128,6 +128,7 @@ WHERE UniqueKey = $key;
 ";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         if (await reader.ReadAsync().ConfigureAwait(false))
@@ -205,6 +206,7 @@ WHERE UniqueKey = $key;
                 ";
                     cmd.Parameters.Add("$loc", DbType.String).Value = locationName;
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
@@ -357,12 +359,13 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                         cmd.Parameters.Add("$recipeId", DbType.String).Value = dto.RecipeId;
                         cmd.Parameters.Add("$pjId", DbType.String).Value = dto.ProcessJobId;
                         cmd.Parameters.Add("$cjId", DbType.String).Value = dto.ControlJobId;
-                        cmd.Parameters.Add("$ts", DbType.Int32).Value = dto.TransportStatus;
-                        cmd.Parameters.Add("$ps", DbType.Int32).Value = dto.ProcessingStatus;
-                        cmd.Parameters.Add("$idRs", DbType.Int32).Value = dto.IdReadingStatus;
+                        cmd.Parameters.Add("$ts", DbType.String).Value = dto.TransportStatus.ToString();
+                        cmd.Parameters.Add("$ps", DbType.String).Value = dto.ProcessingStatus.ToString();
+                        cmd.Parameters.Add("$idRs", DbType.String).Value = dto.IdReadingStatus.ToString();
                         cmd.Parameters.Add("$dnp", DbType.Int32).Value = DbUtil.BoolToInt(dto.DoNotProcessFlag);
                         cmd.Parameters.Add("$usage", DbType.Int32).Value = DbUtil.BoolToInt(dto.Usage);
 
+                        MaterialDbContext.LogCommand(cmd);
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     }
 
@@ -390,6 +393,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                             }
                         }
 
+                        MaterialDbContext.LogCommand(cmd);
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     }
                 });
@@ -498,12 +502,13 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.Parameters.Add("$recipeId", DbType.String).Value = dto.RecipeId;
                     cmd.Parameters.Add("$pjId", DbType.String).Value = dto.ProcessJobId;
                     cmd.Parameters.Add("$cjId", DbType.String).Value = dto.ControlJobId;
-                    cmd.Parameters.Add("$ts", DbType.Int32).Value = dto.TransportStatus;
-                    cmd.Parameters.Add("$ps", DbType.Int32).Value = dto.ProcessingStatus;
-                    cmd.Parameters.Add("$idRs", DbType.Int32).Value = dto.IdReadingStatus;
+                    cmd.Parameters.Add("$ts", DbType.String).Value = dto.TransportStatus.ToString();
+                    cmd.Parameters.Add("$ps", DbType.String).Value = dto.ProcessingStatus.ToString();
+                    cmd.Parameters.Add("$idRs", DbType.String).Value = dto.IdReadingStatus.ToString();
                     cmd.Parameters.Add("$dnp", DbType.Int32).Value = DbUtil.BoolToInt(dto.DoNotProcessFlag);
                     cmd.Parameters.Add("$usage", DbType.Int32).Value = DbUtil.BoolToInt(dto.Usage);
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -530,6 +535,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                         }
                     }
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             });
@@ -728,6 +734,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.CommandText = "DELETE FROM Substrate WHERE UniqueKey = $key;";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             });
@@ -785,6 +792,7 @@ SELECT UniqueKey, Name, LocationId,
 FROM Substrate;
 ";
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
@@ -809,6 +817,7 @@ FROM Substrate;
                 {
                     cmd.CommandText = "SELECT 1 FROM Substrate WHERE UniqueKey = $key LIMIT 1;";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
+                    MaterialDbContext.LogCommand(cmd);
                     var r = cmd.ExecuteScalar();
 
                     return r != null;
@@ -858,9 +867,15 @@ FROM Substrate;
                 RecipeId = reader.IsDBNull(10) ? null : reader.GetString(10),
                 ProcessJobId = reader.IsDBNull(11) ? null : reader.GetString(11),
                 ControlJobId = reader.IsDBNull(12) ? null : reader.GetString(12),
-                TransportStatus = reader.IsDBNull(13) ? 0 : Convert.ToInt32(reader.GetValue(13)),
-                ProcessingStatus = reader.IsDBNull(14) ? 0 : Convert.ToInt32(reader.GetValue(14)),
-                IdReadingStatus = reader.IsDBNull(15) ? 0 : Convert.ToInt32(reader.GetValue(15)),
+                TransportStatus = reader.IsDBNull(13)
+                    ? EFEM.Defines.MaterialTracking.TransportStates.AtSource
+                    : EnumPersistence.ParseNameOrDefault(Convert.ToString(reader.GetValue(13)), EFEM.Defines.MaterialTracking.TransportStates.AtSource),
+                ProcessingStatus = reader.IsDBNull(14)
+                    ? EFEM.Defines.MaterialTracking.ProcessingStates.NeedsProcessing
+                    : EnumPersistence.ParseNameOrDefault(Convert.ToString(reader.GetValue(14)), EFEM.Defines.MaterialTracking.ProcessingStates.NeedsProcessing),
+                IdReadingStatus = reader.IsDBNull(15)
+                    ? EFEM.Defines.MaterialTracking.IdReadingStates.NotConfirmed
+                    : EnumPersistence.ParseNameOrDefault(Convert.ToString(reader.GetValue(15)), EFEM.Defines.MaterialTracking.IdReadingStates.NotConfirmed),
                 DoNotProcessFlag = DbUtil.IntToBool(reader.IsDBNull(16) ? 0L : Convert.ToInt64(reader.GetValue(16))),
                 Usage = DbUtil.IntToBool(reader.IsDBNull(17) ? 0L : Convert.ToInt64(reader.GetValue(17))),
                 Extra = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -878,6 +893,7 @@ FROM SubstrateExtra
 WHERE SubstrateKey = $key;
 ";
                 cmd.Parameters.Add("$key", DbType.String).Value = key;
+                MaterialDbContext.LogCommand(cmd);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())

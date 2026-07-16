@@ -26,7 +26,12 @@ namespace EFEM.MaterialTracking.LocationHistory.Storage
                 return new JsonSerializerSettings
                 {
                     Formatting = Formatting.None,
-                    NullValueHandling = NullValueHandling.Ignore
+                    NullValueHandling = NullValueHandling.Ignore,
+                    // 열거형(ModuleType 등)은 이름으로 저장. 정수 토큰은 조용히 해석하지 않는다.
+                    Converters = new List<JsonConverter>
+                    {
+                        new Newtonsoft.Json.Converters.StringEnumConverter { AllowIntegerValues = false }
+                    }
                 };
             }
             catch (Exception ex)

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 using TickCounter_;
 
+using Alarm_;
+using Define.DefineEnumProject.Task.LoadPort;
+
 using FrameOfSystem3.SECSGEM.Scenario;
 using FrameOfSystem3.SECSGEM;
 using FrameOfSystem3.SECSGEM.DefineSecsGem;
@@ -72,7 +75,6 @@ namespace FrameOfSystem3.Task
         string _recipeId = string.Empty;
 
         private string _toWrite = string.Empty;
-        //private StepsBeforeSendingCarrier _currentStepBeforeSendingCarrier;
 
         private static FunctionsForPWA500W_NRD _functionsForPWA500 = null;
 
@@ -310,6 +312,20 @@ namespace FrameOfSystem3.Task
             if (false == _carrierServer.GetCarrierAccessingStatus(PortId).Equals(CarrierAccessStates.CarrierCompleted))
                 return false;
 
+            // 2026.07.07. jhlim [ADD] 머지 완료 후 SlotMapping 단계에서 에러가 나 액션이 재시도된 경우,
+            // 머지를 다시 큐잉하지 않고 저장된 진행 단계를 보고 SlotMapping부터 이어간다.
+            var savedStep = GetSavedStepBeforeSendingCarrier();
+            if (savedStep == StepsBeforeSendingCarrier.MergeAndChangeCompleted &&
+                IsFinalProcessNeeded())
+            {
+                if (false == TryPrepareSlotMapping(out QueuedScenarioInfo slotMappingInfo))
+                    return false;
+
+                scenarioInfo = slotMappingInfo;
+                return true;
+            }
+            // 2026.07.07. jhlim [END]
+
             Dictionary<string, string> scenarioParam = new Dictionary<string, string>();
             bool needExecuteMerge = IsFinalProcessNeeded();
 
@@ -337,9 +353,23 @@ namespace FrameOfSystem3.Task
                 // TODO : 빈소터와의 운영상 차이점 -> 코어는 현재 운영상 랏 머지/슬롯 매핑이 없다. -> 따라서 코어가 아닌 경우만 체크한다.
                 if (MySubstrateType.Equals(SubstrateType.Core))
                     return false;
-                    
+
                 if (IsAlreadyLotMerged())
+                {
+                    // 2026.07.07. jhlim [MOD] savedStep이 Init일 때만 이 분기에 도달한다(그 외 단계는 위에서 이미 처리/스킵됨).
+                    // SlotMapping이 아직 실행된 적 없음이 보장되므로 SlotMapping으로 이어간다.
+                    if (savedStep == StepsBeforeSendingCarrier.Init)
+                    {
+                        if (false == TryPrepareSlotMapping(out QueuedScenarioInfo slotMappingInfo))
+                            return false;
+
+                        scenarioInfo = slotMappingInfo;
+                        return true;
+                    }
+
                     return false;
+                    // 2026.07.07. jhlim [END]
+                }
 
                 if (false == MakeScenarioParamForMergeLot(ref scenarioParam))
                     return false;
@@ -371,30 +401,39 @@ namespace FrameOfSystem3.Task
                         if (false == MySubstrateType.Equals(SubstrateType.Core))
                         {
                             #region <머지할 랏을 받아온다.>
+                            // 2026.07.07. jhlim [ADD] GetScenarioResultData()가 null을 리턴할 수 있어(시나리오 인스턴스 소실 등)
+                            // 방어 없이 ApplyResultOfMergingLot에 넘기면 NullReferenceException이 발생한다. 알람으로 표면화하고 안전하게 리턴한다.
                             var scenarioResult = GetScenarioResultData(scenario);
-                            if (false == ApplyResultOfMergingLot(scenarioResult))
-                                return;
-                            #endregion </머지할 랏을 받아온다.>
-
-                            // 2025.03.17. jhlim [MOD] 고객사 요청으로 SlotMapping도 Merge와 동일하게 모든 웨이퍼가 터미네이트 되면 SlotMapping 진행하지 않도록 변경
-                            #region <슬롯매핑 실행 조건 체크>
-                            if (false == IsFinalProcessNeeded())
+                            if (scenarioResult == null)
                             {
+                                GenerateAlarm((int)EN_ALARM.LOADPORT_SECSGEM_ERROR_BEFORE_UNLOADING_CARRIER,
+                                    string.Format("{0} - 머지 결과 데이터 없음(GetScenarioResultData null)", scenario));
                                 return;
                             }
-                            #endregion </슬롯매핑 실행 조건 체크>
-                            // 2025.03.17. jhlim [END]
 
-                            // 2024.09.29. jhlim [MOD] 고객사 요청으로 순서 변경(랏 머지&체인지 후 매핑 진행)
-                            Dictionary<string, string> param = new Dictionary<string, string>();
-                            if (false == MakeScenarioParamForSlotMapping(ref param))
+                            if (false == ApplyResultOfMergingLot(scenarioResult))
+                            {
+                                GenerateAlarm((int)EN_ALARM.LOADPORT_SECSGEM_ERROR_BEFORE_UNLOADING_CARRIER,
+                                    string.Format("{0} - 머지 결과 반영 실패(ApplyResultOfMergingLot)", scenario));
                                 return;
+                            }
+                            // 2026.07.07. jhlim [END]
+                            #endregion </머지할 랏을 받아온다.>
 
-                            _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.MergeAndChangeCompleted).ToString());
+                            // 랏 머지 완료 처리
+                            _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, StepsBeforeSendingCarrier.MergeAndChangeCompleted.ToString());
                             _carrierServer.SaveCarrierData(PortId);
 
-                            EnqueueScenario(ScenarioTypeToSlotMapping, param, null);
+                            // 2025.03.17. jhlim [MOD] 고객사 요청으로 SlotMapping도 Merge와 동일하게 모든 웨이퍼가 터미네이트 되면 SlotMapping 진행하지 않도록 변경
+                            // 2024.09.29. jhlim [MOD] 고객사 요청으로 순서 변경(랏 머지&체인지 후 매핑 진행)
+                            // 2026.07.07. jhlim [MOD] EnqueueScenraioBeforeActionCompletion과 공용 로직 사용하도록 TryPrepareSlotMapping으로 추출
+                            if (TryPrepareSlotMapping(out QueuedScenarioInfo slotMappingInfo))
+                            {
+                                EnqueueScenario(slotMappingInfo.Scenario, slotMappingInfo.ScenarioParams, slotMappingInfo.AdditionalParams);
+                            }
+                            // 2026.07.07. jhlim [END]
                             // 2024.09.29. jhlim [END]
+                            // 2025.03.17. jhlim [END]
 
                             // 2024.09.29. jhlim [DEL] LotId Change는 Merge에 병합됨
                             //Dictionary<string, string> param = new Dictionary<string, string>();
@@ -449,7 +488,7 @@ namespace FrameOfSystem3.Task
                         }
 
                         _lotHistoryLog.BackupCarrierHistory(PortId, carrierId, lotId, substrates, isCore);
-                        _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.SlotMappingCompleted).ToString());
+                        _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, StepsBeforeSendingCarrier.SlotMappingCompleted.ToString());
 
                         if (MySubstrateType.Equals(SubstrateType.Core))
                         {
@@ -542,149 +581,15 @@ namespace FrameOfSystem3.Task
             _commandResult.CommandResult = CommandResult.Completed;
             return _commandResult;
         }
+        // 2026.07.07. jhlim [DEL] EnqueueScenraioBeforeActionCompletion/ExecuteAfterScenarioCompletion을 대체하려던 미완성 리팩토링(어디서도 호출되지 않음) 제거
         protected override bool PrepareBeforeSendingCarrier()
         {
-            // 아래 작업 전 각 스텝에서 할 일 메서드화가 선행돼야함
-            // 스텝에 따라 아래 액션을 Enqueue
-            // 머지
-            // 슬롯매핑
-            // 태깅
-
             return false;
-            //// 1. 작업이 완료되었는지 먼저 확인
-            //var accessingStatus = _carrierServer.GetCarrierAccessingStatus(PortId);
-            //if (false == accessingStatus.Equals(CarrierAccessStates.CarrierCompleted))
-            //    return false;
-
-            //switch (MySubstrateType)
-            //{
-            //    case SubstrateType.Bin1:
-            //    case SubstrateType.Bin2:
-            //    case SubstrateType.Bin3:
-            //        {
-            //            var stepString = _carrierServer.GetAttribute(PortId, PWA500WCarrierAttributeKeys.KeyProcessStepBeforeSendingCarrier);
-            //            if (int.TryParse(stepString, out int stepInt) &&
-            //                Enum.IsDefined(typeof(StepsBeforeSendingCarrier), stepInt))
-            //            {
-            //                _currentStepBeforeSendingCarrier = (StepsBeforeSendingCarrier)stepInt;
-            //            }
-            //            else
-            //            {
-            //                _currentStepBeforeSendingCarrier = default;
-            //            }
-
-            //            // 2. 진행단계에 따라..
-            //            switch (_currentStepBeforeSendingCarrier)
-            //            {
-            //                case StepsBeforeSendingCarrier.Init:
-            //                    {
-            //                        // 2-1. 머지, 체인지 실행 
-            //                        Dictionary<string, string> scenarioParam = new Dictionary<string, string>();
-            //                        if (false == MakeScenarioParamForMergeLot(ref scenarioParam))
-            //                            return false;
-
-            //                        InitResult(ScenarioTypeToLotMerge);
-
-            //                        return _scenarioOperator.UpdateScenarioParam(GetTaskName(), ScenarioTypeToLotMerge, scenarioParam);
-            //                    }
-
-
-            //                case StepsBeforeSendingCarrier.MergeAndChangeCompleted:
-            //                    {
-            //                        // 2-2. 슬롯 매핑
-            //                        Dictionary<string, string> scenarioParam = new Dictionary<string, string>();
-            //                        if (false == MakeScenarioParamForSlotMapping(ref scenarioParam))
-            //                            return false;
-
-            //                        InitResult(ScenarioTypeToSlotMapping);
-
-            //                        return _scenarioOperator.UpdateScenarioParam(GetTaskName(), ScenarioTypeToSlotMapping, scenarioParam);
-
-            //                    }
-                            
-            //                case StepsBeforeSendingCarrier.SlotMappingCompleted:
-            //                    {
-            //                        // 2-3. 태그쓰기 실행
-            //                        InitRFID(true);
-            //                        return true;
-            //                    }
-                                
-            //                default:
-            //                    return false;
-            //            }
-            //        }
-                    
-            //    default:
-            //        return false;
-            //}
         }
         protected override CommandResults ExecuteBeforeSendingCarrier()
         {
             _commandResult.CommandResult = CommandResult.Completed;
             return _commandResult;
-            //switch (MySubstrateType)
-            //{
-            //    case SubstrateType.Bin1:
-            //    case SubstrateType.Bin2:
-            //    case SubstrateType.Bin3:
-            //        {
-            //            switch (_currentStepBeforeSendingCarrier)
-            //            {
-            //                case StepsBeforeSendingCarrier.Init:
-            //                case StepsBeforeSendingCarrier.MergeAndChangeCompleted:
-            //                    {
-            //                        // LotMerge 실행(멤버변수는 안에서 갱신됨)
-            //                        EN_SCENARIO scenario;
-            //                        if (_currentStepBeforeSendingCarrier == StepsBeforeSendingCarrier.Init)
-            //                        {
-            //                            scenario = ScenarioTypeToLotMerge;
-            //                        }
-            //                        else
-            //                        {
-            //                            scenario = ScenarioTypeToSlotMapping;
-            //                        }
-            //                        var result = RunScenario(scenario);
-            //                        if (result.CommandResult == CommandResult.Completed ||
-            //                            result.CommandResult == CommandResult.Skipped)
-            //                        {
-            //                            // 완료 후 다음 스텝
-            //                            if (_currentStepBeforeSendingCarrier == StepsBeforeSendingCarrier.Init)
-            //                            {
-            //                                _currentStepBeforeSendingCarrier = StepsBeforeSendingCarrier.MergeAndChangeCompleted;
-            //                            }
-            //                            else
-            //                            {
-            //                                _currentStepBeforeSendingCarrier = StepsBeforeSendingCarrier.SlotMappingCompleted;
-            //                            }
-
-            //                            _carrierServer.SetAttribute(PortId,
-            //                                PWA500WCarrierAttributeKeys.KeyProcessStepBeforeSendingCarrier,
-            //                                ((int)_currentStepBeforeSendingCarrier).ToString());
-            //                        }
-
-            //                        return result;
-            //                    }
-
-            //                case StepsBeforeSendingCarrier.SlotMappingCompleted:
-            //                    {
-            //                        var result = WriteLotId()
-            //                    }
-            //                    break;
-            //                case StepsBeforeSendingCarrier.WriteTag:
-            //                    break;
-
-            //                default:
-            //                    _commandResult.CommandResult = CommandResult.Completed;
-            //                    return _commandResult;
-            //            }
-
-            //            return _commandResult;
-            //        }
-
-            //    default:
-            //        _commandResult.CommandResult = CommandResult.Completed;
-            //        return _commandResult;
-            //}
         }
         protected override CommandResults WriteCarrierId()
         {
@@ -809,7 +714,7 @@ namespace FrameOfSystem3.Task
                             }
                             else
                             {
-                                _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, ((int)StepsBeforeSendingCarrier.WriteTag).ToString());
+                                _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, StepsBeforeSendingCarrier.WriteTag.ToString());
                                 _carrierServer.SaveCarrierData(PortId);
                             }
                         }
@@ -961,11 +866,49 @@ namespace FrameOfSystem3.Task
                     // TODO : 빈소터와의 운영상 차이점 -> 랏 머지가 없다.
                     return false;
                     //return GetSubstrateToMerge(out _);
-                   
+
                 default:
                     return true;
             }
         }
+
+        // 2026.07.07. jhlim [ADD] 캐리어를 보내기 전 진행 단계(KeyProcessStepBeforeSendingCarrier)를 조회한다.
+        // 재시도 시 어디까지 완료됐는지 판단하는 용도로 사용한다.
+        private StepsBeforeSendingCarrier GetSavedStepBeforeSendingCarrier()
+        {
+            var stepString = _carrierServer.GetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier);
+            return EFEM.MaterialTracking.EnumPersistence.ParseNameOrDefault(stepString, StepsBeforeSendingCarrier.Init);
+        }
+
+        // 2026.07.07. jhlim [ADD] SlotMapping이 필요하면 큐잉 정보를 만들어 true를 리턴하고,
+        // 필요 없으면 SlotMappingCompleted까지 진행시키고 false를 리턴한다.
+        // ExecuteAfterScenarioCompletion(머지 완료 직후)과 EnqueueScenraioBeforeActionCompletion(머지 완료 후 재시도)에서 공용으로 사용한다.
+        private bool TryPrepareSlotMapping(out QueuedScenarioInfo scenarioInfo)
+        {
+            scenarioInfo = null;
+
+            if (false == IsFinalProcessNeeded())
+            {
+                // 슬롯 매핑 완료 처리
+                _carrierServer.SetAttribute(PortId, PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier, StepsBeforeSendingCarrier.SlotMappingCompleted.ToString());
+                _carrierServer.SaveCarrierData(PortId);
+
+                return false;
+            }
+
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            if (false == MakeScenarioParamForSlotMapping(ref param))
+                return false;
+
+            scenarioInfo = new QueuedScenarioInfo
+            {
+                Scenario = ScenarioTypeToSlotMapping,
+                ScenarioParams = param
+            };
+            return true;
+        }
+        // 2026.07.07. jhlim [END]
+
         private void InitResult(EN_SCENARIO scenario)
         {
             _commandResult.ActionName = scenario.ToString();

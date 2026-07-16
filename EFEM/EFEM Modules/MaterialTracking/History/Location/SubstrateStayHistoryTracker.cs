@@ -316,9 +316,9 @@ namespace EFEM.MaterialTracking.LocationHistory
             var entry = new SubstrateLocationChangeItem(
                 substrateKey: substrateKey,
                 fromLocationName: fromLocationName,
-                fromLocationKind: (int)fromLocationKind,
+                fromLocationKind: fromLocationKind,
                 toLocationName: toLocationName,
-                toLocationKind: (int)toLocationKind,
+                toLocationKind: toLocationKind,
                 changeTime: changeTime,
                 reason: reason.ToString());
 
@@ -332,7 +332,7 @@ namespace EFEM.MaterialTracking.LocationHistory
             if (reason == OccupancyChangeReason.Recovery)
                 return Task.CompletedTask;
 
-            var entry = new SubstrateLocationChangeItem(substrateKey, null, (int)ModuleType.Unknown, toLocationName, (int)toLocationKind, time, reason.ToString());
+            var entry = new SubstrateLocationChangeItem(substrateKey, null, ModuleType.Unknown, toLocationName, toLocationKind, time, reason.ToString());
             _storage.RecordChange(entry);
             return Task.CompletedTask;
         }
@@ -341,7 +341,7 @@ namespace EFEM.MaterialTracking.LocationHistory
             if (reason == OccupancyChangeReason.Recovery)
                 return Task.CompletedTask;
 
-            var entry = new SubstrateLocationChangeItem(substrateKey, fromLocationName, (int)fromLocationKind, null, (int)ModuleType.Unknown, time, reason.ToString());
+            var entry = new SubstrateLocationChangeItem(substrateKey, fromLocationName, fromLocationKind, null, ModuleType.Unknown, time, reason.ToString());
             _storage.RecordChange(entry);
 
             return Task.CompletedTask;

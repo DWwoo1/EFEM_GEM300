@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 
+using EFEM.History;
+
 namespace EFEM.CustomizedByProcessType.PWA500Common
 {
     #region <Constants>
@@ -15,6 +17,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         public const string KeyProcessStepBeforeSendingCarrier = "ProcessStepBeforeSendingCarrier";
         public const string KeyTrackInCompleted = "TrackInCompleted";
         public const string KeyDownloadingRecipeCompleted = "DownloadingRecipeCompleted";
+        // 2026.07.08. jhlim [ADD] 배출 전 RFID 태그에 기입할 랏ID(머지 결과). 앱 재시작 후 재개 시 복원용으로 영속화.
+        public const string KeyLotIdToWrite = "LotIdToWrite";
     }
     public static class PWA500SubstrateAttributes
     {       
@@ -103,13 +107,35 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
         ResponseStartUnloading,
     }
+    // [영속화 enum] Carrier.Extra(KeyProcessStepBeforeSendingCarrier)에 저장됨. 저장은 이름으로.
+    // 멤버 재배치/삭제 금지 — 끝에만 추가. (2026.06.25 커밋 9a22ef2에서 MovingAdsCompleted가
+    // SlotMappingCompleted와 WriteTag 사이에 삽입된 전례가 있음 — 이 클래스의 사고를 재발시키지 말 것.)
     public enum StepsBeforeSendingCarrier
     {
         Init = 0,
-        MergeAndChangeCompleted,
-        SlotMappingCompleted,
-        MovingAdsCompleted,
-        WriteTag,
+        MergeAndChangeCompleted = 1,
+        SlotMappingCompleted = 2,
+        MovingAdsCompleted = 3,
+        WriteTag = 4,
+    }
+    // [영속화 enum] Substrate.Extra(BinUnloadingStep)에 저장됨(PWA500BIN 전용). 저장은 이름으로.
+    // 멤버 재배치/삭제 금지 — 끝에만 추가.
+    public enum UnloadingStepTypesFor500BIN
+    {
+        Init = 0,
+        AfterScrap = 1,
+        AfterIdAssignment = 2,
+        AfterBinTrackOut = 3,
+        Finished = 4,
+    }
+    // [영속화 enum] Substrate.Extra(BinUnloadingStep)에 저장됨(PWA500W 전용). 저장은 이름으로.
+    // 멤버 재배치/삭제 금지 — 끝에만 추가.
+    public enum UnloadingStepTypesFor500W
+    {
+        Init = 0,
+        AfterIdAssignment = 1,
+        AfterBinTrackOut = 2,
+        Finished = 3,
     }
     public enum CheckingCarrierCodeToUnload
     {
@@ -769,10 +795,21 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         #region <Constructors>
         private LotHistoryLog()
         {
-            BasePath = string.Format(@"{0}\History", Define.DefineConstant.FilePath.FILEPATH_LOG);
-            CurrentWorkingPath = new Dictionary<int, string>();
+            var basePath = string.Format(@"{0}\History", Define.DefineConstant.FilePath.FILEPATH_LOG);
 
-            BasePathForSubstrate = string.Format(@"{0}\CurrentWorking", BasePath);
+            // 2026.07.06. jhlim [MOD] 저장 메커니즘(큐잉/파일 조작/백업/병합/개명/고아 정리)을
+            // 공용 엔진(EFEM.History.LotHistoryEngine)으로 분리.
+            // 이 클래스는 PWA500 이벤트 어휘(Core/Bin, 이벤트 타입)와 메시지 문구만 정의하는 파사드로 유지한다.
+            // 2단계: 영속화를 IHistoryStore로 추상화.
+            // 3단계: 파일(주) + DB(병행, best-effort) 합성 - DB 저장소는 초기화 시 AttachDatabaseStore로 장착된다.
+            _fileStore = new FileHistoryStore(basePath, Enum.GetNames(typeof(SubstrateType)), "LotHistoryLogError");
+            _parallelStore = new ParallelHistoryStore(_fileStore);
+            _engine = new LotHistoryEngine(_parallelStore);
+
+            // 4단계: 조회는 자동 소스 선택 - 파일 우선, 없으면 DB 폴백. (랏 목록/집계는 합집합)
+            _basePath = basePath;
+            _fileQuery = new FileHistoryQuery(_fileStore);
+            _query = new CompositeHistoryQuery(_fileQuery);
         }
         #endregion </Constructors>
 
@@ -813,18 +850,26 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
             ReqPartId,
             UploadBinData
         }
+
         #endregion </Types>
 
         #region <Fields>
-        private const string LogFileExtension = ".log";
-
         private static LotHistoryLog _instance = null;
-        private readonly string BasePath = null;
-        private readonly string BasePathForSubstrate = null;
-        private readonly Dictionary<int, string> CurrentWorkingPath = null;
-        private readonly ConcurrentQueue<Tuple<string, string>> QueueToWrite = new ConcurrentQueue<Tuple<string, string>>();
+        private readonly LotHistoryEngine _engine = null;
+        private readonly FileHistoryStore _fileStore = null;
+        private readonly ParallelHistoryStore _parallelStore = null;
+        private readonly CompositeHistoryQuery _query = null;
+        private readonly FileHistoryQuery _fileQuery = null;
+        private readonly string _basePath = null;
 
-        private Action<int, string> _logMessageToDisplay = null;
+        // 병행 검증 기간 전용 : 파일↔DB 일일 자동 대조 (DB 조회 장착 시 활성화)
+        private HistoryConsistencyChecker _consistencyChecker = null;
+        private DateTime _lastVerifiedDate = DateTime.MinValue;
+        private volatile bool _verifyRunning = false;
+
+        // 불변 키 해석기 (초기화 시 주입) - 미주입/해석 실패 시 키는 빈 값으로 기록된다.
+        private Func<int, string> _carrierKeyResolver = null;
+        private Func<string, string> _substrateKeyResolver = null;
         #endregion </Fields>
 
         #region <Properties>
@@ -845,199 +890,78 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         #region <AssignPath>
         public void AddLogInfo(int portId, string name)
         {
-            string dir = string.Format(@"{0}\CurrentWorking\{1}", BasePath, name);
-            CurrentWorkingPath[portId] = dir;
-            if (false == Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            _engine.RegisterCarrierDirectory(portId, name);
         }
         public void AttachDisplayLogAction(Action<int, string> action)
         {
-            _logMessageToDisplay = action;
+            _engine.AttachDisplayLogAction(action);
+        }
+        /// <summary>
+        /// 2026.07.06. jhlim [ADD] 불변 키 해석기 주입. (초기화 시 1회)
+        /// 캐리어 방문 키(포트→CarrierKey)와 기판 생성 키(이름→SubstrateKey)를 이력 레코드에 함께 실어,
+        /// DB 저장소(도입 예정)에서 개명/재작업과 무관한 키 컬럼으로 쓸 수 있게 한다.
+        /// 미주입 시 키는 빈 값으로 기록되며 파일 이력에는 영향이 없다.
+        /// </summary>
+        public void AttachKeyResolvers(Func<int, string> carrierKeyByPort, Func<string, string> substrateKeyByName)
+        {
+            _carrierKeyResolver = carrierKeyByPort;
+            _substrateKeyResolver = substrateKeyByName;
+        }
+        /// <summary>
+        /// 2026.07.06. jhlim [ADD] 병행 기록용 DB 저장소 장착. (초기화 시 1회)
+        /// 파일 저장소가 주(primary)이고 DB는 best-effort - DB 실패는 파일 기록을 막지 않는다.
+        /// </summary>
+        public void AttachDatabaseStore(IHistoryStore databaseStore)
+        {
+            _parallelStore.SetSecondary(databaseStore);
+        }
+        /// <summary>
+        /// 2026.07.06. jhlim [ADD] DB 조회 장착. (초기화 시 1회)
+        /// 조회는 항상 파일 우선이며, 파일에 없는 날짜/랏만 DB로 폴백한다. (설정 토글 없음 - 자동 선택)
+        /// </summary>
+        public void AttachDatabaseQuery(IHistoryQuery databaseQuery)
+        {
+            _query.SetDatabase(databaseQuery);
+
+            // 병행 검증 기간 전용: 화면은 파일 우선이라 DB 내용을 볼 일이 없으므로
+            // 전일자 파일↔DB 대조를 매일 자동 수행해 리포트로 남긴다. (파일 은퇴 시 함께 제거)
+            _consistencyChecker = new HistoryConsistencyChecker(
+                _fileQuery, databaseQuery, string.Format(@"{0}\Verify", _basePath), _fileStore.WriteDiagnostic);
+        }
+        /// <summary>조회 화면용 - 자동 소스 선택 조회기를 반환한다. (분류 문자열은 Core/Bin)</summary>
+        public IHistoryQuery GetQuery()
+        {
+            return _query;
         }
         public string GetBackupHistoryPath(DateTime time, bool isCore)
         {
-            if (isCore)
-            {
-                return string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\Core", BasePath, time.Year, time.Month, time.Day);
-            }
-            else
-            {
-                return string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\Bin", BasePath, time.Year, time.Month, time.Day);
-            }
+            return _fileStore.GetBackupPath(time, CategoryOf(isCore));
         }
         public string GetCarrierHistoryPath(int portId, string carrierId)
         {
-            if (false == CurrentWorkingPath.TryGetValue(portId, out string basePath))
-                return string.Empty;
-
-            return string.Format(@"{0}\{1}{2}", basePath, carrierId, LogFileExtension);
+            return _fileStore.GetCarrierHistoryPath(portId, carrierId);
         }
         public string GetSubstratePath(string substrateName, bool isCore)
         {
-            SubstrateType substrateType = isCore ? SubstrateType.Core : SubstrateType.Bin;
-
-            return string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, substrateType.ToString(), substrateName, LogFileExtension);
+            return _fileStore.GetSubstratePath(substrateName, CategoryOf(isCore));
         }
         public void ClearPreviousHistory(int portId, string carrierId, string loadportName)
         {
-            if (false == CurrentWorkingPath.TryGetValue(portId, out string basePath))
-                return;
-
-            DateTime date = DateTime.Now;
-            string backupPath = string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\NotCompleted\{4}", BasePath, date.Year, date.Month, date.Day, loadportName);
-            if (false == Directory.Exists(backupPath))
-                Directory.CreateDirectory(backupPath);
-            
-            string[] files = Directory.GetFiles(basePath);
-            string sourceFilePath = string.Format(@"{0}\{1}{2}", basePath, carrierId, LogFileExtension);
-            for(int i = 0; files != null && i < files.Length; ++i)
-            {
-                var file = files[i];
-                if (false == file.Equals(sourceFilePath))
-                {
-                    try
-                    {
-                        string fileNameToMove = Path.GetFileName(file);
-                        string destinationPath = Path.Combine(backupPath, fileNameToMove);
-                        if (File.Exists(destinationPath))
-                            File.Delete(destinationPath);
-
-                        File.Move(file, destinationPath);
-                    }
-                    catch
-                    {
-
-                    }
-                }
-            }
-            
-        }        
+            _engine.ClearPreviousHistory(portId, carrierId, loadportName);
+        }
         public void UpdateSubstrateHistoryToCarrierHistory(int portId, string carrierId, string substrateName)
         {
-            try
-            {
-                var substrateHistoryFullPath = GetSubstratePath(substrateName, false);
-                var substrateHistoryPath = Path.GetDirectoryName(substrateHistoryFullPath);
-                if (false == Directory.Exists(substrateHistoryPath) ||
-                    false == File.Exists(substrateHistoryFullPath))
-                    return;
-
-                var carrierHistoryFullPath = GetCarrierHistoryPath(portId, carrierId);
-                var carrierHistoryPath = Path.GetDirectoryName(carrierHistoryFullPath);
-                if (false == Directory.Exists(carrierHistoryPath) ||
-                    false == File.Exists(carrierHistoryFullPath))
-                    return;
-
-                string[] lines;
-                using (FileStream fs = new FileStream(substrateHistoryFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (StreamReader sr = new StreamReader(fs))
-                {
-                    var tempList = new System.Collections.Generic.List<string>();
-                    while (false == sr.EndOfStream)
-                    {
-                        tempList.Add(sr.ReadLine());
-                    }
-                    lines = tempList.ToArray();
-                }
-
-                if (lines == null || lines.Length <= 0)
-                    return;
-
-                UpdateRingIdToSubstrateId(substrateName, ref lines);
-
-                using (FileStream fs = new FileStream(carrierHistoryFullPath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    for (int i = 0; lines != null && i < lines.Length; ++i)
-                    {
-                        sw.WriteLine(lines[i]);
-                    }
-                }
-            }
-            catch
-            {
-
-            }
+            UpdateSubstrateHistoryToCarrierHistory(portId, carrierId, substrateName, ResolveSubstrateKey(substrateName));
         }
-        private void UpdateRingIdToSubstrateId(string substrateName, ref string[] linesToChange)
+        /// <summary>substrate 객체를 쥔 호출부용 오버로드 - 이름 역해석 없이 불변 키(UniqueKey)를 그대로 사용한다.</summary>
+        public void UpdateSubstrateHistoryToCarrierHistory(int portId, string carrierId, string substrateName, string substrateKey)
         {
-            for (int i = 0; i < linesToChange.Length; ++i)
-            {
-                var parts = linesToChange[i].Split(new char[] { '\t' }, StringSplitOptions.None);
-                if (parts.Length < 2)
-                    continue;
-
-                parts[2] = substrateName;
-                linesToChange[i] = string.Join("\t", parts);
-            }
+            // 지연 바인딩 대상은 Bin 기판뿐이다. (Core는 기록 시점에 캐리어에 즉시 이중 기록)
+            _engine.BindSubstrateToCarrier(portId, ResolveCarrierKey(portId), carrierId, substrateKey ?? string.Empty, substrateName, CategoryOf(false));
         }
         public void BackupCarrierHistory(int portId, string carrierId, string lotId, List<string> substrates, bool isCore)
         {
-            if (false == CurrentWorkingPath.TryGetValue(portId, out string basePath))
-                return;
-
-            string sourceFilePath = string.Format(@"{0}\{1}{2}", basePath, carrierId, LogFileExtension);
-            DateTime date = DateTime.Now;
-            string backupPath;
-            if (isCore)
-            {
-                backupPath = string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\Core\{4}", BasePath, date.Year, date.Month, date.Day, lotId);
-            }
-            else
-            {
-                backupPath = string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\Bin\{4}", BasePath, date.Year, date.Month, date.Day, lotId);
-            }
-            //var backupPath = string.Format(@"{0}\Backup\{1:0000}\{2:00}\{3:00}\{4}", BasePath, date.Year, date.Month, date.Day, lotId);
-
-            var backupFullPath = string.Format(@"{0}\{1}{2}", backupPath, carrierId, LogFileExtension);
-
-            try
-            {
-                if (false == Directory.Exists(backupPath))
-                    Directory.CreateDirectory(backupPath);
-
-                if (File.Exists(backupFullPath))
-                {
-                    File.Delete(backupFullPath);
-                }
-
-                // Substrate Lists
-                if (substrates != null)
-                {
-                    Dictionary<string, string> filebodies = null;
-                    string backupSubstratePath = string.Format(@"{0}\Wafers", backupPath);
-                    if (false == isCore)
-                    {
-                        filebodies = new Dictionary<string, string>();
-                    }
-                    
-                    for (int i = 0; i < substrates.Count; ++i)
-                    {
-                        SubstrateType type;
-                        if (isCore)
-                        {
-                            type = SubstrateType.Core;
-                        }
-                        else
-                        {
-                            type = SubstrateType.Bin;
-                            string body = string.Empty;
-                            body = GetSubstrateHistoryFromFile(type, substrates[i]);
-                            filebodies[substrates[i]] = body;
-                        }
-
-                        MoveSubstrateHistoryFile(type, substrates[i], backupSubstratePath);
-                    }
-
-                }
-
-                // Carrier History
-                File.Move(sourceFilePath, backupFullPath);                
-            }
-            catch
-            {
-
-            }
+            _engine.CompleteCarrier(portId, ResolveCarrierKey(portId), carrierId, lotId, substrates, CategoryOf(isCore));
         }
         #endregion </AssignPath>
 
@@ -1220,21 +1144,39 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         }
         public void WriteSubstrateHistoryForAssignSubstrateId(int portId, string substrateName, string assignedSubstrateName)
         {
-            RenameBinSubstrateFile(substrateName, assignedSubstrateName);
+            // 이 시점에는 도메인 개명 전이므로 구 이름(링ID)으로 키를 해석한다.
+            WriteSubstrateHistoryForAssignSubstrateId(portId, substrateName, assignedSubstrateName, ResolveSubstrateKey(substrateName));
+        }
+        /// <summary>substrate 객체를 쥔 호출부용 오버로드 - 새 이름으로는 키 해석이 불가능한 시점이라 명시 키가 특히 중요하다.</summary>
+        public void WriteSubstrateHistoryForAssignSubstrateId(int portId, string substrateName, string assignedSubstrateName, string substrateKey)
+        {
+            _engine.RenameSubstrate(substrateKey ?? string.Empty, substrateName, assignedSubstrateName, CategoryOf(SubstrateType.Bin));
 
-            WriteSubstrateLog(assignedSubstrateName, SubstrateBasedEventType.IdAssign, SubstrateType.Bin, string.Format("서버로부터 이름이 [{0}] 으로 할당됨 [링 이름:{1}]", assignedSubstrateName, substrateName));
+            WriteSubstrateLog(assignedSubstrateName, SubstrateBasedEventType.IdAssign, SubstrateType.Bin, string.Format("서버로부터 이름이 [{0}] 으로 할당됨 [링 이름:{1}]", assignedSubstrateName, substrateName), substrateKey);
         }
         public void WriteSubstrateHistoryForBinWorkEnd(int portId, string substrateName, string binCode, string remainingChips)
         {
-            WriteSubstrateLog(substrateName, SubstrateBasedEventType.WorkEnd, SubstrateType.Bin, string.Format("작업 종료 이벤트 송신 -> [빈코드:{0}], [칩수량:{1}]", binCode, remainingChips));
+            WriteSubstrateHistoryForBinWorkEnd(portId, substrateName, binCode, remainingChips, ResolveSubstrateKey(substrateName));
+        }
+        public void WriteSubstrateHistoryForBinWorkEnd(int portId, string substrateName, string binCode, string remainingChips, string substrateKey)
+        {
+            WriteSubstrateLog(substrateName, SubstrateBasedEventType.WorkEnd, SubstrateType.Bin, string.Format("작업 종료 이벤트 송신 -> [빈코드:{0}], [칩수량:{1}]", binCode, remainingChips), substrateKey);
         }
         public void WriteSubstrateHistoryForBinTrackOut(int portId, string substrateName, string lotId, string binCode, string remainingChips)
         {
-            WriteSubstrateLog(substrateName, SubstrateBasedEventType.TrackOut, SubstrateType.Bin, string.Format("랏 [{0}] 트랙 아웃 진행 [빈코드:{1}], [칩수량:{2}]", lotId, binCode, remainingChips));
+            WriteSubstrateHistoryForBinTrackOut(portId, substrateName, lotId, binCode, remainingChips, ResolveSubstrateKey(substrateName));
+        }
+        public void WriteSubstrateHistoryForBinTrackOut(int portId, string substrateName, string lotId, string binCode, string remainingChips, string substrateKey)
+        {
+            WriteSubstrateLog(substrateName, SubstrateBasedEventType.TrackOut, SubstrateType.Bin, string.Format("랏 [{0}] 트랙 아웃 진행 [빈코드:{1}], [칩수량:{2}]", lotId, binCode, remainingChips), substrateKey);
         }
         public void WriteSubstrateHistoryForReqBinPartId(int portId, string substrateName, string binCode, string oldPartId, string newPartId)
         {
-            WriteSubstrateLog(substrateName, SubstrateBasedEventType.ReqPartId, SubstrateType.Bin, string.Format("파트 아이디를 부여받아 [{0}] 에서 [{1}] 로 변경 [빈코드:{2}]", oldPartId, newPartId, binCode));
+            WriteSubstrateHistoryForReqBinPartId(portId, substrateName, binCode, oldPartId, newPartId, ResolveSubstrateKey(substrateName));
+        }
+        public void WriteSubstrateHistoryForReqBinPartId(int portId, string substrateName, string binCode, string oldPartId, string newPartId, string substrateKey)
+        {
+            WriteSubstrateLog(substrateName, SubstrateBasedEventType.ReqPartId, SubstrateType.Bin, string.Format("파트 아이디를 부여받아 [{0}] 에서 [{1}] 로 변경 [빈코드:{2}]", oldPartId, newPartId, binCode), substrateKey);
         }
         public void WriteSubstrateHistoryForUploadBinMap(int portId, string substrateName, string serializedMapData)
         {
@@ -1242,212 +1184,137 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
         }
         public void WriteSubstrateHistoryForUploadBinData(int portId, string substrateName, string pmsPath)
         {
+            WriteSubstrateHistoryForUploadBinData(portId, substrateName, pmsPath, ResolveSubstrateKey(substrateName));
+        }
+        public void WriteSubstrateHistoryForUploadBinData(int portId, string substrateName, string pmsPath, string substrateKey)
+        {
             var fullPath = Path.GetFullPath(pmsPath);
-            WriteSubstrateLog(substrateName, SubstrateBasedEventType.UploadBinData, SubstrateType.Bin, string.Format("작업 정보 업로드 진행 [PMS파일 경로:{0}]", fullPath));
+            WriteSubstrateLog(substrateName, SubstrateBasedEventType.UploadBinData, SubstrateType.Bin, string.Format("작업 정보 업로드 진행 [PMS파일 경로:{0}]", fullPath), substrateKey);
         }
         #endregion </SubstrateBasedEvents>
 
         #region <Executing>
         public void ExecuteWriteAsync()
         {
-            if (QueueToWrite.Count <= 0)
+            _engine.ExecuteWriteAsync();
+
+            RunDailyConsistencyCheckIfNeeded();
+        }
+        /// <summary>
+        /// 기동 후 첫 펌핑과 날짜 변경 후 첫 펌핑에서 전일자 대조를 1회 수행한다.
+        /// 대조는 파일/DB 읽기가 있어 백그라운드로 실행한다. (펌핑 루프는 장비 스캔과 엮여 있어 블로킹 금지)
+        /// </summary>
+        private void RunDailyConsistencyCheckIfNeeded()
+        {
+            if (_consistencyChecker == null || _verifyRunning)
                 return;
 
-            if (QueueToWrite.TryDequeue(out Tuple<string, string> logInfoToWrite))
+            var targetDate = DateTime.Today.AddDays(-1);
+            if (_lastVerifiedDate >= targetDate)
+                return;
+
+            _verifyRunning = true;
+            System.Threading.Tasks.Task.Run(() =>
             {
-                WriteLog(logInfoToWrite.Item1, logInfoToWrite.Item2);
-            }
+                try
+                {
+                    _consistencyChecker.VerifyDate(targetDate, Enum.GetNames(typeof(SubstrateType)));
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    // 실패해도 같은 날 재시도 폭주를 막기 위해 완료로 표시한다. (다음 날짜에 다시 수행됨)
+                    _lastVerifiedDate = targetDate;
+                    _verifyRunning = false;
+                }
+            });
         }
+
+        public void FlushAll()
+        {
+            _engine.FlushAll();
+        }
+
         #endregion </Executing>
 
         #region <Internal>
-        private bool GetHistoryTimeFromLog(string message, ref DateTime time)
+        private static string CategoryOf(bool isCore)
         {
-            string[] splittedLine = message.Split('\t');
-            if (splittedLine.Length <= 0)
-                return false;
-
-            return DateTime.TryParse(splittedLine[0], out time);            
+            return CategoryOf(isCore ? SubstrateType.Core : SubstrateType.Bin);
         }
-        private string GetSubstrateHistoryFromFile(SubstrateType type, string substrateName)
+        private static string CategoryOf(SubstrateType substrateType)
         {
-            string sourceFilePath = string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, type.ToString(), substrateName, LogFileExtension);
-            string fileBody = string.Empty;
+            return substrateType.ToString();
+        }
+        // 키 해석 실패가 이력 기록 자체를 막으면 안 되므로 예외는 삼키고 빈 값으로 기록한다.
+        private string ResolveCarrierKey(int portId)
+        {
             try
             {
-                string sourcePath = Path.GetDirectoryName(sourceFilePath);
-                if (false == Directory.Exists(sourcePath))
-                    return fileBody;
-
-                if (false == File.Exists(sourceFilePath))
-                    return fileBody;
-
-                using (StreamReader sr = new StreamReader(sourceFilePath))
-                {
-                    fileBody = sr.ReadToEnd();
-                }
-
-                return fileBody;
+                return _carrierKeyResolver != null ? (_carrierKeyResolver(portId) ?? string.Empty) : string.Empty;
             }
-            catch (Exception)
+            catch
             {
-                throw;
+                return string.Empty;
             }
         }
-        private void MoveSubstrateHistoryFile(SubstrateType type, string substrateName, string newPath)
+        private string ResolveSubstrateKey(string substrateName)
         {
-            string sourceFilePath = string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, type.ToString(), substrateName, LogFileExtension);
-            string destFilePath = string.Format(@"{0}\{1}{2}", newPath, substrateName, LogFileExtension);
-
             try
             {
-                string sourcePath = Path.GetDirectoryName(sourceFilePath);
-                if (false == Directory.Exists(sourcePath))
-                    return;
-
-                string destPath = Path.GetDirectoryName(destFilePath);
-                if (false == Directory.Exists(destPath))
-                    Directory.CreateDirectory(destPath);
-
-                if (false == File.Exists(sourceFilePath))
-                    return;
-
-                if (File.Exists(destFilePath))
-                    File.Delete(destFilePath);
-
-                File.Move(sourceFilePath, destFilePath);
+                return _substrateKeyResolver != null ? (_substrateKeyResolver(substrateName) ?? string.Empty) : string.Empty;
             }
-            catch (Exception)
+            catch
             {
-
-                throw;
+                return string.Empty;
             }
         }
-        private void RenameBinSubstrateFile(string oldName, string newName)
-        {
-            string sourceFilePath = string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, SubstrateType.Bin.ToString(), oldName, LogFileExtension);
-            string destFilePath = string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, SubstrateType.Bin.ToString(), newName, LogFileExtension);
-
-            try
-            {
-                string sourcePath = Path.GetDirectoryName(sourceFilePath);
-                if (false == Directory.Exists(sourcePath))
-                    return;
-
-                string destPath = Path.GetDirectoryName(destFilePath);
-                if (false == Directory.Exists(destPath))
-                    Directory.CreateDirectory(destPath);
-
-                if (false == File.Exists(sourceFilePath))
-                    return;
-
-                if (File.Exists(destFilePath))
-                    File.Delete(destFilePath);
-
-                File.Move(sourceFilePath, destFilePath);
-            }
-            catch (Exception)
-            {
-
-            }
-        }        
         private void WriteSubstrateLog(int portId, string carrierId, string substrateName, SubstrateBasedEventType type, SubstrateType substrateType, string message)
         {
-            // Substrate History 기록
-            WriteSubstrateLog(substrateName, type, substrateType, message);
-
-            // Carrier History 에도 기록
-            WriteCarrierLog(portId, carrierId, substrateName, type, message);
+            // Substrate History와 Carrier History에 동시 기록
+            _engine.AppendSubstrateEventWithCarrier(new HistoryRecord
+            {
+                Time = DateTime.Now,
+                PortId = portId,
+                Category = CategoryOf(substrateType),
+                CarrierKey = ResolveCarrierKey(portId),
+                CarrierId = carrierId,
+                SubstrateKey = ResolveSubstrateKey(substrateName),
+                SubstrateName = substrateName,
+                SubstrateEventCode = type.ToString(),
+                Message = message,
+            });
         }
         private void WriteSubstrateLog(string substrateName, SubstrateBasedEventType type, SubstrateType substrateType, string message)
         {
-            string filePath = string.Format(@"{0}\{1}\{2}{3}", BasePathForSubstrate, substrateType.ToString(), substrateName, LogFileExtension);
-            DateTime time = DateTime.Now;
-            var logEntry = string.Format("{0:d2}/{1:d2}-{2:d2}:{3:d2}:{4:d2}.{5:d3}\t{6}\t{7}\t{8}\t{9}",
-                time.Month,
-                time.Day,
-                time.Hour,
-                time.Minute,
-                time.Second,
-                time.Millisecond,
-                string.Empty,       // Carrier Event Type
-                substrateName,      // SubstrateName
-                type.ToString(),    // Substrate Event Type
-                message);
-
-            EnqueueLogToWrite(filePath, logEntry);
+            WriteSubstrateLog(substrateName, type, substrateType, message, ResolveSubstrateKey(substrateName));
         }
-        private void WriteCarrierLog(int portId, string carrierId, string substrateName, SubstrateBasedEventType type, string message)
+        private void WriteSubstrateLog(string substrateName, SubstrateBasedEventType type, SubstrateType substrateType, string message, string substrateKey)
         {
-            if (false == CurrentWorkingPath.TryGetValue(portId, out string basePath))
-                return;
-
-            string filePath = string.Format(@"{0}\{1}{2}", basePath, carrierId, LogFileExtension);
-            DateTime time = DateTime.Now;
-            var logEntry = string.Format("{0:d2}/{1:d2}-{2:d2}:{3:d2}:{4:d2}.{5:d3}\t{6}\t{7}\t{8}\t{9}",
-                time.Month,
-                time.Day,
-                time.Hour,
-                time.Minute,
-                time.Second,
-                time.Millisecond,
-                string.Empty,       // Carrier Event Type
-                substrateName,      // SubstrateName
-                type.ToString(),    // Substrate Event Type
-                message);
-
-            if(_logMessageToDisplay != null)
+            _engine.AppendSubstrateEvent(new HistoryRecord
             {
-                _logMessageToDisplay(portId, logEntry);
-            }
-
-            EnqueueLogToWrite(filePath, logEntry);
+                Time = DateTime.Now,
+                PortId = -1,        // 소속 캐리어 미확정 단계라 포트 정보 없음
+                Category = CategoryOf(substrateType),
+                SubstrateKey = substrateKey ?? string.Empty,
+                SubstrateName = substrateName,
+                SubstrateEventCode = type.ToString(),
+                Message = message,
+            });
         }
         private void WriteCarrierLog(int portId, string carrierId, CarrierBasedEventType type, string message)
         {
-            if (false == CurrentWorkingPath.TryGetValue(portId, out string basePath))
-                return;
-
-            string filePath = string.Format(@"{0}\{1}{2}", basePath, carrierId, LogFileExtension);
-            DateTime time = DateTime.Now;
-            var logEntry = string.Format("{0:d2}/{1:d2}-{2:d2}:{3:d2}:{4:d2}.{5:d3}\t{6}\t{7}\t{8}\t{9}",
-                time.Month,
-                time.Day,
-                time.Hour,
-                time.Minute,
-                time.Second,
-                time.Millisecond,
-                type.ToString(),        // Carrier Event Type
-                string.Empty,           // SubstrateName
-                string.Empty,           // Substrate Event Type
-                message);
-
-            EnqueueLogToWrite(filePath, logEntry);
-        }
-
-        private void EnqueueLogToWrite(string filePath, string logEntry)
-        {
-            QueueToWrite.Enqueue(Tuple.Create(filePath, logEntry));
-        }
-        private void WriteLog(string filePath, string logEntry)
-        {
-            try
+            _engine.AppendCarrierEvent(new HistoryRecord
             {
-                string dirName = Path.GetDirectoryName(filePath);
-                if (false == Directory.Exists(dirName))
-                    Directory.CreateDirectory(dirName);
-
-                using (FileStream fs = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
-                using (StreamWriter sw = new StreamWriter(fs))
-                {
-                    sw.AutoFlush = true;
-
-                    sw.WriteLine(logEntry);
-                }
-            }
-            catch (Exception)
-            {
-            }
+                Time = DateTime.Now,
+                PortId = portId,
+                CarrierKey = ResolveCarrierKey(portId),
+                CarrierId = carrierId,
+                CarrierEventCode = type.ToString(),
+                Message = message,
+            });
         }
         #endregion </Internal>
 

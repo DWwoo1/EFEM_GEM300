@@ -175,7 +175,7 @@ namespace EFEM.MaterialTracking
             return new LocationItem
             {
                 Id = location.Id,
-                LocationKind = (int)location.LocationKind,
+                LocationKind = location.LocationKind,
                 Capacity = location.Capacity,
                 Name = location.Name
             };

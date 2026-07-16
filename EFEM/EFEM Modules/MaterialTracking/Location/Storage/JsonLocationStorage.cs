@@ -20,7 +20,12 @@ namespace EFEM.MaterialTracking.LocationStorage
             new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore
+                NullValueHandling = NullValueHandling.Ignore,
+                // 열거형(LocationKind)은 이름으로 저장. 정수 토큰은 조용히 해석하지 않는다.
+                Converters = new List<JsonConverter>
+                {
+                    new Newtonsoft.Json.Converters.StringEnumConverter { AllowIntegerValues = false }
+                }
             };
 
         public JsonLocationStorage(string rootPath)

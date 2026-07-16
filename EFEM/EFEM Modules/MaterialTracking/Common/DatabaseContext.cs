@@ -54,10 +54,13 @@ namespace EFEM.Database
         WaitForCompletion,
         QueueOnly
     }
+    // 주의: 이 enum은 stale/신뢰 금지. 실제 마이그레이션 버전 번호는 MigrationSteps.GetMigrationSteps()가 소유하며
+    // 과거 재배정 이력이 있다(초기 6.x에서 v2 = KeyLotQty->LotQty 였으나, 현재 v2 = Location.Name->Id, KeyLotQty->LotQty는 v4).
+    // 그래서 마이그레이션 적용은 SchemaVersion 카운터가 아니라 각 스텝의 실제 스키마 검사(TableExists/ColumnExists)로 판단한다.
     public enum DataBaseVersion
     {
         BaseSchema = 1,
-        CarrierExtraChanged = 2,    // ExtraAttribute 중 "KeyLotQty" -> "LotQty"로 변경
+        CarrierExtraChanged = 2,    // (레거시 표기) 초기 6.x에서만 v2 == KeyLotQty->LotQty. 현재 의미와 불일치하므로 참조 금지.
     }
     public sealed class MaterialDbContext : IDisposable
     {
@@ -251,7 +254,7 @@ WHERE NOT EXISTS (SELECT 1 FROM SchemaVersion);
 -- Location
 CREATE TABLE IF NOT EXISTS Location (
     Name         TEXT PRIMARY KEY,
-    LocationKind INTEGER NOT NULL,
+    LocationKind TEXT NOT NULL,
     Capacity     INTEGER NOT NULL
                  CHECK (Capacity >= 0)
 );
@@ -265,7 +268,7 @@ CREATE TABLE IF NOT EXISTS Carrier (
     LotId         TEXT,
     CarrierId     TEXT,
     PortId        INTEGER,
-    AccessStatus  INTEGER NOT NULL DEFAULT 0,
+    AccessStatus  TEXT NOT NULL DEFAULT 'NotAccessed',
     Capacity      INTEGER NOT NULL DEFAULT 0,
     LoadTime      TEXT,
     UnloadTime    TEXT
@@ -275,7 +278,7 @@ CREATE TABLE IF NOT EXISTS Carrier (
 CREATE TABLE IF NOT EXISTS CarrierSlotMap (
     CarrierKey  TEXT    NOT NULL,
     SlotNo      INTEGER NOT NULL,
-    MapValue    INTEGER NOT NULL,
+    MapValue    TEXT NOT NULL,
     PRIMARY KEY (CarrierKey, SlotNo),
     FOREIGN KEY (CarrierKey)
         REFERENCES Carrier(UniqueKey)
@@ -311,9 +314,9 @@ CREATE TABLE IF NOT EXISTS Substrate (
     RecipeId            TEXT,
     ProcessJobId        TEXT,
     ControlJobId        TEXT,
-    TransportStatus     INTEGER,
-    ProcessingStatus    INTEGER,
-    IdReadingStatus     INTEGER,
+    TransportStatus     TEXT,
+    ProcessingStatus    TEXT,
+    IdReadingStatus     TEXT,
     DoNotProcessFlag    INTEGER NOT NULL DEFAULT 0,
     Usage               INTEGER NOT NULL DEFAULT 0,
 
@@ -367,9 +370,9 @@ CREATE TABLE IF NOT EXISTS SubstrateLocationHistory (
     Id               INTEGER PRIMARY KEY AUTOINCREMENT,
     SubstrateKey     TEXT    NOT NULL,
     FromLocationName TEXT    NULL,
-    FromLocationKind INTEGER,
+    FromLocationKind TEXT,
     ToLocationName   TEXT    NULL,
-    ToLocationKind   INTEGER,
+    ToLocationKind   TEXT,
     ChangeTime       TEXT    NOT NULL,
     Reason           TEXT    NOT NULL,
 
@@ -402,6 +405,28 @@ CREATE TABLE IF NOT EXISTS SubstrateProcessingHistory (
     FOREIGN KEY (SubstrateKey)
         REFERENCES Substrate(UniqueKey)
         ON DELETE CASCADE
+);
+";
+
+            // 2026.07.06. jhlim [ADD] 랏 히스토리 이벤트 (EFEM.History.SqliteHistoryStore가 기록)
+            // - CarrierKey/SubstrateKey는 Carrier/Substrate.UniqueKey와 논리적으로 조인되는 키지만
+            //   FK 제약은 걸지 않는다: 자재 행의 archive 이동/삭제(캐스케이드)와 이력 수명주기를 분리하기 위함.
+            //   이력 행의 archive 이동은 SqliteCarrierStorage.PrepareToArchiveAsync에서 캐리어 제거와 함께 수행된다.
+            const string LotHistoryEventTable = @"
+-- Lot History Event
+CREATE TABLE IF NOT EXISTS LotHistoryEvent (
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    EventTime           TEXT    NOT NULL,
+    Category            TEXT    NOT NULL DEFAULT '',
+    PortId              INTEGER NOT NULL DEFAULT -1,
+    CarrierKey          TEXT    NOT NULL DEFAULT '',
+    CarrierId           TEXT    NOT NULL DEFAULT '',
+    LotId               TEXT    NOT NULL DEFAULT '',
+    SubstrateKey        TEXT    NOT NULL DEFAULT '',
+    SubstrateName       TEXT    NOT NULL DEFAULT '',
+    CarrierEventCode    TEXT    NOT NULL DEFAULT '',
+    SubstrateEventCode  TEXT    NOT NULL DEFAULT '',
+    Message             TEXT    NOT NULL DEFAULT ''
 );
 ";
 
@@ -440,6 +465,23 @@ CREATE INDEX IF NOT EXISTS IX_SubstrateProcHistory_ControlJob
 
 CREATE INDEX IF NOT EXISTS IX_SubstrateProcHistory_ProcessJob
     ON SubstrateProcessingHistory(ProcessJobId);
+
+CREATE INDEX IF NOT EXISTS IX_LotHistoryEvent_CarrierKey
+    ON LotHistoryEvent(CarrierKey);
+
+CREATE INDEX IF NOT EXISTS IX_LotHistoryEvent_SubstrateKey
+    ON LotHistoryEvent(SubstrateKey);
+
+CREATE INDEX IF NOT EXISTS IX_LotHistoryEvent_LotId
+    ON LotHistoryEvent(LotId);
+
+CREATE INDEX IF NOT EXISTS IX_LotHistoryEvent_EventTime
+    ON LotHistoryEvent(EventTime);
+
+-- 파일 저장소 실패로 이력 명령이 재시도될 때 DB에 같은 이벤트가 중복 INSERT되는 것을
+-- INSERT OR IGNORE로 막기 위한 자연 키 (ms 타임스탬프 + 내용 동일 = 같은 이벤트)
+CREATE UNIQUE INDEX IF NOT EXISTS UQ_LotHistoryEvent_Natural
+    ON LotHistoryEvent(EventTime, SubstrateName, CarrierEventCode, SubstrateEventCode, Message);
 ";
 
             // 전체 스키마
@@ -451,7 +493,8 @@ CREATE INDEX IF NOT EXISTS IX_SubstrateProcHistory_ProcessJob
                 + SubstrateMainTable
                 //+ LocationHistoryTable
                 + LocationChangeHistoryTable
-                + ProcessingHistoryTable;
+                + ProcessingHistoryTable
+                + LotHistoryEventTable;
             //+ CarrierExtraTable
             //+ SubstrateExtraTable
             //+ Indexes;
@@ -464,7 +507,7 @@ CREATE TABLE IF NOT EXISTS archive.Carrier (
     LotId         TEXT,
     CarrierId     TEXT,
     PortId        INTEGER,
-    AccessStatus  INTEGER,
+    AccessStatus  TEXT,
     Capacity      INTEGER,
     LoadTime      TEXT,
     UnloadTime    TEXT
@@ -474,7 +517,7 @@ CREATE TABLE IF NOT EXISTS archive.Carrier (
 CREATE TABLE IF NOT EXISTS archive.CarrierSlotMap (
     CarrierKey  TEXT    NOT NULL,
     SlotNo      INTEGER NOT NULL,
-    MapValue    INTEGER NOT NULL,
+    MapValue    TEXT NOT NULL,
     PRIMARY KEY (CarrierKey, SlotNo)
 );
 ";
@@ -503,9 +546,9 @@ CREATE TABLE IF NOT EXISTS archive.Substrate (
     RecipeId            TEXT,
     ProcessJobId        TEXT,
     ControlJobId        TEXT,
-    TransportStatus     INTEGER,
-    ProcessingStatus    INTEGER,
-    IdReadingStatus     INTEGER,
+    TransportStatus     TEXT,
+    ProcessingStatus    TEXT,
+    IdReadingStatus     TEXT,
     DoNotProcessFlag    INTEGER NOT NULL,
     Usage               INTEGER NOT NULL
 );
@@ -537,9 +580,9 @@ CREATE TABLE IF NOT EXISTS archive.SubstrateLocationHistory (
     Id               INTEGER PRIMARY KEY,
     SubstrateKey     TEXT    NOT NULL,
     FromLocationName TEXT    NULL,
-    FromLocationKind INTEGER,
+    FromLocationKind TEXT,
     ToLocationName   TEXT    NULL,
-    ToLocationKind   INTEGER,
+    ToLocationKind   TEXT,
     ChangeTime       TEXT    NOT NULL,
     Reason           TEXT    NOT NULL
 );
@@ -557,6 +600,34 @@ CREATE TABLE IF NOT EXISTS archive.SubstrateProcessingHistory (
     LocationId    TEXT,
     Description   TEXT
 );
+";
+
+            // 2026.07.06. jhlim [ADD] 랏 히스토리 이벤트 아카이브 (캐리어 제거 시 main에서 이동)
+            // Id는 main 값을 승계하지 않고 archive 파일 자체 AUTOINCREMENT 사용 (정렬은 EventTime 기준)
+            const string LotHistoryEventTable = @"
+CREATE TABLE IF NOT EXISTS archive.LotHistoryEvent (
+    Id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    EventTime           TEXT    NOT NULL,
+    Category            TEXT    NOT NULL DEFAULT '',
+    PortId              INTEGER NOT NULL DEFAULT -1,
+    CarrierKey          TEXT    NOT NULL DEFAULT '',
+    CarrierId           TEXT    NOT NULL DEFAULT '',
+    LotId               TEXT    NOT NULL DEFAULT '',
+    SubstrateKey        TEXT    NOT NULL DEFAULT '',
+    SubstrateName       TEXT    NOT NULL DEFAULT '',
+    CarrierEventCode    TEXT    NOT NULL DEFAULT '',
+    SubstrateEventCode  TEXT    NOT NULL DEFAULT '',
+    Message             TEXT    NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS archive.IX_LotHistoryEvent_CarrierKey
+    ON LotHistoryEvent(CarrierKey);
+
+CREATE INDEX IF NOT EXISTS archive.IX_LotHistoryEvent_LotId
+    ON LotHistoryEvent(LotId);
+
+CREATE INDEX IF NOT EXISTS archive.IX_LotHistoryEvent_EventTime
+    ON LotHistoryEvent(EventTime);
 ";
 
             public const string ArchiveAtTableAndIndexes = @"
@@ -580,7 +651,8 @@ CREATE INDEX IF NOT EXISTS archive.IX_ArchiveAt_ArchivedAt
                 + SubstrateMainTable
                 //+ LocationHistoryTable
                 + LocationChangeHistoryTable
-                + ProcessingHistoryTable;
+                + ProcessingHistoryTable
+                + LotHistoryEventTable;
             //+ CarrierExtraTable
             //+ SubstrateExtraTable
             //+ ArchiveAtTableAndIndexes;
@@ -593,6 +665,28 @@ CREATE INDEX IF NOT EXISTS archive.IX_ArchiveAt_ArchivedAt
                 get { return _currentJob.Value; }
                 set { _currentJob.Value = value; }
             }
+        }
+
+        /// <summary>
+        /// 현재 실행 중인 쓰기 잡(WriteJob)에 이 커맨드를 기록한다. 잡 컨텍스트 밖(읽기 경로 등)에서 호출되면
+        /// 조용히 no-op — 그래서 저장소 클래스의 모든 커맨드 실행 지점(읽기 포함)에 구분 없이 넣어도 안전하다.
+        /// 실행 직전에 호출해야 한다 — 그래야 ExecuteXxx 자체가 실패해도 이미 로그에 남는다.
+        /// </summary>
+        public static void LogCommand(SQLiteCommand cmd)
+        {
+            var job = WriteJobCommandLogContext.CurrentJob;
+            if (job == null || cmd == null)
+                return;
+
+            var parameters = new Dictionary<string, object>();
+            foreach (SQLiteParameter p in cmd.Parameters)
+                parameters[p.ParameterName] = p.Value ?? DBNull.Value;
+
+            job.LoggedCommands.Add(new DbCommandLogEntry
+            {
+                CommandText = cmd.CommandText,
+                Parameters = parameters
+            });
         }
 
         private bool _isShuttingDown;
@@ -970,20 +1064,26 @@ CREATE INDEX IF NOT EXISTS archive.IX_ArchiveAt_ArchivedAt
             Action<SQLiteConnection, SQLiteTransaction, int> setVersion)
         {
             var currentVersion = getVersion(conn, tx);
+            var maxVersion = currentVersion;
 
+            // 카운터로 스킵하지 않는다: 마이그레이션 버전 번호가 과거 재배정된 이력이 있어(SchemaVersion 정수는
+            // "무엇이 실제로 적용됐는가"의 신뢰 지표가 아님), 카운터로 스킵하면 미적용 스텝(예: Location.Name->Id)이
+            // 잘못 건너뛰어질 수 있다. 각 스텝은 실제 스키마 상태(TableExists/ColumnExists)를 검사하는 멱등 연산이므로
+            // 항상 Apply를 호출해 실제 상태 기준으로 자가 치유하게 한다. (버전 재배정/롤백된 DB에서도 정확)
             foreach (var migration in _migrationSteps)
             {
-                if (currentVersion >= migration.Version)
-                    continue;
-
                 migration.Apply(conn, tx, schemaName);
 
-                currentVersion = migration.Version;
-                setVersion(conn, tx, currentVersion);
+                if (migration.Version > maxVersion)
+                    maxVersion = migration.Version;
+            }
 
+            // SchemaVersion은 게이트가 아니라 정보성 스탬프로만 갱신한다(최신 스텝 번호 기록).
+            if (maxVersion != currentVersion)
+            {
+                setVersion(conn, tx, maxVersion);
                 WriteLog("[DB Migration] " + GetDisplayTableName(schemaName, "Schema")
-                    + " upgraded to version " + currentVersion
-                    + " (" + migration.Name + ").");
+                    + " version stamp updated to " + maxVersion + " (state-based apply).");
             }
         }
 
@@ -1007,11 +1107,272 @@ CREATE INDEX IF NOT EXISTS archive.IX_ArchiveAt_ArchivedAt
                 SetArchiveSchemaVersion);
         }
 
+        #region <Enum Column Affinity Rebuild>
+        // 2026.07.13. jhlim [ADD] enum 저장을 정수 ordinal -> 이름(TEXT)으로 전환했는데,
+        // 이 장비의 SQLite 스택(3.32.1 + 커스텀 인터롭)은 INTEGER affinity 컬럼에 비숫자 TEXT를 저장하면
+        // 값이 '0'(text)으로 훼손되는 비표준 동작을 보인다(검증: 리터럴/파라미터/CAST 모두 동일, TEXT 컬럼은 정상).
+        // 따라서 레거시 DB(enum 컬럼이 INTEGER 로 선언된)는 UPDATE 백필이 불가능하며,
+        // 테이블 재구축(새 TEXT 테이블 생성 -> CASE 매핑 복사 -> DROP -> RENAME)이 필요하다.
+        // - main DB: FK(ON DELETE CASCADE) 때문에 DROP 시 암묵 DELETE 가 연쇄삭제를 유발하므로
+        //   반드시 ForeignKeys=false 별도 연결에서 수행한다(PRAGMA foreign_keys 는 트랜잭션 안에서 변경 불가).
+        // - archive: FK 정의가 없어 호출측 트랜잭션 안에서 안전하게 수행 가능.
+        // AccessStatus 만 5.18(Unknown=0 존재)↔6.18 ordinal 시프트가 있어 scheme-aware 매핑을 쓴다.
+
+        private sealed class EnumTableRebuildDef
+        {
+            public string Table;
+            public string CreateBody;                          // CREATE TABLE {name} ( ... ) 괄호 안
+            public string[] Columns;                           // canonical 컬럼(복사 대상, 존재하는 것만 복사)
+            public Dictionary<string, string> EnumCaseByColumn; // enum 컬럼 -> CASE WHEN body
+        }
+
+        private static string GetAccessStatusCase(bool legacy518)
+        {
+            // 5.18: Unknown=0, NotAccessed=1, InAccessed=2, CarrierCompleted=3, CarrierStopped=4
+            // 6.18: NotAccessed=0, InAccessed=1, CarrierCompleted=2, CarrierStopped=3
+            // 미지 값은 절대 CarrierCompleted 로 두지 않는다(미처리 조기 배출 방지) -> InAccessed.
+            return legacy518
+                ? "WHEN 0 THEN 'NotAccessed' WHEN 1 THEN 'NotAccessed' WHEN 2 THEN 'InAccessed' WHEN 3 THEN 'CarrierCompleted' WHEN 4 THEN 'CarrierStopped' ELSE 'InAccessed'"
+                : "WHEN 0 THEN 'NotAccessed' WHEN 1 THEN 'InAccessed' WHEN 2 THEN 'CarrierCompleted' WHEN 3 THEN 'CarrierStopped' ELSE 'InAccessed'";
+        }
+
+        private const string SlotMapCase = "WHEN 0 THEN 'Undefined' WHEN 1 THEN 'Empty' WHEN 2 THEN 'NotEmpty' WHEN 3 THEN 'CorrectlyOccupied' WHEN 4 THEN 'DoubleSlotted' WHEN 5 THEN 'CrossSlotted' ELSE 'Undefined'";
+        private const string TransportCase = "WHEN 0 THEN 'AtSource' WHEN 1 THEN 'AtWork' WHEN 2 THEN 'AtDestination' ELSE 'AtSource'";
+        private const string ProcessingCase = "WHEN 0 THEN 'NeedsProcessing' WHEN 1 THEN 'InProcess' WHEN 2 THEN 'Processed' WHEN 3 THEN 'Aborted' WHEN 4 THEN 'Stopped' WHEN 5 THEN 'Rejected' WHEN 6 THEN 'Lost' WHEN 7 THEN 'Skipped' ELSE 'NeedsProcessing'";
+        private const string IdReadingCase = "WHEN 0 THEN 'NotConfirmed' WHEN 1 THEN 'WaitingForHost' WHEN 2 THEN 'Confirmed' WHEN 3 THEN 'ConfirmationFailed' ELSE 'NotConfirmed'";
+        private const string ModuleTypeCase = "WHEN 0 THEN 'Unknown' WHEN 1 THEN 'LoadPort' WHEN 2 THEN 'Robot' WHEN 3 THEN 'ProcessModule' WHEN 4 THEN 'Aligner' WHEN 5 THEN 'Normal' ELSE 'Unknown'";
+
+        // main 스키마용(마이그레이션 v2~v5 적용 이후 canonical). Location.Id/Name, Substrate.OriginName 존재 전제.
+        private static List<EnumTableRebuildDef> GetMainRebuildDefs(bool legacy518)
+        {
+            return new List<EnumTableRebuildDef>
+            {
+                new EnumTableRebuildDef
+                {
+                    Table = "Location",
+                    CreateBody = "Id TEXT PRIMARY KEY, LocationKind TEXT NOT NULL, Capacity INTEGER NOT NULL CHECK (Capacity >= 0), Name TEXT",
+                    Columns = new[] { "Id", "LocationKind", "Capacity", "Name" },
+                    EnumCaseByColumn = new Dictionary<string, string> { ["LocationKind"] = ModuleTypeCase },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "Carrier",
+                    CreateBody = "UniqueKey TEXT PRIMARY KEY, LotId TEXT, CarrierId TEXT, PortId INTEGER, AccessStatus TEXT NOT NULL DEFAULT 'NotAccessed', Capacity INTEGER NOT NULL DEFAULT 0, LoadTime TEXT, UnloadTime TEXT",
+                    Columns = new[] { "UniqueKey", "LotId", "CarrierId", "PortId", "AccessStatus", "Capacity", "LoadTime", "UnloadTime" },
+                    EnumCaseByColumn = new Dictionary<string, string> { ["AccessStatus"] = GetAccessStatusCase(legacy518) },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "CarrierSlotMap",
+                    CreateBody = "CarrierKey TEXT NOT NULL, SlotNo INTEGER NOT NULL, MapValue TEXT NOT NULL, PRIMARY KEY (CarrierKey, SlotNo), FOREIGN KEY (CarrierKey) REFERENCES Carrier(UniqueKey) ON DELETE CASCADE",
+                    Columns = new[] { "CarrierKey", "SlotNo", "MapValue" },
+                    EnumCaseByColumn = new Dictionary<string, string> { ["MapValue"] = SlotMapCase },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "Substrate",
+                    CreateBody = "UniqueKey TEXT PRIMARY KEY, Name TEXT, OriginName TEXT, LocationId TEXT, SourcePortId INTEGER, SourceSlot INTEGER, SourceCarrierId TEXT, CurrentCarrierKey TEXT, DestinationPortId INTEGER, DestinationSlot INTEGER, LotId TEXT, RecipeId TEXT, ProcessJobId TEXT, ControlJobId TEXT, TransportStatus TEXT, ProcessingStatus TEXT, IdReadingStatus TEXT, DoNotProcessFlag INTEGER NOT NULL DEFAULT 0, Usage INTEGER NOT NULL DEFAULT 0, FOREIGN KEY (LocationId) REFERENCES Location(Id), FOREIGN KEY (CurrentCarrierKey) REFERENCES Carrier(UniqueKey) ON DELETE CASCADE",
+                    Columns = new[] { "UniqueKey", "Name", "OriginName", "LocationId", "SourcePortId", "SourceSlot", "SourceCarrierId", "CurrentCarrierKey", "DestinationPortId", "DestinationSlot", "LotId", "RecipeId", "ProcessJobId", "ControlJobId", "TransportStatus", "ProcessingStatus", "IdReadingStatus", "DoNotProcessFlag", "Usage" },
+                    EnumCaseByColumn = new Dictionary<string, string>
+                    {
+                        ["TransportStatus"] = TransportCase,
+                        ["ProcessingStatus"] = ProcessingCase,
+                        ["IdReadingStatus"] = IdReadingCase,
+                    },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "SubstrateLocationHistory",
+                    CreateBody = "Id INTEGER PRIMARY KEY AUTOINCREMENT, SubstrateKey TEXT NOT NULL, FromLocationName TEXT NULL, FromLocationKind TEXT, ToLocationName TEXT NULL, ToLocationKind TEXT, ChangeTime TEXT NOT NULL, Reason TEXT NOT NULL, FOREIGN KEY (SubstrateKey) REFERENCES Substrate(UniqueKey) ON DELETE CASCADE, FOREIGN KEY (FromLocationName) REFERENCES Location(Id), FOREIGN KEY (ToLocationName) REFERENCES Location(Id)",
+                    Columns = new[] { "Id", "SubstrateKey", "FromLocationName", "FromLocationKind", "ToLocationName", "ToLocationKind", "ChangeTime", "Reason" },
+                    EnumCaseByColumn = new Dictionary<string, string>
+                    {
+                        ["FromLocationKind"] = ModuleTypeCase,
+                        ["ToLocationKind"] = ModuleTypeCase,
+                    },
+                },
+            };
+        }
+
+        // archive 스키마용(FK/AUTOINCREMENT 없음)
+        private static List<EnumTableRebuildDef> GetArchiveRebuildDefs(bool legacy518)
+        {
+            return new List<EnumTableRebuildDef>
+            {
+                new EnumTableRebuildDef
+                {
+                    Table = "Carrier",
+                    CreateBody = "UniqueKey TEXT PRIMARY KEY, LotId TEXT, CarrierId TEXT, PortId INTEGER, AccessStatus TEXT, Capacity INTEGER, LoadTime TEXT, UnloadTime TEXT",
+                    Columns = new[] { "UniqueKey", "LotId", "CarrierId", "PortId", "AccessStatus", "Capacity", "LoadTime", "UnloadTime" },
+                    EnumCaseByColumn = new Dictionary<string, string> { ["AccessStatus"] = GetAccessStatusCase(legacy518) },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "CarrierSlotMap",
+                    CreateBody = "CarrierKey TEXT NOT NULL, SlotNo INTEGER NOT NULL, MapValue TEXT NOT NULL, PRIMARY KEY (CarrierKey, SlotNo)",
+                    Columns = new[] { "CarrierKey", "SlotNo", "MapValue" },
+                    EnumCaseByColumn = new Dictionary<string, string> { ["MapValue"] = SlotMapCase },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "Substrate",
+                    CreateBody = "UniqueKey TEXT PRIMARY KEY, Name TEXT, OriginName TEXT, LocationId TEXT, SourcePortId INTEGER, SourceSlot INTEGER, SourceCarrierId TEXT, CurrentCarrierKey TEXT, DestinationPortId INTEGER, DestinationSlot INTEGER, LotId TEXT, RecipeId TEXT, ProcessJobId TEXT, ControlJobId TEXT, TransportStatus TEXT, ProcessingStatus TEXT, IdReadingStatus TEXT, DoNotProcessFlag INTEGER NOT NULL DEFAULT 0, Usage INTEGER NOT NULL DEFAULT 0",
+                    Columns = new[] { "UniqueKey", "Name", "OriginName", "LocationId", "SourcePortId", "SourceSlot", "SourceCarrierId", "CurrentCarrierKey", "DestinationPortId", "DestinationSlot", "LotId", "RecipeId", "ProcessJobId", "ControlJobId", "TransportStatus", "ProcessingStatus", "IdReadingStatus", "DoNotProcessFlag", "Usage" },
+                    EnumCaseByColumn = new Dictionary<string, string>
+                    {
+                        ["TransportStatus"] = TransportCase,
+                        ["ProcessingStatus"] = ProcessingCase,
+                        ["IdReadingStatus"] = IdReadingCase,
+                    },
+                },
+                new EnumTableRebuildDef
+                {
+                    Table = "SubstrateLocationHistory",
+                    CreateBody = "Id INTEGER PRIMARY KEY, SubstrateKey TEXT NOT NULL, FromLocationName TEXT NULL, FromLocationKind TEXT, ToLocationName TEXT NULL, ToLocationKind TEXT, ChangeTime TEXT NOT NULL, Reason TEXT NOT NULL",
+                    Columns = new[] { "Id", "SubstrateKey", "FromLocationName", "FromLocationKind", "ToLocationName", "ToLocationKind", "ChangeTime", "Reason" },
+                    EnumCaseByColumn = new Dictionary<string, string>
+                    {
+                        ["FromLocationKind"] = ModuleTypeCase,
+                        ["ToLocationKind"] = ModuleTypeCase,
+                    },
+                },
+            };
+        }
+
+        private List<string> GetExistingColumns(SQLiteConnection conn, SQLiteTransaction tx, string schemaName, string tableName)
+        {
+            var cols = new List<string>();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
+                    ? "PRAGMA table_info(" + QuoteIdentifier(tableName) + ");"
+                    : "PRAGMA " + QuoteIdentifier(schemaName) + ".table_info(" + QuoteIdentifier(tableName) + ");";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                        cols.Add(Convert.ToString(reader["name"]));
+                }
+            }
+            return cols;
+        }
+
+        private string GetColumnDeclType(SQLiteConnection conn, SQLiteTransaction tx, string schemaName, string tableName, string columnName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
+                    ? "PRAGMA table_info(" + QuoteIdentifier(tableName) + ");"
+                    : "PRAGMA " + QuoteIdentifier(schemaName) + ".table_info(" + QuoteIdentifier(tableName) + ");";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (string.Equals(Convert.ToString(reader["name"]), columnName, StringComparison.OrdinalIgnoreCase))
+                            return Convert.ToString(reader["type"]) ?? string.Empty;
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// enum 컬럼이 INTEGER 로 선언된 레거시 테이블을 TEXT 스키마로 재구축한다(멱등: 이미 TEXT 면 no-op).
+        /// 값 매핑은 typeof(값)='integer' 인 것만 CASE 로 이름 변환하고, 이미 TEXT 인 값은 그대로 복사한다.
+        /// </summary>
+        private void RebuildIntegerEnumTables(SQLiteConnection conn, SQLiteTransaction tx, string schemaName, List<EnumTableRebuildDef> defs)
+        {
+            foreach (var def in defs)
+            {
+                if (!TableExists(conn, tx, schemaName, def.Table))
+                    continue;
+
+                // 첫 enum 컬럼의 선언 타입으로 레거시 여부 판정
+                string firstEnumCol = null;
+                foreach (var kv in def.EnumCaseByColumn) { firstEnumCol = kv.Key; break; }
+                if (firstEnumCol == null || !ColumnExists(conn, tx, schemaName, def.Table, firstEnumCol))
+                    continue;
+
+                var declType = GetColumnDeclType(conn, tx, schemaName, def.Table, firstEnumCol);
+                if (declType.IndexOf("INT", StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;   // 이미 TEXT(신규/재구축 완료)
+
+                var existing = GetExistingColumns(conn, tx, schemaName, def.Table);
+                var copyCols = new List<string>();
+                foreach (var c in def.Columns)
+                {
+                    foreach (var e in existing)
+                    {
+                        if (string.Equals(e, c, StringComparison.OrdinalIgnoreCase)) { copyCols.Add(c); break; }
+                    }
+                }
+
+                var selectExprs = new List<string>();
+                foreach (var c in copyCols)
+                {
+                    string caseBody;
+                    if (def.EnumCaseByColumn.TryGetValue(c, out caseBody))
+                    {
+                        selectExprs.Add(
+                            "CASE WHEN typeof(" + QuoteIdentifier(c) + ")='integer' THEN (CASE " + QuoteIdentifier(c) + " " + caseBody + " END) ELSE " + QuoteIdentifier(c) + " END");
+                    }
+                    else
+                    {
+                        selectExprs.Add(QuoteIdentifier(c));
+                    }
+                }
+
+                var oldName = GetQualifiedTableName(schemaName, def.Table);
+                var newName = GetQualifiedTableName(schemaName, def.Table + "_rebuild");
+
+                ExecuteNonQuery(conn, tx, "DROP TABLE IF EXISTS " + newName + ";");
+                ExecuteNonQuery(conn, tx, "CREATE TABLE " + newName + " (" + def.CreateBody + ");");
+                ExecuteNonQuery(conn, tx,
+                    "INSERT INTO " + newName + " (" + string.Join(", ", copyCols.ConvertAll(QuoteIdentifier)) + ") " +
+                    "SELECT " + string.Join(", ", selectExprs) + " FROM " + oldName + ";");
+                ExecuteNonQuery(conn, tx, "DROP TABLE " + oldName + ";");
+                ExecuteNonQuery(conn, tx, "ALTER TABLE " + newName + " RENAME TO " + QuoteIdentifier(def.Table) + ";");
+
+                WriteLog("[DB Migration] " + GetDisplayTableName(schemaName, def.Table)
+                    + " rebuilt with TEXT enum columns (legacy INTEGER affinity).");
+            }
+        }
+
+        /// <summary>
+        /// 5.18(AccessStatus에 Unknown=0 이 존재하던 체계) DB 인지 판정.
+        /// 지문: CarrierExtra.KeyLotQty 컬럼 존재(5.18 전용) 또는 스키마 버전 스탬프 &lt; 2 (6.18 계열 코드가 손대지 않음).
+        /// (마이그레이션 v4 가 KeyLotQty 를 rename 하기 전에 호출해야 정확하다.)
+        /// </summary>
+        private bool DetectLegacy518Scheme(SQLiteConnection conn, SQLiteTransaction tx, string schemaName, Func<SQLiteConnection, SQLiteTransaction, int> getVersion)
+        {
+            if (TableExists(conn, tx, schemaName, "CarrierExtra") &&
+                ColumnExists(conn, tx, schemaName, "CarrierExtra", "KeyLotQty"))
+                return true;
+
+            try
+            {
+                return getVersion(conn, tx) < 2;
+            }
+            catch
+            {
+                // SchemaVersion 테이블조차 없는 신규 DB: 어차피 재구축 대상 데이터가 없어 무해.
+                return true;
+            }
+        }
+        #endregion </Enum Column Affinity Rebuild>
+
         #region <Migration>
         internal void EnsureArchiveSchemaAndMigrate(SQLiteConnection conn, SQLiteTransaction tx)
         {
+            // 주의: 판정(KeyLotQty)은 마이그레이션(v4 rename)보다 먼저 해야 한다.
+            bool archiveLegacy518 = DetectLegacy518Scheme(conn, tx, ArchiveSchemaName, GetArchiveSchemaVersion);
+
             ExecuteNonQuery(conn, tx, GetArchiveCommand());
             ApplyArchiveSchemaMigrations(conn, tx);
+
+            // archive 테이블은 FK 정의가 없어 트랜잭션 안 재구축이 안전하다(DROP 시 연쇄삭제 없음).
+            RebuildIntegerEnumTables(conn, tx, ArchiveSchemaName, GetArchiveRebuildDefs(archiveLegacy518));
         }
         private void MigrateCarrierExtraKeyLotQtyToLotQty(
     SQLiteConnection conn,
@@ -1104,15 +1465,42 @@ CREATE INDEX IF NOT EXISTS archive.IX_ArchiveAt_ArchivedAt
 
         private void ExecuteWorkingTables()
         {
+            bool mainLegacy518;
+
             using (var conn = new SQLiteConnection(_connectionString))
             {
                 conn.Open();
+
+                // 5.18 체계 판정은 v4(KeyLotQty rename) 실행 전에 해야 정확하다.
+                mainLegacy518 = DetectLegacy518Scheme(conn, null, null, GetMainSchemaVersion);
 
                 using (var tx = conn.BeginTransaction())
                 {
                     EnsureMainSchema(conn, tx);
 
                     ApplySchemaMigrations(conn, tx);
+
+                    tx.Commit();
+                }
+            }
+
+            // 레거시 enum(INTEGER) 테이블 재구축: main 은 FK CASCADE 위험(DROP 시 암묵 DELETE) 때문에
+            // 반드시 ForeignKeys=false 별도 연결에서 수행한다. 인덱스는 재구축으로 테이블과 함께
+            // 삭제될 수 있으므로 재구축 이후에 생성한다. (이미 TEXT 인 신규 DB 에서는 전부 no-op)
+            var builderNoFk = new SQLiteConnectionStringBuilder
+            {
+                DataSource = DataBaseFilePath,
+                ForeignKeys = false,
+                JournalMode = SQLiteJournalModeEnum.Wal
+            };
+
+            using (var conn = new SQLiteConnection(builderNoFk.ToString()))
+            {
+                conn.Open();
+
+                using (var tx = conn.BeginTransaction())
+                {
+                    RebuildIntegerEnumTables(conn, tx, null, GetMainRebuildDefs(mainLegacy518));
 
                     ExecuteNonQuery(conn, tx, MaterialSchemaSql.Indexes);
 

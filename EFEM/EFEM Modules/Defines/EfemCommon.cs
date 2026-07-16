@@ -812,14 +812,15 @@ namespace EFEM.Defines.Common
     #endregion </Interfaces>
 
     #region <Enumerations>
+    // [영속화 enum] LocationKind로 저장됨. 저장은 이름으로. 멤버 재배치/삭제 금지 — 끝에만 추가.
     public enum ModuleType
     {
         Unknown = 0,
-        LoadPort,
-        Robot,
-        ProcessModule,
-        Aligner,
-        Normal,
+        LoadPort = 1,
+        Robot = 2,
+        ProcessModule = 3,
+        Aligner = 4,
+        Normal = 5,
     }
     public enum OccupancyChangeReason
     {
@@ -865,6 +866,7 @@ namespace EFEM.Defines.Common
         IN,     // IN 신호
         OUT,    // OUT 신호
         CARR,   // 캐리어 단위
+        RFID,   // RFID 읽기/쓰기
     }
 
     public enum MaterialFormat

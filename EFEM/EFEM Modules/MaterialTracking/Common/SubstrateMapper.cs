@@ -158,9 +158,9 @@ namespace EFEM.MaterialTracking
                 RecipeId = s.RecipeId ?? string.Empty,
                 ProcessJobId = s.ProcessJobId ?? string.Empty,
                 ControlJobId = s.ControlJobId ?? string.Empty,
-                TransportStatus = (int)s.TransportStatus,
-                ProcessingStatus = (int)s.ProcessingStatus,
-                IdReadingStatus = (int)s.IdReadingStatus,
+                TransportStatus = s.TransportStatus,
+                ProcessingStatus = s.ProcessingStatus,
+                IdReadingStatus = s.IdReadingStatus,
                 DoNotProcessFlag = s.DoNotProcessFlag,
                 Usage = s.Usage,
                 Extra = ExtractExtra(s.Extra),
@@ -207,9 +207,9 @@ namespace EFEM.MaterialTracking
             target.ProcessJobId = dto.ProcessJobId ?? string.Empty;
             target.ControlJobId = dto.ControlJobId ?? string.Empty;
 
-            target.TransportStatus = (TransportStates)dto.TransportStatus;
-            target.ProcessingStatus = (ProcessingStates)dto.ProcessingStatus;
-            target.IdReadingStatus = (IdReadingStates)dto.IdReadingStatus;
+            target.TransportStatus = dto.TransportStatus;
+            target.ProcessingStatus = dto.ProcessingStatus;
+            target.IdReadingStatus = dto.IdReadingStatus;
 
             target.DoNotProcessFlag = dto.DoNotProcessFlag;
             target.Usage = dto.Usage;
@@ -271,9 +271,9 @@ namespace EFEM.MaterialTracking
                 ProcessJobId = Get(map, BaseSubstrateAttributeKeys.ProcessJobId).Trim(),
                 ControlJobId = Get(map, BaseSubstrateAttributeKeys.ControlJobId).Trim(),
 
-                TransportStatus = (int)GetEnum(map, BaseSubstrateAttributeKeys.TransPortState, default(TransportStates)),
-                ProcessingStatus = (int)GetEnum(map, BaseSubstrateAttributeKeys.ProcessingState, default(ProcessingStates)),
-                IdReadingStatus = (int)GetEnum(map, BaseSubstrateAttributeKeys.IdReadingState, default(IdReadingStates)),
+                TransportStatus = GetEnum(map, BaseSubstrateAttributeKeys.TransPortState, default(TransportStates)),
+                ProcessingStatus = GetEnum(map, BaseSubstrateAttributeKeys.ProcessingState, default(ProcessingStates)),
+                IdReadingStatus = GetEnum(map, BaseSubstrateAttributeKeys.IdReadingState, default(IdReadingStates)),
 
                 DoNotProcessFlag = GetBool(map, BaseSubstrateAttributeKeys.DoNotProcessFlag, false),
                 Usage = GetBool(map, BaseSubstrateAttributeKeys.Usage, false),
@@ -361,7 +361,7 @@ namespace EFEM.MaterialTracking
         private static T GetEnum<T>(Dictionary<string, string> map, string key, T @default = default(T)) where T : struct
         {
             var s = Get(map, key);
-            return Enum.TryParse<T>(s, true, out var v) ? v : @default;
+            return EnumPersistence.ParseNameOrDefault(s, @default);
         }
 
     }

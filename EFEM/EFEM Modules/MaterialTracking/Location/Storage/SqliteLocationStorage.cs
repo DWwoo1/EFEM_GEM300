@@ -46,7 +46,7 @@ ON CONFLICT(Id) DO UPDATE SET
                     cmd.CommandText = command;
 
                     var idParam = cmd.Parameters.Add("$id", DbType.String);
-                    var kindParam = cmd.Parameters.Add("$kind", DbType.Int32);
+                    var kindParam = cmd.Parameters.Add("$kind", DbType.String);
                     var capacityParam = cmd.Parameters.Add("$capacity", DbType.Int32);
                     var displayNameParam = cmd.Parameters.Add("$displayName", DbType.String);
 
@@ -56,10 +56,11 @@ ON CONFLICT(Id) DO UPDATE SET
                             continue;
 
                         idParam.Value = item.Id;
-                        kindParam.Value = item.LocationKind;
+                        kindParam.Value = item.LocationKind.ToString();
                         capacityParam.Value = item.Capacity;
                         displayNameParam.Value = item.Name ?? string.Empty;
 
+                        MaterialDbContext.LogCommand(cmd);
                         await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                     }
                 }

@@ -243,6 +243,10 @@ namespace FrameOfSystem3.Functional
 
             if (false == FrameOfSystem3.Task.TaskOperator.GetInstance().IsExiting)
             {
+                // 2026.07.02. jhlim [ADD] 랏 이력 기록/백업은 호스트 연결 여부와 무관하게 항상 처리되어야 하므로
+                // ScenarioOperator(호스트 연결 시에만 Execute) 내부가 아닌 여기서 펌핑한다.
+                EFEM.CustomizedByProcessType.PWA500Common.LotHistoryLog.Instance.ExecuteWriteAsync();
+
                 SECSGEM.ScenarioOperator.Instance.Execute();
                 EFEM.Modules.LoadPortManager.Instance.Execute();
                 EFEM.Modules.AtmRobotManager.Instance.Execute();
@@ -1085,6 +1089,40 @@ namespace FrameOfSystem3.Functional
             EFEM.MaterialTracking.SubstrateManager.Instance.SubstrateLocationChanged += locationStateService.OnSubstrateLocationChanged;
             EFEM.MaterialTracking.SubstrateManager.Instance.SubstrateSwapped += locationStateService.OnSubstrateSwapped;
             EFEM.MaterialTracking.SubstrateManager.Instance.SubstrateRecovered += locationStateService.LoadHistoryFromStorage;
+
+            // 2026.07.06. jhlim [ADD] 랏 히스토리에 불변 키(캐리어 방문 키/기판 생성 키)를 함께 실어 기록하도록 해석기 연결.
+            // DB 저장소 도입 시 개명/재작업과 무관한 키 컬럼으로 사용한다. (파일 이력 포맷에는 영향 없음)
+            EFEM.CustomizedByProcessType.PWA500Common.LotHistoryLog.Instance.AttachKeyResolvers(
+                portId => EFEM.MaterialTracking.CarrierManagementServer.Instance.GetCarrierKey(portId),
+                substrateName =>
+                {
+                    var substrates = new System.Collections.Generic.List<EFEM.MaterialTracking.Substrate>();
+                    if (false == EFEM.MaterialTracking.SubstrateManager.Instance.GetSubstratesAll(ref substrates))
+                        return string.Empty;
+
+                    for (int i = 0; i < substrates.Count; ++i)
+                    {
+                        if (substrates[i] != null && string.Equals(substrates[i].Name, substrateName))
+                            return substrates[i].UniqueKey;
+                    }
+
+                    return string.Empty;
+                });
+
+            // 2026.07.06. jhlim [ADD] 랏 히스토리 SQLite 병행 기록/조회 장착.
+            // 파일 저장소가 주(primary)이고 DB는 best-effort - 캐리어 제거 시 이력 행은
+            // SqliteCarrierStorage의 아카이브 트랜잭션에서 일자별 archive DB로 함께 이동된다.
+            // 조회는 파일 우선 + DB 폴백 자동 선택. (설정 토글 없음)
+            if (storageContext.Database != null)
+            {
+                EFEM.CustomizedByProcessType.PWA500Common.LotHistoryLog.Instance.AttachDatabaseStore(
+                    new EFEM.History.SqliteHistoryStore(storageContext.Database));
+                EFEM.CustomizedByProcessType.PWA500Common.LotHistoryLog.Instance.AttachDatabaseQuery(
+                    new EFEM.History.SqliteHistoryQuery(storageContext.Database));
+
+                // 2026.07.09. jhlim [ADD] DB 조회 페이지용 read-only 조회기 장착. (UI 서브뷰가 Provider로 접근)
+                EFEM.MaterialTracking.Inspection.MaterialDatabaseQueryProvider.Configure(storageContext.Database);
+            }
         }
 
         private void BuildJobBinder()
@@ -1779,6 +1817,35 @@ namespace FrameOfSystem3.Functional
             ConfigureLoadPort();
             ConfigureRobot();
             ConfigureProcessModule();
+
+            // 2026.07.13. jhlim [ADD] 로드 전 1회 레거시 변환: 정수 ordinal 로 저장된 enum 복구파일을 이름으로 변환.
+            // (신버전은 AllowIntegerValues=false 로 정수 토큰을 조용히 해석하지 않으므로, 정수 파일은 로드 전 변환이 필수)
+            // BinUnloadingStep 은 BIN/W가 서로 다른 enum(멤버 개수 다름)을 쓰므로, 현재 실행 중인 제품 기준으로 매핑한다.
+            Func<int, string> mapUnloadingStep = ordinal =>
+            {
+                if (Work.AppConfigManager.Instance.ProcessType == Define.DefineEnumProject.AppConfig.EN_PROCESS_TYPE.BIN_SORTER)
+                {
+                    return Enum.IsDefined(typeof(EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500BIN), ordinal)
+                        ? ((EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500BIN)ordinal).ToString()
+                        : EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500BIN.Init.ToString();
+                }
+
+                return Enum.IsDefined(typeof(EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500W), ordinal)
+                    ? ((EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500W)ordinal).ToString()
+                    : EFEM.CustomizedByProcessType.PWA500Common.UnloadingStepTypesFor500W.Init.ToString();
+            };
+
+            EFEM.MaterialTracking.LegacyRecoveryConverter.EnsureConverted(
+                EFEM.Defines.Common.RecoveryFileDefines.CarrierRecoveryFilePath,
+                EFEM.Defines.Common.RecoveryFileDefines.RecoveryFilePath,
+                mapUnloadingStep,
+                EFEM.Defines.Common.AsyncLoggerForEfem.Instance.WriteDebugLog);
+
+            // SubstrateLocationHistory 는 파일당 하나의 JSON 객체가 아니라 줄 단위 append-log(JSONL)라
+            // 위 EnsureConverted(JObject 전체 파싱 모델)로 커버되지 않는다. 별도 경로로 변환한다.
+            EFEM.MaterialTracking.LegacyRecoveryConverter.EnsureLocationHistoryConverted(
+                EFEM.Defines.Common.RecoveryFileDefines.LocationHistoryPath,
+                EFEM.Defines.Common.AsyncLoggerForEfem.Instance.WriteDebugLog);
 
             EFEM.MaterialTracking.SubstrateManager.Instance.LoadRecoveryDataAll();
             EFEM.MaterialTracking.CarrierManagementServer.Instance.LoadRecoveryDataAll();

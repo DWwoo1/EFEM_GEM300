@@ -346,8 +346,8 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                     return;
                 
                 Dictionary<string, string> targetAttributes = MaterialTracking.SubstrateMapper.ExtractDataAll(_selectedCoreSubstrate);
-                FormMaterialEdit materialEdit = new FormMaterialEdit();
-                if (materialEdit.CreateEditForm(targetAttributes))
+                FormMaterialAttributeEdit materialEdit = new FormMaterialAttributeEdit();
+                if (materialEdit.CreateEditForm(targetAttributes, SubstrateFieldLayoutFactory.Create(FrameOfSystem3.Work.AppConfigManager.Instance.ProcessType)))
                 {
                     if (false == _messageBox.ShowMessage("정말로 자재정보를 변경할까요?"))
                         return;
@@ -400,8 +400,8 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationSecsGem.PWA500BIN
                     return;
                 
                 Dictionary<string, string> targetAttributes = MaterialTracking.SubstrateMapper.ExtractDataAll(_selectedBinOrEmptySubstrate);
-                FormMaterialEdit materialEdit = new FormMaterialEdit();
-                if (materialEdit.CreateEditForm(targetAttributes))
+                FormMaterialAttributeEdit materialEdit = new FormMaterialAttributeEdit();
+                if (materialEdit.CreateEditForm(targetAttributes, SubstrateFieldLayoutFactory.Create(FrameOfSystem3.Work.AppConfigManager.Instance.ProcessType)))
                 {
                     if (false == _messageBox.ShowMessage("정말로 자재정보를 변경할까요?"))
                         return;

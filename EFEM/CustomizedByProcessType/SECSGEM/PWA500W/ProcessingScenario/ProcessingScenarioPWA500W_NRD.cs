@@ -2623,7 +2623,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         public override void Execute()
         {
-            _lotHistoryLog.ExecuteWriteAsync();
+            // 2026.07.02. jhlim [DEL] LotHistoryLog 펌핑은 호스트 연결과 무관하게 동작해야 하므로 Initializer.ExecuteForETC로 이동
 
             _functionsForPWA500.ExecuteScanrioToCarrierLoadAsync();
         }

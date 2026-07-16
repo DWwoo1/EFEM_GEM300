@@ -16,7 +16,8 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
                 PWA500CarrierAttributes.KeyLotQty,
                 PWA500CarrierAttributes.KeyProcessStepBeforeSendingCarrier,
                 PWA500CarrierAttributes.KeyTrackInCompleted,
-                PWA500CarrierAttributes.KeyDownloadingRecipeCompleted
+                PWA500CarrierAttributes.KeyDownloadingRecipeCompleted,
+                PWA500CarrierAttributes.KeyLotIdToWrite
             };
         }
         public void CreateAttributes(Dictionary<string, string> extra)
@@ -28,6 +29,7 @@ namespace EFEM.CustomizedByProcessType.PWA500Common
 
             extra[PWA500CarrierAttributes.KeyTrackInCompleted] = bool.FalseString;
             extra[PWA500CarrierAttributes.KeyDownloadingRecipeCompleted] = bool.FalseString;
+            extra[PWA500CarrierAttributes.KeyLotIdToWrite] = string.Empty;
         }
 
         public void InitializeToPublish(Dictionary<string, string> extra, IMaterial material)

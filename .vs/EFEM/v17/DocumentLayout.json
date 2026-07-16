@@ -1,0 +1,236 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\customizedbyprocesstype\\secsgem\\pwa500common\\scenarios\\scenarioreqwafermapdownload.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\secsgem\\pwa500common\\scenarios\\scenarioreqwafermapdownload.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\views\\operation\\operation_main_manualoperation\\materialedit\\substratefieldlayout.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\views\\operation\\operation_main_manualoperation\\materialedit\\substratefieldlayout.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\views\\operation\\operation_main_manualoperation\\materialedit\\carrierfieldlayout.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\views\\operation\\operation_main_manualoperation\\materialedit\\carrierfieldlayout.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\customizedbyprocesstype\\taskwrapper\\pwa500bin\\taskloadportforpwa500bin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\taskwrapper\\pwa500bin\\taskloadportforpwa500bin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\customizedbyprocesstype\\userinterfaces\\operation_main_history\\pwa500common\\carrierdetailview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\userinterfaces\\operation_main_history\\pwa500common\\carrierdetailview.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\views\\operation\\operation_history.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\views\\operation\\operation_history.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\views\\operation\\operation_history.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\views\\operation\\operation_history.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\customizedbyprocesstype\\secsgem\\pwa500common\\defines\\pwa500commondefines.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\secsgem\\pwa500common\\defines\\pwa500commondefines.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|d:\\project\\efem\\pwa-500w\\source\\program\\efem\\efem\\customizedbyprocesstype\\taskwrapper\\pwa500w\\taskatmrobotforpwa500w.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\taskwrapper\\pwa500w\\taskatmrobotforpwa500w.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\customizedbyprocesstype\\taskwrapper\\pwa500bin\\taskatmrobotforpwa500bin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\taskwrapper\\pwa500bin\\taskatmrobotforpwa500bin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\customizedbyprocesstype\\modules\\pwa500w\\defines\\pwa500wdefines.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\customizedbyprocesstype\\modules\\pwa500w\\defines\\pwa500wdefines.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\secsgem\\gem300services\\gem300scenarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\secsgem\\gem300services\\gem300scenarioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\efem\\task\\taskloadport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{998CA191-899B-4AB6-B17A-76EE56EFFC22}|EFEM\\EFEM.csproj|solutionrelative:efem\\task\\taskloadport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ScenarioReqWaferMapDownload.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Scenarios\\ScenarioReqWaferMapDownload.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Scenarios\\ScenarioReqWaferMapDownload.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Scenarios\\ScenarioReqWaferMapDownload.cs*",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Scenarios\\ScenarioReqWaferMapDownload.cs*",
+              "ViewState": "AgIAANwAAAAAAAAAAAAYwPYAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T01:11:33.077Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SubstrateFieldLayout.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\SubstrateFieldLayout.cs",
+              "RelativeDocumentMoniker": "EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\SubstrateFieldLayout.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\SubstrateFieldLayout.cs",
+              "RelativeToolTip": "EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\SubstrateFieldLayout.cs",
+              "ViewState": "AgIAAFgAAAAAAAAAAAAvwGwAAABoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T00:51:21.838Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CarrierFieldLayout.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\CarrierFieldLayout.cs",
+              "RelativeDocumentMoniker": "EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\CarrierFieldLayout.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\CarrierFieldLayout.cs",
+              "RelativeToolTip": "EFEM\\Views\\Operation\\Operation_Main_ManualOperation\\MaterialEdit\\CarrierFieldLayout.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAvwAsAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T00:50:37.875Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "CarrierDetailView.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\UserInterfaces\\Operation_Main_History\\PWA500Common\\CarrierDetailView.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\UserInterfaces\\Operation_Main_History\\PWA500Common\\CarrierDetailView.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\UserInterfaces\\Operation_Main_History\\PWA500Common\\CarrierDetailView.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\UserInterfaces\\Operation_Main_History\\PWA500Common\\CarrierDetailView.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T00:46:42.116Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Operation_History.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_History.cs",
+              "RelativeDocumentMoniker": "EFEM\\Views\\Operation\\Operation_History.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_History.cs",
+              "RelativeToolTip": "EFEM\\Views\\Operation\\Operation_History.cs",
+              "ViewState": "AgIAACUAAAAAAAAAAAAAwDEAAABUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T00:45:40.995Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Operation_History.cs [\uB514\uC790\uC778]",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_History.cs",
+              "RelativeDocumentMoniker": "EFEM\\Views\\Operation\\Operation_History.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Views\\Operation\\Operation_History.cs [\uB514\uC790\uC778]",
+              "RelativeToolTip": "EFEM\\Views\\Operation\\Operation_History.cs [\uB514\uC790\uC778]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-16T00:45:34.886Z",
+              "EditorCaption": " [\uB514\uC790\uC778]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "TaskAtmRobotForPWA500W.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500W\\TaskAtmRobotForPWA500W.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500W\\TaskAtmRobotForPWA500W.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500W\\TaskAtmRobotForPWA500W.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500W\\TaskAtmRobotForPWA500W.cs",
+              "ViewState": "AgIAADINAAAAAAAAAAAtwEUNAABlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T01:03:41.197Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PWA500CommonDefines.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Defines\\PWA500CommonDefines.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Defines\\PWA500CommonDefines.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Defines\\PWA500CommonDefines.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\SECSGEM\\PWA500Common\\Defines\\PWA500CommonDefines.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFAAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T01:02:36.989Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "PWA500WDefines.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\Modules\\PWA500W\\Defines\\PWA500WDefines.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\Modules\\PWA500W\\Defines\\PWA500WDefines.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\Modules\\PWA500W\\Defines\\PWA500WDefines.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\Modules\\PWA500W\\Defines\\PWA500WDefines.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T01:02:11.576Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TaskLoadPortForPWA500BIN.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskLoadPortForPWA500BIN.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskLoadPortForPWA500BIN.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskLoadPortForPWA500BIN.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskLoadPortForPWA500BIN.cs",
+              "ViewState": "AgIAADEFAAAAAAAAAAAQwFEFAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-14T06:15:54.222Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "TaskAtmRobotForPWA500BIN.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskAtmRobotForPWA500BIN.cs",
+              "RelativeDocumentMoniker": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskAtmRobotForPWA500BIN.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskAtmRobotForPWA500BIN.cs",
+              "RelativeToolTip": "EFEM\\CustomizedByProcessType\\TaskWrapper\\PWA500BIN\\TaskAtmRobotForPWA500BIN.cs",
+              "ViewState": "AgIAANEEAAAAAAAAAAArwBsFAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-15T01:02:53.848Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Gem300ScenarioService.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\SECSGEM\\GEM300Services\\Gem300ScenarioService.cs",
+              "RelativeDocumentMoniker": "EFEM\\SECSGEM\\GEM300Services\\Gem300ScenarioService.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\SECSGEM\\GEM300Services\\Gem300ScenarioService.cs",
+              "RelativeToolTip": "EFEM\\SECSGEM\\GEM300Services\\Gem300ScenarioService.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAUwC0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-14T07:05:17.197Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "TaskLoadPort.cs",
+              "DocumentMoniker": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Task\\TaskLoadPort.cs",
+              "RelativeDocumentMoniker": "EFEM\\Task\\TaskLoadPort.cs",
+              "ToolTip": "D:\\PROJECT\\EFEM\\PWA-500W\\Source\\PROGRAM\\EFEM\\EFEM\\Task\\TaskLoadPort.cs",
+              "RelativeToolTip": "EFEM\\Task\\TaskLoadPort.cs",
+              "ViewState": "AgIAAOkFAAAAAAAAAAAcwAUGAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-14T05:28:25.667Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -109,7 +109,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
         //private QueuedScenarioInfo _executingScenarioInfo = null;
         //private readonly ConcurrentQueue<QueuedScenarioInfo> _queuedScenario = new ConcurrentQueue<QueuedScenarioInfo>();
         private const string NameOfPM = "PWA500W";
-        
+
         //private const string _recipeBasePathToDownload = @"\\192.168.100.200\Shared\Download";
         //private const string _recipeBasePathToDownload = @"\\192.168.100.150\EFEM\RMS\PWA500W\Download";
 
@@ -1656,7 +1656,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
         public override void Execute()
         {
-            _lotHistoryLog.ExecuteWriteAsync();
+            // 2026.07.02. jhlim [DEL] LotHistoryLog 펌핑은 호스트 연결과 무관하게 동작해야 하므로 Initializer.ExecuteForETC로 이동
 
             _functionsForPWA500.ExecuteScanrioToCarrierLoadAsync();
         }
@@ -3527,24 +3527,7 @@ namespace FrameOfSystem3.SECSGEM.Scenario
 
                 case MessagesToReceive.ResponseDownloadRecipe:
                     {
-                        //bool scenarioPermission = true;
-                        //if (false == messagePairs.TryGetValue(ResultKeys.KeyResult, out string resultFromClient) ||
-                        //    false == messagePairs.TryGetValue(ResultKeys.KeyDescription, out _))
-                        //    scenarioPermission = false;
-
-                        //if (resultFromClient.Equals(EN_MESSAGE_RESULT.OK.ToString()))
-                        //    scenarioPermission = true;
-                        //else
-                        //    scenarioPermission = false;
-
-                        //if (IsScenarioRunning(EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD))
-                        //{
-                        //    UpdateScenarioPermission(EN_SCENARIO.SCENARIO_REQ_RECIPE_DOWNLOAD, scenarioPermission);
-                        //}
-
-                        //return scenarioPermission;
-
-                       bool scenarioPermission = true;
+                        bool scenarioPermission = true;
                         if (false == messagePairs.TryGetValue(ResultKeys.KeyResult, out string resultFromClient) ||
                             false == messagePairs.TryGetValue(ResultKeys.KeyDescription, out _))
                             scenarioPermission = false;

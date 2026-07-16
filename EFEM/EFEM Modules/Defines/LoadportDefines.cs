@@ -42,22 +42,29 @@ namespace EFEM.Defines.LoadPort
         VerificationFailed
     }
 
+    // [영속화 enum] 저장은 멤버 "이름"으로만 한다(정수 저장 금지). 멤버 재배치/삭제 금지 — 필요시 끝에만 추가.
+    // 주의(레거시 호환): 5.18 이하 버전은 맨 앞에 Unknown=0 이 있어 정수 저장 시 값이 1씩 컸다
+    //   (5.18: Unknown=0, NotAccessed=1, InAccessed=2, CarrierCompleted=3, CarrierStopped=4).
+    //   커밋 6c82adf(2026-04-23)에서 Unknown을 제거해 ordinal이 밀렸고, 이로 인해 5.18이 저장한
+    //   InAccessed(=2)가 신버전에서 CarrierCompleted(=2)로 오독되어 미처리 캐리어가 조기 배출되는 사고가 있었다.
+    //   레거시 정수 복구 데이터는 반드시 1회 변환기(scheme-aware)에서 이 5.18 매핑으로 해석해야 한다.
     public enum CarrierAccessStates
     {
-        Unknown,
-        NotAccessed,
-        InAccessed,
-        CarrierCompleted,
-        CarrierStopped
+        //Unknown,   // 5.18 이하에서 0 이었음(제거됨). 절대 다시 넣지 말 것 — ordinal이 다시 밀린다.
+        NotAccessed = 0,
+        InAccessed = 1,
+        CarrierCompleted = 2,
+        CarrierStopped = 3,
     }
+    // [영속화 enum] 저장은 이름으로. 멤버 재배치/삭제 금지 — 끝에만 추가.
     public enum CarrierSlotMapStates
     {
         Undefined = 0,          // 초기 상태
-        Empty,                  // 자재 없음
-        NotEmpty,              // 있으나 사용 불가
-        CorrectlyOccupied,     // 자재 있음(정상)
-        DoubleSlotted,         // 슬롯 중첩(이중 감지)
-        CrossSlotted           // 
+        Empty = 1,              // 자재 없음
+        NotEmpty = 2,           // 있으나 사용 불가
+        CorrectlyOccupied = 3,  // 자재 있음(정상)
+        DoubleSlotted = 4,      // 슬롯 중첩(이중 감지)
+        CrossSlotted = 5,       //
     }
 
     public enum LoadPortAccessMode
@@ -284,6 +291,11 @@ namespace EFEM.Defines.LoadPort
             {
                 WriteLog(LogTitleTypes.CARR, "Carrier has been removed");
             }
+        }
+        // 2026.07.08. jhlim [ADD] RFID 읽기/쓰기 기록 일반화. RFIDManager가 포트별로 이 로거를 통해 호출한다.
+        public void WriteRfidLog(string message)
+        {
+            WriteLog(LogTitleTypes.RFID, message);
         }
     }
     public class LoadPortStateInformation

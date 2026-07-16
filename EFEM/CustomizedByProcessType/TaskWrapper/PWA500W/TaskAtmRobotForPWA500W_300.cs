@@ -103,12 +103,14 @@ namespace FrameOfSystem3.Task
         #endregion </Properties>
 
         #region <Type>
+        // [영속화 enum] Substrate.Extra(BinUnloadingStep)에 저장됨(W_300 전용). 저장은 이름으로.
+        // 멤버 재배치/삭제 금지 — 끝에만 추가.
         private enum UnloadingStepTypes
         {
             Init = 0,
-            AfterIdAssignment,
-            AfterBinTrackOut,
-            Finished,
+            AfterIdAssignment = 1,
+            AfterBinTrackOut = 2,
+            Finished = 3,
         }
         #endregion </Type>
 
@@ -555,7 +557,7 @@ namespace FrameOfSystem3.Task
                                 if (currentStep == (int)UnloadingStepTypes.Init)
                                 {
                                     // Step 증가
-                                    int nextStep = (int)UnloadingStepTypes.AfterIdAssignment;
+                                    UnloadingStepTypes nextStep = UnloadingStepTypes.AfterIdAssignment;
                                     _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
                                 }
 
@@ -565,7 +567,7 @@ namespace FrameOfSystem3.Task
                                 #region <2. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>
                                 string ringId = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
 
-                                _lotHistoryLog.WriteSubstrateHistoryForAssignSubstrateId(portId, ringId, newSubstrateId);
+                                _lotHistoryLog.WriteSubstrateHistoryForAssignSubstrateId(portId, ringId, newSubstrateId, substrate.UniqueKey);
 
                                 // 서버에서 받은 이름을 이 웨이퍼의 이름으로 설정한다.
                                 //var key = substrate.UniqueKey;
@@ -607,7 +609,7 @@ namespace FrameOfSystem3.Task
                                 if (currentStep == (int)UnloadingStepTypes.AfterIdAssignment)
                                 {
                                     // Step 증가
-                                    int nextStep = (int)UnloadingStepTypes.AfterBinTrackOut;
+                                    UnloadingStepTypes nextStep = UnloadingStepTypes.AfterBinTrackOut;
                                     _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
                                     // 아래에서 저장하므로 패스
                                     //_substrateManager.SaveDataByKey(substrate.UniqueKey);
@@ -2967,14 +2969,14 @@ namespace FrameOfSystem3.Task
         private int GetUnloadingStep(ref Substrate substrate)
         {
             var step = substrate.GetAttribute(PWA500SubstrateAttributes.BinUnloadingStep);
-            if (false == int.TryParse(step, out int unloadingStep))
+            if (false == EFEM.MaterialTracking.EnumPersistence.TryParseName<UnloadingStepTypes>(step, out var unloadingStep))
             {
-                // 파싱 불가면 0으로 고정
-                unloadingStep = (int)UnloadingStepTypes.Init;
+                // 파싱 불가면 Init으로 고정
+                unloadingStep = UnloadingStepTypes.Init;
                 _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, unloadingStep.ToString());
             }
 
-            return unloadingStep;
+            return (int)unloadingStep;
         }
         private bool HasSameSourceSubstrate(Substrate substrate, string sourceCarrierId, int portId, string key)
         {

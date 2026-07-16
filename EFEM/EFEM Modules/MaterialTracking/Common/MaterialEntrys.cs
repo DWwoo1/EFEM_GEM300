@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
+using EFEM.Defines.Common;            // ModuleType
+using EFEM.Defines.LoadPort;          // CarrierAccessStates, CarrierSlotMapStates
+using EFEM.Defines.MaterialTracking;  // TransportStates, ProcessingStates, IdReadingStates
+
 namespace EFEM.MaterialTracking
 {
     [DataContract(Name = "Substrate")]
@@ -21,9 +25,9 @@ namespace EFEM.MaterialTracking
         [DataMember(Order = 12)] public string RecipeId { get; set; }
         [DataMember(Order = 13)] public string ProcessJobId { get; set; }
         [DataMember(Order = 14)] public string ControlJobId { get; set; }
-        [DataMember(Order = 15)] public int TransportStatus { get; set; }
-        [DataMember(Order = 16)] public int ProcessingStatus { get; set; }
-        [DataMember(Order = 17)] public int IdReadingStatus { get; set; }
+        [DataMember(Order = 15)] public TransportStates TransportStatus { get; set; }
+        [DataMember(Order = 16)] public ProcessingStates ProcessingStatus { get; set; }
+        [DataMember(Order = 17)] public IdReadingStates IdReadingStatus { get; set; }
         [DataMember(Order = 18)] public bool DoNotProcessFlag { get; set; }
         [DataMember(Order = 19)] public bool Usage { get; set; }
 
@@ -43,15 +47,15 @@ namespace EFEM.MaterialTracking
         [DataMember(Order = 4)] 
         public int PortId { get; set; }
         [DataMember(Order = 5)]
-        public int AccessStatus { get; set; }
+        public CarrierAccessStates AccessStatus { get; set; }
         [DataMember(Order = 6)]
         public int Capacity { get; set; }
-        [DataMember(Order = 96)] 
+        [DataMember(Order = 96)]
         public string LoadTime { get; set; }
-        [DataMember(Order = 97)] 
+        [DataMember(Order = 97)]
         public string UnloadTime { get; set; }
         [DataMember(Order = 98)]
-        public Dictionary<int, int> SlotMaps { get; set; }
+        public Dictionary<int, CarrierSlotMapStates> SlotMaps { get; set; }
         [DataMember(Order = 99)]
         public Dictionary<string, string> Extra { get; set; }
     }
@@ -111,9 +115,9 @@ namespace EFEM.MaterialTracking
         public SubstrateLocationChangeItem(
             string substrateKey,
             string fromLocationName,
-            int fromLocationKind,
+            ModuleType fromLocationKind,
             string toLocationName,
-            int toLocationKind,
+            ModuleType toLocationKind,
             DateTime changeTime,
             string reason)
         {
@@ -135,9 +139,9 @@ namespace EFEM.MaterialTracking
 
         public string SubstrateKey { get; }
         public string FromLocationName { get; }
-        public int FromLocationKind { get; }
+        public ModuleType FromLocationKind { get; }
         public string ToLocationName { get; }
-        public int ToLocationKind { get; }
+        public ModuleType ToLocationKind { get; }
         public DateTime ChangeTime { get; }
         public string Reason { get; }
     }
@@ -146,7 +150,7 @@ namespace EFEM.MaterialTracking
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public int LocationKind { get; set; }
+        public ModuleType LocationKind { get; set; }
         public int Capacity { get; set; }
     }
     public sealed class SubstrateProcessingHistoryItem

@@ -745,6 +745,9 @@ namespace FrameOfSystem3.Views
 
                         FrameOfSystem3.Task.TaskOperator.GetInstance().IsExiting = true;
 
+                        // 2026.07.02. jhlim [ADD] 종료 전 큐에 남은 랏 이력을 모두 기록한다.
+                        EFEM.CustomizedByProcessType.PWA500Common.LotHistoryLog.Instance.FlushAll();
+
                         // 2021.10.06. jhlim [ADD] 통신 및 시나리오를 종료한다.
                         CloseScenarioHandler();
 

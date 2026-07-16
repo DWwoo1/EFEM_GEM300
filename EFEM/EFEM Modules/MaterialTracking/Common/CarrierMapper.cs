@@ -17,6 +17,17 @@ namespace EFEM.MaterialTracking
         private const string Carrier = "CARRIER";
         private const char Separator = '_';
 
+        // 코어(Base) 캐리어 키 셋 — Extra 분리용
+        private static readonly HashSet<string> _commonKeys = new HashSet<string>(StringComparer.Ordinal)
+        {
+            BaseCarrierAttributeKeys.UniqueKey,
+            BaseCarrierAttributeKeys.LotId,
+            BaseCarrierAttributeKeys.CarrierId,
+            BaseCarrierAttributeKeys.CarrierAccessStatus,
+            BaseCarrierAttributeKeys.LoadTime,
+            BaseCarrierAttributeKeys.UnloadTime,
+        };
+
         public static string MakeCarrierKey(int portId)
         {
             var now = DateTime.Now;
@@ -61,7 +72,7 @@ namespace EFEM.MaterialTracking
                 UniqueKey = s.UniqueKey ?? string.Empty,
                 LotId = s.LotId ?? string.Empty,
                 CarrierId = s.CarrierId ?? s.UniqueKey ?? string.Empty,
-                AccessStatus = (int)s.AccessingStatus,
+                AccessStatus = s.AccessingStatus,
                 PortId = s.PortId,
                 Capacity = s.Capacity,
                 LoadTime = s.LoadTime.ToString(ETC.DateTimeFormat),
@@ -82,7 +93,7 @@ namespace EFEM.MaterialTracking
 
             target.LotId = dto.LotId;
             target.CarrierId = dto.CarrierId;
-            target.AccessingStatus = (CarrierAccessStates)dto.AccessStatus;
+            target.AccessingStatus = dto.AccessStatus;
             target.Capacity = dto.Capacity;
 
             DateTime.TryParse(dto.LoadTime, out var loadTime);
@@ -96,7 +107,7 @@ namespace EFEM.MaterialTracking
             {
                 foreach (var item in dto.SlotMaps)
                 {
-                    maps[item.Key] = (CarrierSlotMapStates)item.Value;
+                    maps[item.Key] = item.Value;
                 }
             }
             target.SetSlotMaps(maps);
@@ -130,13 +141,13 @@ namespace EFEM.MaterialTracking
             return c;
         }
 
-        private static Dictionary<int, int> ExtractSlotMaps(IReadOnlyDictionary<int, CarrierSlotMapStates> maps)
+        private static Dictionary<int, CarrierSlotMapStates> ExtractSlotMaps(IReadOnlyDictionary<int, CarrierSlotMapStates> maps)
         {
             if (maps == null || maps.Count == 0) return null;
-            var slotMaps = new Dictionary<int, int>();
+            var slotMaps = new Dictionary<int, CarrierSlotMapStates>();
             foreach (var kv in maps)
             {
-                slotMaps[kv.Key] = (int)kv.Value;
+                slotMaps[kv.Key] = kv.Value;
             }
 
             return slotMaps;
@@ -153,32 +164,86 @@ namespace EFEM.MaterialTracking
             return extra.Count == 0 ? null : extra;
         }
 
+        // ─────────────────────────────────────────────────────────────
+        // 문자열 왕복(편집 UI용) — SubstrateMapper 미러
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 캐리어의 Base 키 + Extra 를 하나의 문자열 맵으로 평탄화한다(편집 폼 입력용).
+        /// </summary>
+        public static Dictionary<string, string> ExtractDataAll(Carrier c)
+        {
+            if (c == null) return new Dictionary<string, string>();
+
+            var data = new Dictionary<string, string>
+            {
+                [BaseCarrierAttributeKeys.UniqueKey]           = c.UniqueKey ?? string.Empty,
+                [BaseCarrierAttributeKeys.CarrierId]           = c.CarrierId ?? string.Empty,
+                [BaseCarrierAttributeKeys.LotId]               = c.LotId ?? string.Empty,
+                [BaseCarrierAttributeKeys.CarrierAccessStatus] = c.AccessingStatus.ToString(),
+                [BaseCarrierAttributeKeys.LoadTime]            = c.LoadTime.ToString(BaseCarrierAttributeKeys.DateTimeFormat),
+                [BaseCarrierAttributeKeys.UnloadTime]          = c.UnloadTime.ToString(BaseCarrierAttributeKeys.DateTimeFormat),
+            };
+
+            var extra = ExtractExtra(c.Extra);
+            if (extra != null)
+            {
+                foreach (var kv in extra)
+                    data[kv.Key] = kv.Value;
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// 편집 폼이 돌려준 문자열 맵을 파싱해 Base 값(CarrierItem)과 Extra(out)로 나눈다.
+        /// UniqueKey 가 비어 있으면 null 을 반환한다.
+        /// </summary>
+        public static CarrierItem GetCarrierDataFromAttributes(Dictionary<string, string> map, out Dictionary<string, string> extra)
+        {
+            extra = null;
+            if (map == null) return null;
+
+            var uniqueKey = Get(map, BaseCarrierAttributeKeys.UniqueKey).Trim();
+            if (string.IsNullOrEmpty(uniqueKey)) return null;
+
+            var dto = new CarrierItem
+            {
+                UniqueKey    = uniqueKey,
+                CarrierId    = Get(map, BaseCarrierAttributeKeys.CarrierId).Trim(),
+                LotId        = Get(map, BaseCarrierAttributeKeys.LotId).Trim(),
+                AccessStatus = GetEnum(map, BaseCarrierAttributeKeys.CarrierAccessStatus, default(CarrierAccessStates)),
+                LoadTime     = Get(map, BaseCarrierAttributeKeys.LoadTime),
+                UnloadTime   = Get(map, BaseCarrierAttributeKeys.UnloadTime),
+            };
+
+            extra = GetExtraDataFromAttributesAll(map);
+            return dto;
+        }
+
+        public static Dictionary<string, string> GetExtraDataFromAttributesAll(Dictionary<string, string> map)
+        {
+            var extra = new Dictionary<string, string>();
+            if (map == null) return extra;
+
+            foreach (var kv in map)
+            {
+                if (false == _commonKeys.Contains(kv.Key))
+                    extra[kv.Key] = kv.Value;
+            }
+
+            return extra;
+        }
+
         private static string Get(Dictionary<string, string> map, string key)
         {
             return map.TryGetValue(key, out var v) ? (v ?? string.Empty) : string.Empty;
         }
 
-        //private static string GetOrDefault(Dictionary<string, string> map, string key, string @default)
-        //{
-        //    return map.TryGetValue(key, out var v) ? (v ?? string.Empty) : (@default ?? string.Empty);
-        //}
-
-        //private static int GetInt(Dictionary<string, string> map, string key, int @default = 0)
-        //{
-        //    var s = Get(map, key);
-        //    return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : @default;
-        //}
-
-        //private static bool GetBool(Dictionary<string, string> map, string key, bool @default = false)
-        //{
-        //    var s = Get(map, key);
-        //    return bool.TryParse(s, out var v) ? v : @default;
-        //}
-
-        //private static T GetEnum<T>(Dictionary<string, string> map, string key, T @default = default(T)) where T : struct
-        //{
-        //    var s = Get(map, key);
-        //    return Enum.TryParse<T>(s, true, out var v) ? v : @default;
-        //}
+        private static T GetEnum<T>(Dictionary<string, string> map, string key, T @default = default(T)) where T : struct
+        {
+            var s = Get(map, key);
+            return EnumPersistence.ParseNameOrDefault(s, @default);
+        }
     }
 }

@@ -142,6 +142,7 @@ WHERE UniqueKey = $key;
 ";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         if (await reader.ReadAsync().ConfigureAwait(false))
@@ -167,6 +168,7 @@ WHERE CarrierKey = $key;
                     //cmd.Parameters.AddWithValue("@Key", key);
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         if (await reader.ReadAsync().ConfigureAwait(false))
@@ -277,7 +279,7 @@ WHERE CarrierKey = $key;
             if (dto.Extra == null)
                 dto.Extra = new Dictionary<string, string>(StringComparer.Ordinal);
             if (dto.SlotMaps == null)
-                dto.SlotMaps = new Dictionary<int, int>();
+                dto.SlotMaps = new Dictionary<int, EFEM.Defines.LoadPort.CarrierSlotMapStates>();
 
             return UpsertInternalAsync(dto);
         }
@@ -298,6 +300,7 @@ SELECT UniqueKey, LotId, CarrierId, PortId,
 FROM Carrier;
 ";
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
@@ -329,6 +332,7 @@ WHERE PortId = $portId
 LIMIT 1;
 ";
                     cmd.Parameters.Add("$portId", DbType.Int32).Value = portId;
+                    MaterialDbContext.LogCommand(cmd);
                     var result = cmd.ExecuteScalar();
                     if (result != null && result != DBNull.Value)
                     {
@@ -349,6 +353,7 @@ LIMIT 1;
                 {
                     cmd.CommandText = "SELECT 1 FROM Carrier WHERE UniqueKey = $key LIMIT 1;";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
+                    MaterialDbContext.LogCommand(cmd);
                     var r = cmd.ExecuteScalar();
 
                     return r != null;
@@ -384,11 +389,12 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.Parameters.Add("$lotId", DbType.String).Value = dto.LotId;
                     cmd.Parameters.Add("$cid", DbType.String).Value = dto.CarrierId;
                     cmd.Parameters.Add("$portId", DbType.Int32).Value = dto.PortId;
-                    cmd.Parameters.Add("$accessStatus", DbType.Int32).Value = dto.AccessStatus;
+                    cmd.Parameters.Add("$accessStatus", DbType.String).Value = dto.AccessStatus.ToString();
                     cmd.Parameters.Add("$capacity", DbType.Int32).Value = dto.Capacity;
                     cmd.Parameters.Add("$loadTime", DbType.String).Value = dto.LoadTime;
                     cmd.Parameters.Add("$unloadTime", DbType.String).Value = dto.UnloadTime;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -442,6 +448,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.CommandText = "DELETE FROM CarrierSlotMap WHERE CarrierKey = $key;";
                     cmd.Parameters.Add("$key", DbType.String).Value = dto.UniqueKey;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -460,12 +467,14 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                         cmd.Parameters.Add(pSlot);
                         var pVal = cmd.CreateParameter();
                         pVal.ParameterName = "$mapVal";
+                        pVal.DbType = DbType.String;
                         cmd.Parameters.Add(pVal);
 
                         foreach (var kv in dto.SlotMaps)
                         {
                             pSlot.Value = kv.Key;
-                            pVal.Value = kv.Value;
+                            pVal.Value = kv.Value.ToString();   // enum 이름으로 저장
+                            MaterialDbContext.LogCommand(cmd);
                             await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                         }
                     }
@@ -639,6 +648,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     }
                 }
 
+                MaterialDbContext.LogCommand(cmd);
                 await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
             }
         }
@@ -656,6 +666,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.CommandText = "DELETE FROM Carrier WHERE UniqueKey = $key;";
                     cmd.Parameters.Add("$key", DbType.String).Value = key;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             });
@@ -681,6 +692,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                 {
                     cmd.Transaction = tx;
                     cmd.CommandText = $"ATTACH DATABASE '{escapedPath}' AS archive;";
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -693,6 +705,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     //cmd.CommandText = ArchiveSchemaSql.ArchiveSchema;
 
                     cmd.CommandText = _db.GetArchiveCommand();
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -715,6 +728,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -732,6 +746,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
     WHERE CarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -743,6 +758,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.CommandText = _db.GetArchiveCarrierExtraCommand();
 
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -773,6 +789,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
     ";
 
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -782,6 +799,7 @@ ON CONFLICT(UniqueKey) DO UPDATE SET
                     cmd.Transaction = tx;
                     cmd.CommandText = _db.GetArchiveSubstrateExtraCommand();
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -830,6 +848,7 @@ JOIN Substrate AS s
 WHERE s.CurrentCarrierKey = $key;
 ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -855,6 +874,7 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -867,6 +887,7 @@ WHERE s.CurrentCarrierKey = $key;
     VALUES ($key, 0, datetime('now'));
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -882,6 +903,42 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                }
+
+                // 11-1) 2026.07.06. jhlim [ADD] 랏 히스토리 이벤트 -> archive.LotHistoryEvent
+                // 이력 테이블은 Carrier와 FK가 없어 12)의 CASCADE에 포함되지 않으므로 여기서 함께 이동한다.
+                // (캐리어 수명주기 = 이력 archive 이동 시점. Id는 archive 자체 AUTOINCREMENT 사용)
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = @"
+    INSERT INTO archive.LotHistoryEvent (
+        EventTime, Category, PortId,
+        CarrierKey, CarrierId, LotId,
+        SubstrateKey, SubstrateName,
+        CarrierEventCode, SubstrateEventCode, Message
+    )
+    SELECT
+        EventTime, Category, PortId,
+        CarrierKey, CarrierId, LotId,
+        SubstrateKey, SubstrateName,
+        CarrierEventCode, SubstrateEventCode, Message
+    FROM LotHistoryEvent
+    WHERE CarrierKey = $key;
+    ";
+                    cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
+                    await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
+                }
+
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = "DELETE FROM LotHistoryEvent WHERE CarrierKey = $key;";
+                    cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -891,6 +948,7 @@ WHERE s.CurrentCarrierKey = $key;
                     cmd.Transaction = tx;
                     cmd.CommandText = "DELETE FROM Carrier WHERE UniqueKey = $key;";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -910,6 +968,7 @@ WHERE s.CurrentCarrierKey = $key;
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = "DETACH DATABASE archive;";
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             });
@@ -937,6 +996,7 @@ WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -954,6 +1014,7 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE CarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -965,6 +1026,7 @@ WHERE s.CurrentCarrierKey = $key;
                     cmd.CommandText = _db.GetArchiveCarrierExtraCommand();
 
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -995,6 +1057,7 @@ WHERE s.CurrentCarrierKey = $key;
     ";
 
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1004,6 +1067,7 @@ WHERE s.CurrentCarrierKey = $key;
                     cmd.Transaction = tx;
                     cmd.CommandText = _db.GetArchiveSubstrateExtraCommand();
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1027,6 +1091,7 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1052,6 +1117,7 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1064,6 +1130,7 @@ WHERE s.CurrentCarrierKey = $key;
     VALUES ($key, 0, datetime('now'));
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1079,6 +1146,7 @@ WHERE s.CurrentCarrierKey = $key;
     WHERE s.CurrentCarrierKey = $key;
     ";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 
@@ -1088,6 +1156,7 @@ WHERE s.CurrentCarrierKey = $key;
                     cmd.Transaction = tx;
                     cmd.CommandText = "DELETE FROM Carrier WHERE UniqueKey = $key;";
                     cmd.Parameters.Add("$key", DbType.String).Value = carrierKey;
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             });
@@ -1333,11 +1402,13 @@ WHERE s.CurrentCarrierKey = $key;
                 LotId = reader.IsDBNull(1) ? null : reader.GetString(1),
                 CarrierId = reader.IsDBNull(2) ? null : reader.GetString(2),
                 PortId = reader.IsDBNull(3) ? 0 : Convert.ToInt32(reader.GetValue(3)),
-                AccessStatus = reader.IsDBNull(4) ? 0 : Convert.ToInt32(reader.GetValue(4)),
+                AccessStatus = reader.IsDBNull(4)
+                    ? EFEM.Defines.LoadPort.CarrierAccessStates.NotAccessed
+                    : EnumPersistence.ParseNameOrDefault(Convert.ToString(reader.GetValue(4)), EFEM.Defines.LoadPort.CarrierAccessStates.InAccessed),
                 Capacity = reader.IsDBNull(5) ? 0 : Convert.ToInt32(reader.GetValue(5)),
                 LoadTime = reader.IsDBNull(6) ? null : reader.GetString(6),
                 UnloadTime = reader.IsDBNull(7) ? null : reader.GetString(7),
-                SlotMaps = new Dictionary<int, int>(),
+                SlotMaps = new Dictionary<int, EFEM.Defines.LoadPort.CarrierSlotMapStates>(),
                 Extra = new Dictionary<string, string>(StringComparer.Ordinal)
             };
 
@@ -1357,6 +1428,7 @@ FROM CarrierExtra
 WHERE CarrierKey = $key;
 ";
                 cmd.Parameters.Add("$key", DbType.String).Value = key;
+                MaterialDbContext.LogCommand(cmd);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -1381,9 +1453,9 @@ WHERE CarrierKey = $key;
             }
             return dict;
         }
-        private static Dictionary<int, int> LoadCarrierSlotMap(SQLiteConnection conn, string key)
+        private static Dictionary<int, EFEM.Defines.LoadPort.CarrierSlotMapStates> LoadCarrierSlotMap(SQLiteConnection conn, string key)
         {
-            var dict = new Dictionary<int, int>();
+            var dict = new Dictionary<int, EFEM.Defines.LoadPort.CarrierSlotMapStates>();
             using (var cmd = conn.CreateCommand())
             {
                 cmd.CommandText = @"
@@ -1393,12 +1465,15 @@ WHERE CarrierKey = $key
 ORDER BY SlotNo;
 ";
                 cmd.Parameters.Add("$key", DbType.String).Value = key;
+                MaterialDbContext.LogCommand(cmd);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         var slot = Convert.ToInt32(reader.GetValue(0));
-                        var mv = Convert.ToInt32(reader.GetValue(1));
+                        var mv = EnumPersistence.ParseNameOrDefault(
+                            Convert.ToString(reader.GetValue(1)),
+                            EFEM.Defines.LoadPort.CarrierSlotMapStates.Undefined);
                         dict[slot] = mv;
                     }
                 }

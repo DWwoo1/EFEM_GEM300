@@ -95,16 +95,6 @@ namespace FrameOfSystem3.Task
         }
         #endregion </Properties>
 
-        #region <Type>
-        private enum UnloadingStepTypes
-        {
-            Init = 0,
-            AfterIdAssignment,
-            AfterBinTrackOut,
-            Finished,
-        }
-        #endregion </Type>
-
         #region <Methods>
 
         #region <Overrids>
@@ -497,7 +487,7 @@ namespace FrameOfSystem3.Task
                         int unloadingStep = GetUnloadingStep(ref substrate);
                         switch (unloadingStep)
                         {
-                            case (int)UnloadingStepTypes.Init:
+                            case (int)UnloadingStepTypesFor500W.Init:
                                 {
                                     // 1. Id Assignment Event
                                     QueuedScenarioForBinSubstrate.Enqueue(ScenarioBinWaferIdAssign);
@@ -515,7 +505,7 @@ namespace FrameOfSystem3.Task
                                     QueuedScenarioForBinSubstrate.Enqueue(ScenarioUploadBinData);
                                 }
                                 break;
-                            case (int)UnloadingStepTypes.AfterIdAssignment:
+                            case (int)UnloadingStepTypesFor500W.AfterIdAssignment:
                                 {
                                     // AssignWaferId 이후
                                     // 2. Send to PM Assigned Id
@@ -532,7 +522,7 @@ namespace FrameOfSystem3.Task
                                     QueuedScenarioForBinSubstrate.Enqueue(ScenarioUploadBinData);
                                 }
                                 break;
-                            case (int)UnloadingStepTypes.AfterBinTrackOut:
+                            case (int)UnloadingStepTypesFor500W.AfterBinTrackOut:
                                 {
                                     // BinTrackout 이후
                                     // 5. Request Part Id Info
@@ -689,10 +679,10 @@ namespace FrameOfSystem3.Task
                         case ScenarioSendClientToBinWaferIdAssign:
                             {
                                 int currentStep = GetUnloadingStep(ref substrate);
-                                if (currentStep == (int)UnloadingStepTypes.Init)
+                                if (currentStep == (int)UnloadingStepTypesFor500W.Init)
                                 {
                                     // Step 증가
-                                    int nextStep = (int)UnloadingStepTypes.AfterIdAssignment;
+                                    UnloadingStepTypesFor500W nextStep = UnloadingStepTypesFor500W.AfterIdAssignment;
                                     _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
                                 }
                                 else
@@ -704,7 +694,7 @@ namespace FrameOfSystem3.Task
                                 #region <2. Send to PM Assigned Id : 공정설비에 할당받은 결과를 전달한다.>
                                 string ringId = substrate.GetAttribute(PWA500SubstrateAttributes.RingId);
 
-                                _lotHistoryLog.WriteSubstrateHistoryForAssignSubstrateId(portId, ringId, _newSubstrateId);
+                                _lotHistoryLog.WriteSubstrateHistoryForAssignSubstrateId(portId, ringId, _newSubstrateId, substrate.UniqueKey);
 
                                 // 서버에서 받은 이름을 이 웨이퍼의 이름으로 설정한다.
                                 // substrate.SetName(_newSubstrateId);
@@ -851,10 +841,10 @@ namespace FrameOfSystem3.Task
                         case ScenarioSendClientUploadBinFile:
                             {
                                 int currentStep = GetUnloadingStep(ref substrate);
-                                if (currentStep == (int)UnloadingStepTypes.AfterIdAssignment)
+                                if (currentStep == (int)UnloadingStepTypesFor500W.AfterIdAssignment)
                                 {
                                     // Step 증가
-                                    int nextStep = (int)UnloadingStepTypes.AfterBinTrackOut;
+                                    UnloadingStepTypesFor500W nextStep = UnloadingStepTypesFor500W.AfterBinTrackOut;
                                     _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, nextStep.ToString());
                                     _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.PartId, _newPartId);
                                     _substrateManager.SaveDataByKey(substrate.UniqueKey);
@@ -1143,7 +1133,20 @@ namespace FrameOfSystem3.Task
 
                             if (_substrateManager.GetSubstrateByLocationAndKey(lpLocation, string.Empty, out var substrate))
                             {
-                                _lotHistoryLog.UpdateSubstrateHistoryToCarrierHistory(lpLocation.PortId, carrierId, substrate.UniqueKey);
+                                // 코어 기판 이력은 기록 시점에 캐리어 이력에 즉시 이중 기록되므로 병합 대상이 아니다.
+                                // (병합 처리부가 Bin 폴더만 읽어 사실상 무시되지만, 이름 충돌 시 오기록을 막기 위해 타입으로도 차단.
+                                //  타입 파싱 실패 시에는 Bin 이력 유실을 피하기 위해 기존처럼 병합을 시도한다.)
+                                string subType = substrate.GetAttribute(PWA500SubstrateAttributes.SubstrateType);
+                                SubstrateType substrateType = SubstrateType.Core;
+                                bool isCore = GetSubstrateTypeByAttribute(subType, ref substrateType) &&
+                                              substrateType.Equals(SubstrateType.Core);
+                                if (false == isCore)
+                                {
+                                    // 2026.07.06. jhlim [MOD] 이력 파일은 Name(링ID→할당ID)으로 생성/개명되므로 Name으로 조회해야 한다.
+                                    // UniqueKey({캐리어}_{위치}_{Ticks})로는 파일이 존재한 적이 없어 병합이 항상 스킵되고 있었다.
+                                    // (Name은 파일 저장소용, UniqueKey는 DB 저장소의 키 컬럼용으로 함께 전달한다)
+                                    _lotHistoryLog.UpdateSubstrateHistoryToCarrierHistory(lpLocation.PortId, carrierId, substrate.Name, substrate.UniqueKey);
+                                }
                             }
                         }
                     }
@@ -3283,7 +3286,7 @@ namespace FrameOfSystem3.Task
                                     string remainingChips = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
                                     string binCode = substrate.GetAttribute(PWA500SubstrateAttributes.BinCode);
 
-                                    _lotHistoryLog.WriteSubstrateHistoryForBinWorkEnd(portId, substrateName, binCode, remainingChips);
+                                    _lotHistoryLog.WriteSubstrateHistoryForBinWorkEnd(portId, substrateName, binCode, remainingChips, substrate.UniqueKey);
                                 }
                                 break;
 
@@ -3302,7 +3305,7 @@ namespace FrameOfSystem3.Task
                                     string remainingChips = substrate.GetAttribute(PWA500SubstrateAttributes.ChipQty);
                                     string binCode = substrate.GetAttribute(PWA500SubstrateAttributes.BinCode);
 
-                                    _lotHistoryLog.WriteSubstrateHistoryForBinTrackOut(portId, substrateName, lotId, binCode, remainingChips);
+                                    _lotHistoryLog.WriteSubstrateHistoryForBinTrackOut(portId, substrateName, lotId, binCode, remainingChips, substrate.UniqueKey);
                                 }
                                 break;
 
@@ -3327,7 +3330,7 @@ namespace FrameOfSystem3.Task
                                     string substrateName = substrate.Name;
                                     string binCode = substrate.GetAttribute(PWA500SubstrateAttributes.BinCode);
                                     string partId = substrate.GetAttribute(PWA500SubstrateAttributes.PartId);
-                                    _lotHistoryLog.WriteSubstrateHistoryForReqBinPartId(portId, substrateName, binCode, partId, _newPartId);
+                                    _lotHistoryLog.WriteSubstrateHistoryForReqBinPartId(portId, substrateName, binCode, partId, _newPartId, substrate.UniqueKey);
                                 }
                                 break;
                             case ScenarioUploadBinData:
@@ -3345,7 +3348,7 @@ namespace FrameOfSystem3.Task
                                     int portId = substrate.DestinationPortId;
                                     string substrateName = substrate.Name;
 
-                                    _lotHistoryLog.WriteSubstrateHistoryForUploadBinData(portId, substrateName, _functionsForPWA500.PmsFullPath);
+                                    _lotHistoryLog.WriteSubstrateHistoryForUploadBinData(portId, substrateName, _functionsForPWA500.PmsFullPath, substrate.UniqueKey);
                                 }
                                 break;
 
@@ -3392,14 +3395,14 @@ namespace FrameOfSystem3.Task
         private int GetUnloadingStep(ref Substrate substrate)
         {
             var step = substrate.GetAttribute(PWA500SubstrateAttributes.BinUnloadingStep);
-            if (false == int.TryParse(step, out int unloadingStep))
+            if (false == EFEM.MaterialTracking.EnumPersistence.TryParseName<UnloadingStepTypesFor500W>(step, out var unloadingStep))
             {
-                // 파싱 불가면 0으로 고정
-                unloadingStep = (int)UnloadingStepTypes.Init;
+                // 파싱 불가면 Init으로 고정
+                unloadingStep = UnloadingStepTypesFor500W.Init;
                 _substrateManager.SetAttributeByKey(substrate.UniqueKey, PWA500SubstrateAttributes.BinUnloadingStep, unloadingStep.ToString());
             }
 
-            return unloadingStep;
+            return (int)unloadingStep;
         }
         private bool HasSameSourceSubstrate(Substrate substrate, string sourceCarrierId, int portId, string key)
         {

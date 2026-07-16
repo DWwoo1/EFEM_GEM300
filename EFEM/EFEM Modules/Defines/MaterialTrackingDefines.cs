@@ -24,12 +24,13 @@ namespace EFEM.Defines.MaterialTracking
         Lost = 6,
         Skipped = 7
     }
+    // [영속화 enum] 저장은 이름으로. 멤버 재배치/삭제 금지 — 끝에만 추가.
     public enum IdReadingStates
     {
         NotConfirmed = 0,
-        WaitingForHost,
-        Confirmed,
-        ConfirmationFailed
+        WaitingForHost = 1,
+        Confirmed = 2,
+        ConfirmationFailed = 3,
     }
     public enum OccupancyState
     {

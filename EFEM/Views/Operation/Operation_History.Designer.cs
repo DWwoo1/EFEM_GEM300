@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnSubViewDatabase = new Sys3Controls.Sys3button();
             this.btnSubViewHistory = new Sys3Controls.Sys3button();
             this.btnSubViewCurrentWorking = new Sys3Controls.Sys3button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -38,6 +39,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btnSubViewDatabase);
             this.panel1.Controls.Add(this.btnSubViewHistory);
             this.panel1.Controls.Add(this.btnSubViewCurrentWorking);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -45,6 +47,48 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1134, 39);
             this.panel1.TabIndex = 3;
+            // 
+            // btnSubViewDatabase
+            // 
+            this.btnSubViewDatabase.BorderWidth = 2;
+            this.btnSubViewDatabase.ButtonClicked = false;
+            this.btnSubViewDatabase.ClickedEmphasizeTextColor = System.Drawing.Color.White;
+            this.btnSubViewDatabase.CustomClickedGradientFirstColor = System.Drawing.Color.DarkBlue;
+            this.btnSubViewDatabase.CustomClickedGradientSecondColor = System.Drawing.Color.DarkBlue;
+            this.btnSubViewDatabase.Description = "";
+            this.btnSubViewDatabase.DisabledColor = System.Drawing.Color.DarkGray;
+            this.btnSubViewDatabase.Dock = System.Windows.Forms.DockStyle.Left;
+            this.btnSubViewDatabase.EdgeRadius = 5;
+            this.btnSubViewDatabase.GradientAngle = 70F;
+            this.btnSubViewDatabase.GradientFirstColor = System.Drawing.Color.White;
+            this.btnSubViewDatabase.GradientSecondColor = System.Drawing.Color.White;
+            this.btnSubViewDatabase.HoverEmphasizeCustomColor = System.Drawing.Color.White;
+            this.btnSubViewDatabase.ImagePosition = new System.Drawing.Point(7, 7);
+            this.btnSubViewDatabase.ImageSize = new System.Drawing.Point(30, 30);
+            this.btnSubViewDatabase.LoadImage = global::FrameOfSystem3.Properties.Resources.Home_black;
+            this.btnSubViewDatabase.Location = new System.Drawing.Point(478, 0);
+            this.btnSubViewDatabase.MainFont = new System.Drawing.Font("맑은 고딕", 14.25F, System.Drawing.FontStyle.Bold);
+            this.btnSubViewDatabase.MainFontColor = System.Drawing.Color.DarkBlue;
+            this.btnSubViewDatabase.Margin = new System.Windows.Forms.Padding(0);
+            this.btnSubViewDatabase.Name = "btnSubViewDatabase";
+            this.btnSubViewDatabase.Size = new System.Drawing.Size(239, 39);
+            this.btnSubViewDatabase.SubFont = new System.Drawing.Font("맑은 고딕", 8F, System.Drawing.FontStyle.Bold);
+            this.btnSubViewDatabase.SubFontColor = System.Drawing.Color.DarkBlue;
+            this.btnSubViewDatabase.SubText = "STATUS";
+            this.btnSubViewDatabase.TabIndex = 10415;
+            this.btnSubViewDatabase.Text = "DB QUERY(BETA)";
+            this.btnSubViewDatabase.TextAlignMain = Sys3Controls.EN_TEXTALIGN.MIDDLE_CENTER;
+            this.btnSubViewDatabase.TextAlignSub = Sys3Controls.EN_TEXTALIGN.TOP_RIGHT;
+            this.btnSubViewDatabase.ThemeIndex = 0;
+            this.btnSubViewDatabase.UseBorder = false;
+            this.btnSubViewDatabase.UseClickedEmphasizeTextColor = false;
+            this.btnSubViewDatabase.UseCustomizeClickedColor = true;
+            this.btnSubViewDatabase.UseEdge = false;
+            this.btnSubViewDatabase.UseHoverEmphasizeCustomColor = false;
+            this.btnSubViewDatabase.UseImage = false;
+            this.btnSubViewDatabase.UserHoverEmpahsize = false;
+            this.btnSubViewDatabase.UseSubFont = false;
+            this.btnSubViewDatabase.Click += new System.EventHandler(this.BtnSubViewClicked);
             // 
             // btnSubViewHistory
             // 
@@ -163,6 +207,7 @@
         #endregion
 
         private System.Windows.Forms.Panel panel1;
+        private Sys3Controls.Sys3button btnSubViewDatabase;
         private Sys3Controls.Sys3button btnSubViewHistory;
         private Sys3Controls.Sys3button btnSubViewCurrentWorking;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;

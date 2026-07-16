@@ -71,6 +71,10 @@ namespace FrameOfSystem3.Functional
         public ICarrierStorage Carrier { get; }
         public Func<DateTime> Clock { get; }
         public ILocationStorage Location { get; }
+
+        // 2026.07.06. jhlim [ADD] 랏 히스토리 SQLite 저장소(SqliteHistoryStore) 조립용.
+        // DB를 쓰지 않는 팩토리(Json 전용)에서는 null 이다.
+        public EFEM.Database.MaterialDbContext Database { get; set; }
     }
 
     public interface IMaterialTrackingStorageContextFactory
@@ -122,7 +126,10 @@ namespace FrameOfSystem3.Functional
                 substrate,
                 carrier,
                 location,
-                _clock);
+                _clock)
+            {
+                Database = _databaseContext,
+            };
         }
 
         public async void ShutDown()
@@ -327,7 +334,10 @@ namespace FrameOfSystem3.Functional
                 substrate,
                 carrier,
                 location,
-                _clock);
+                _clock)
+            {
+                Database = _databaseContext,
+            };
         }
 
         public async void ShutDown()
@@ -663,6 +673,77 @@ namespace EFEM.Migrations
                             }
                         }
                     }),
+                // 2026.07.08. jhlim [ADD] 배출 전 RFID 태그 기입값(머지 결과) 영속화용 CarrierExtra.LotIdToWrite 컬럼 추가.
+                // 신규 DB는 CarrierExtra CREATE TABLE에 이미 포함(GetExtraKeys)되지만, 기존 DB는 컬럼이 없어
+                // Upsert/Load SQL이 실패하므로 여기서 ADD COLUMN 한다. main/archive 스키마 공통 적용.
+                new Database.DelegateDbMigrationStep(
+                    5,
+                    "Add CarrierExtra.LotIdToWrite",
+                    (conn, tx, schemaName) =>
+                    {
+                        const string tableNameOnly = "CarrierExtra";
+                        const string columnName = "LotIdToWrite";
+
+                        string qualifiedTableName = string.IsNullOrWhiteSpace(schemaName)
+                            ? "\"" + tableNameOnly + "\""
+                            : "\"" + schemaName + "\".\"" + tableNameOnly + "\"";
+
+                        bool tableExists;
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText =
+                                "SELECT 1 FROM "
+                                + (string.IsNullOrWhiteSpace(schemaName)
+                                    ? "sqlite_master"
+                                    : "\"" + schemaName + "\".sqlite_master")
+                                + " WHERE type = 'table' AND name = $name LIMIT 1;";
+                            cmd.Parameters.AddWithValue("$name", tableNameOnly);
+
+                            var result = cmd.ExecuteScalar();
+                            tableExists = result != null && result != DBNull.Value;
+                        }
+
+                        if (!tableExists)
+                            return;
+
+                        bool hasColumn = false;
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = string.IsNullOrWhiteSpace(schemaName)
+                                ? "PRAGMA table_info(\"" + tableNameOnly + "\");"
+                                : "PRAGMA \"" + schemaName + "\".table_info(\"" + tableNameOnly + "\");";
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var currentName = Convert.ToString(reader["name"]);
+                                    if (string.Equals(currentName, columnName, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        hasColumn = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!hasColumn)
+                        {
+                            using (var cmd = conn.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText =
+                                    "ALTER TABLE " + qualifiedTableName +
+                                    " ADD COLUMN \"" + columnName + "\" TEXT;";
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }),
+                // 2026.07.13. jhlim [NOTE] 정수 enum 컬럼 -> 이름 변환은 마이그레이션 스텝(UPDATE 백필)으로 하지 않는다.
+                // 이 장비의 SQLite 스택은 INTEGER affinity 컬럼에 비숫자 TEXT 저장 시 값을 '0'으로 훼손하는
+                // 비표준 동작이 있어, MaterialDbContext.RebuildIntegerEnumTables(테이블 TEXT 재구축)에서 처리한다.
                 };
 
             return extraMigrations;

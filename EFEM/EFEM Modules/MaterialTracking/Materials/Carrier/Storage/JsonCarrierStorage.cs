@@ -42,7 +42,13 @@ namespace EFEM.MaterialTracking.CarrierStorage
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
-            NullValueHandling = NullValueHandling.Ignore
+            NullValueHandling = NullValueHandling.Ignore,
+            // 열거형은 이름으로 저장. AllowIntegerValues=false 로 정수 토큰(레거시 ordinal)을 조용히
+            // 해석하지 않는다(정수 데이터는 1회 변환기가 이름으로 선변환해야 함).
+            Converters = new List<JsonConverter>
+            {
+                new Newtonsoft.Json.Converters.StringEnumConverter { AllowIntegerValues = false }
+            }
         };
         #endregion </Fields>
 
@@ -64,20 +70,37 @@ namespace EFEM.MaterialTracking.CarrierStorage
         {
             dataFromStorage = new List<CarrierItem>();
 
-            string[] files = Directory.GetFiles(_activePath);
+            string[] files = Directory.GetFiles(_activePath, "*.json");
             if (files.Length <= 0)
                 return false;
 
             for (int i = 0; i < files.Length; ++i)
             {
-                string fileName = Path.GetFileNameWithoutExtension(files[i]);
+                string name = Path.GetFileName(files[i]);
 
-                // 1) 저장소에서 전송용 Data(DTO) 형태로 읽어옴
-                var dto = GetByKeyAsync(fileName).GetAwaiter().GetResult();
-                if (dto == null)
+                // 포맷 스탬프/백업 파일은 자재가 아니므로 건너뛴다.
+                if (string.Equals(name, EFEM.MaterialTracking.LegacyRecoveryConverter.StampFileName, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (name.IndexOf(".bak", StringComparison.OrdinalIgnoreCase) >= 0)
                     continue;
 
-                dataFromStorage.Add(dto);
+                string fileName = Path.GetFileNameWithoutExtension(files[i]);
+
+                try
+                {
+                    // 1) 저장소에서 전송용 Data(DTO) 형태로 읽어옴
+                    var dto = GetByKeyAsync(fileName).GetAwaiter().GetResult();
+                    if (dto == null)
+                        continue;
+
+                    dataFromStorage.Add(dto);
+                }
+                catch (Exception ex)
+                {
+                    // 손상/미변환(정수 잔존) 파일은 격리: 전체 복구 로드를 중단시키지 않는다.
+                    AsyncLoggerForEfem.Instance.WriteDebugLog(
+                        $"[JsonCarrierStorage] skip unreadable recovery file '{name}': {ex.Message}");
+                }
             }
 
             return true;

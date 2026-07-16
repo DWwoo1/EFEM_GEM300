@@ -184,44 +184,82 @@ namespace EFEM.Modules
         }
         public CommandResults ReadLotId(int index, LoadPortLoadingMode loadingMode, ref string lotId)
         {
-            if (false == Readers.ContainsKey(index))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            CommandResults result;
+            if (false == Readers.ContainsKey(index) || false == Readers[index].ContainsKey(loadingMode))
+                result = new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            else
+                result = Readers[index][loadingMode].ReadLotId(ref lotId);
 
-            if (false == Readers[index].ContainsKey(loadingMode))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
-
-            return Readers[index][loadingMode].ReadLotId(ref lotId);
+            LogRfid(index, RfidCommand.READ_LOT_ID, loadingMode, lotId, result);
+            return result;
         }
         public CommandResults ReadCarrierId(int index, LoadPortLoadingMode loadingMode, ref string CarrierId)
         {
-            if (false == Readers.ContainsKey(index))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            CommandResults result;
+            if (false == Readers.ContainsKey(index) || false == Readers[index].ContainsKey(loadingMode))
+                result = new CommandResults("Read Carrier Id", CommandResult.Error, "Does not have rfid");
+            else
+                result = Readers[index][loadingMode].ReadCarrierId(ref CarrierId);
 
-            if (false == Readers[index].ContainsKey(loadingMode))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
-
-            return Readers[index][loadingMode].ReadCarrierId(ref CarrierId);
+            LogRfid(index, RfidCommand.READ_CARRIER_ID, loadingMode, CarrierId, result);
+            return result;
         }
 
         public CommandResults WriteLotId(int index, LoadPortLoadingMode loadingMode, string lotId)
         {
-            if (false == Readers.ContainsKey(index))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            CommandResults result;
+            if (false == Readers.ContainsKey(index) || false == Readers[index].ContainsKey(loadingMode))
+                result = new CommandResults("Write Lot Id", CommandResult.Error, "Does not have rfid");
+            else
+                result = Readers[index][loadingMode].WriteLotId(lotId);
 
-            if (false == Readers[index].ContainsKey(loadingMode))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
-
-            return Readers[index][loadingMode].WriteLotId(lotId);
+            LogRfid(index, RfidCommand.WRITE_LOT_ID, loadingMode, lotId, result);
+            return result;
         }
         public CommandResults WriteCarrierId(int index, LoadPortLoadingMode loadingMode, string CarrierId)
         {
-            if (false == Readers.ContainsKey(index))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            CommandResults result;
+            if (false == Readers.ContainsKey(index) || false == Readers[index].ContainsKey(loadingMode))
+                result = new CommandResults("Write Carrier Id", CommandResult.Error, "Does not have rfid");
+            else
+                result = Readers[index][loadingMode].WriteCarrierId(CarrierId);
 
-            if (false == Readers[index].ContainsKey(loadingMode))
-                return new CommandResults("Read Lot Id", CommandResult.Error, "Does not have rfid");
+            LogRfid(index, RfidCommand.WRITE_CARRIER_ID, loadingMode, CarrierId, result);
+            return result;
+        }
 
-            return Readers[index][loadingMode].WriteCarrierId(CarrierId);
+        // 2026.07.08. jhlim [ADD] RFID 읽기/쓰기 결과를 해당 로드포트 로거로 일반화하여 기록.
+        // index는 LoadPortIndex와 동일하므로 LoadPortManager로 포트 로거를 얻는다.
+        // Proceed(진행중)는 매 스캔 반복되므로 최종 결과(Completed/Skipped/Error/Timeout)만 남긴다.
+        // 접근 주소/길이도 함께 남긴다(LotId/CarrierId 명령에 따라 해당 영역).
+        private void LogRfid(int index, RfidCommand command, LoadPortLoadingMode loadingMode, string value, CommandResults result)
+        {
+            if (result == null || result.CommandResult == CommandResult.Proceed)
+                return;
+
+            var logger = LoadPortManager.Instance.GetLogger(index);
+            if (logger == null)
+                return;
+
+            int address = -1;
+            int length = -1;
+            switch (command)
+            {
+                case RfidCommand.READ_LOT_ID:
+                case RfidCommand.WRITE_LOT_ID:
+                    address = GetLotIdAddress(index, loadingMode);
+                    length = GetLotIdLength(index, loadingMode);
+                    break;
+                case RfidCommand.READ_CARRIER_ID:
+                case RfidCommand.WRITE_CARRIER_ID:
+                    address = GetCarrierIdAddress(index, loadingMode);
+                    length = GetCarrierIdLength(index, loadingMode);
+                    break;
+            }
+
+            var desc = string.IsNullOrEmpty(result.Description) ? string.Empty : (" (" + result.Description + ")");
+            logger.WriteRfidLog(string.Format("{0} [{1}] addr={2} len={3} value='{4}' -> {5}{6}",
+                command, loadingMode, address, length, value ?? string.Empty, result.CommandResult, desc));
         }
         #endregion </Action>
 

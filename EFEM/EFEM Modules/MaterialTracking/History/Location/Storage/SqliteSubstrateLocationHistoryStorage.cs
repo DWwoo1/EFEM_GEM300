@@ -73,7 +73,7 @@ VALUES
                     {
                         cmd.Parameters.Add("$fromLoc", DbType.String).Value = entry.FromLocationName;
                     }
-                    cmd.Parameters.Add("$fromLocKind", DbType.Int16).Value = entry.FromLocationKind;
+                    cmd.Parameters.Add("$fromLocKind", DbType.String).Value = entry.FromLocationKind.ToString();
 
                     if (string.IsNullOrWhiteSpace(entry.ToLocationName))
                     {
@@ -83,11 +83,12 @@ VALUES
                     {
                         cmd.Parameters.Add("$toLoc", DbType.String).Value = entry.ToLocationName;
                     }
-                    cmd.Parameters.Add("$toLocKind", DbType.Int16).Value = entry.ToLocationKind;
+                    cmd.Parameters.Add("$toLocKind", DbType.String).Value = entry.ToLocationKind.ToString();
 
                     cmd.Parameters.Add("$changeTime", DbType.String).Value = DbUtil.ToIsoString(entry.ChangeTime);
                     cmd.Parameters.Add("$reason", DbType.String).Value = entry.Reason;
 
+                    MaterialDbContext.LogCommand(cmd);
                     await cmd.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }).ConfigureAwait(false);
@@ -115,6 +116,7 @@ ORDER BY ChangeTime ASC, Id ASC;
 ";
                     cmd.Parameters.Add("$key", DbType.String).Value = substrateKey;
 
+                    MaterialDbContext.LogCommand(cmd);
                     using (var r = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await r.ReadAsync().ConfigureAwait(false))
@@ -125,12 +127,14 @@ ORDER BY ChangeTime ASC, Id ASC;
                             string from = r.IsDBNull(1) ? null : r.GetString(1);
                             if (string.IsNullOrWhiteSpace(from)) from = null;
 
-                            int fromKind = r.GetInt16(2);
+                            var fromKind = EnumPersistence.ParseNameOrDefault(
+                                Convert.ToString(r.GetValue(2)), EFEM.Defines.Common.ModuleType.Unknown);
 
                             string to = r.IsDBNull(3) ? null : r.GetString(3);
                             if (string.IsNullOrWhiteSpace(to)) to = null;
 
-                            int toKind = r.GetInt16(4);
+                            var toKind = EnumPersistence.ParseNameOrDefault(
+                                Convert.ToString(r.GetValue(4)), EFEM.Defines.Common.ModuleType.Unknown);
 
                             var time = DbUtil.FromIsoString(r.GetString(5));
                             var reason = r.IsDBNull(6) ? string.Empty : r.GetString(6);

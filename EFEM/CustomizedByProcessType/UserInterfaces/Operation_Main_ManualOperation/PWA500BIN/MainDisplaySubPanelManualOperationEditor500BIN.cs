@@ -93,6 +93,33 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
             LoadPortNames[4] = lblLoadPort5;
             LoadPortNames[5] = lblLoadPort6;
 
+            // 2026.07.09. [ADD] lblLoadPort(헤더)와 슬롯맵 사이에 캐리어 이름 라벨을 생성.
+            // 슬롯맵이 이미 Dock.Fill 로 추가된 뒤라, 여기서 Dock.Top 으로 추가하면 상단에 배치된다.
+            CarrierLabels = new ConcurrentDictionary<int, Sys3Controls.Sys3Label>();
+            foreach (var item in LoadPortPanels)
+            {
+                var carrierLabel = new Sys3Controls.Sys3Label
+                {
+                    Dock = DockStyle.Top,
+                    Height = 24,
+                    BackGroundColor = Color.LightBlue,
+                    MainFont = new Font("맑은 고딕", 9F, FontStyle.Bold),
+                    MainFontColor = Color.Black,
+                    TextAlignMain = Sys3Controls.EN_TEXTALIGN.MIDDLE_CENTER,
+                    UseBorder = true,
+                    BorderStroke = 1,
+                    BorderStyle = ButtonBorderStyle.Solid,
+                    Description = "",
+                    UseImage = false,
+                    UseSubFont = false,
+                    Text = string.Empty,
+                    Tag = item.Key,
+                };
+                carrierLabel.Click += CarrierLabelClicked;
+                item.Value.Controls.Add(carrierLabel);
+                CarrierLabels[item.Key] = carrierLabel;
+            }
+
             InitInfo();
 
             ProcessModuleName = _processGroup.GetProcessModuleName(ProcessModuleIndex);
@@ -147,6 +174,8 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
 
         #region <ETC>
         private readonly ConcurrentDictionary<int, Sys3Controls.Sys3Label> LoadPortNames = null;
+        // 2026.07.09. [ADD] 로드포트별 캐리어 이름 라벨(런타임 생성, pnLoadPort 상단 Dock)
+        private readonly ConcurrentDictionary<int, Sys3Controls.Sys3Label> CarrierLabels = null;
         #endregion </ETC>
 
         private readonly string ProcessModuleName = string.Empty;
@@ -212,6 +241,7 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
             //DisplayModuleInfo();
             DisplayRobotInfo();
             RefreshSubstrateList();
+            DisplayCarrierNames();                    // 2026.07.09. [ADD] 캐리어 라벨 갱신
             EnableEditButtons();
             UpdateSelectedSubstrateLableColor();      // 2025.07.08. dwlim [ADD] Move Substrate Information 추가
 
@@ -351,9 +381,9 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
                         temporarySubstrate == null)
                         return;
 
-                    FormMaterialEdit materialEdit = new FormMaterialEdit();
+                    FormMaterialAttributeEdit materialEdit = new FormMaterialAttributeEdit();
                     Dictionary<string, string> targetAttributes = MaterialTracking.SubstrateMapper.ExtractDataAll(temporarySubstrate);
-                    if (materialEdit.CreateEditForm(targetAttributes))
+                    if (materialEdit.CreateEditForm(targetAttributes, SubstrateFieldLayoutFactory.Create(FrameOfSystem3.Work.AppConfigManager.Instance.ProcessType)))
                     {
                         Dictionary<string, string> attributeResults = new Dictionary<string, string>();
                         materialEdit.GetResult(ref attributeResults);
@@ -438,8 +468,8 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
 
                 //string currentLocation = _selectedSubstrate.CurrentLocation;
                 Dictionary<string, string> targetAttributes = MaterialTracking.SubstrateMapper.ExtractDataAll(_selectedSubstrate);
-                FormMaterialEdit materialEdit = new FormMaterialEdit();
-                if (materialEdit.CreateEditForm(targetAttributes))
+                FormMaterialAttributeEdit materialEdit = new FormMaterialAttributeEdit();
+                if (materialEdit.CreateEditForm(targetAttributes, SubstrateFieldLayoutFactory.Create(FrameOfSystem3.Work.AppConfigManager.Instance.ProcessType)))
                 {
                     if (_messageBox.ShowMessage("정말로 자재정보를 변경할까요?"))
                     {
@@ -702,6 +732,66 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
 
             UpdateSelectedSubstrateInfo();
         }
+        // 2026.07.09. [ADD] 로드포트 캐리어 라벨 클릭 → 확인 후 캐리어 속성 편집
+        private void CarrierLabelClicked(object sender, EventArgs e)
+        {
+            if (!(sender is Sys3Controls.Sys3Label label) || label.Tag == null)
+                return;
+
+            if (false == int.TryParse(label.Tag.ToString(), out int index))
+                return;
+
+            int portId = _loadPortManager.GetLoadPortPortId(index);
+            if (false == _carrierServer.HasCarrier(portId))
+                return;
+
+            EditCarrierAtPort(portId);
+        }
+        private void EditCarrierAtPort(int portId)
+        {
+            if (false == IsEquipmentIdleOrPause())
+                return;
+
+            if (false == _carrierServer.HasCarrier(portId))
+                return;
+
+            // 편집 전 확인
+            if (false == _messageBox.ShowMessage("캐리어 정보를 편집할까요?"))
+                return;
+
+            var carrier = _carrierServer.GetCarrierInfoById(_carrierServer.GetCarrierId(portId));
+            if (carrier == null)
+                return;
+
+            Dictionary<string, string> targetAttributes = MaterialTracking.CarrierMapper.ExtractDataAll(carrier);
+
+            FormMaterialAttributeEdit carrierEdit = new FormMaterialAttributeEdit();
+            if (carrierEdit.CreateEditForm(targetAttributes,
+                CarrierFieldLayoutFactory.Create(FrameOfSystem3.Work.AppConfigManager.Instance.ProcessType)))
+            {
+                Dictionary<string, string> attributeResults = new Dictionary<string, string>();
+                carrierEdit.GetResult(ref attributeResults);
+
+                var data = MaterialTracking.CarrierMapper.GetCarrierDataFromAttributes(attributeResults, out var extra);
+                if (data != null)
+                {
+                    _carrierServer.SetCarrierId(portId, data.CarrierId);
+                    _carrierServer.SetCarrierLotId(portId, data.LotId);
+                    _carrierServer.SetCarrierAccessingStatus(portId, (EFEM.Defines.LoadPort.CarrierAccessStates)data.AccessStatus);
+
+                    if (extra != null)
+                    {
+                        foreach (var kv in extra)
+                            _carrierServer.SetAttribute(portId, kv.Key, kv.Value);
+                    }
+
+                    // 캐리어는 포트 기반 저장(setter 는 자동저장 안 함)
+                    _carrierServer.SaveCarrierData(portId);
+                }
+            }
+
+            carrierEdit.DisposeControls();
+        }
         private void ProcessModuleClicked(object sender, MouseEventArgs e)
         {
             var hitGvSort = gvSortSubstrateList.HitTest(e.X, e.Y);
@@ -851,6 +941,20 @@ namespace EFEM.CustomizedByProcessType.UserInterface.OperationMainManual.PWA500B
                 //item.Value.Text = name;
                 item.Value.Text = _functionsForPWA500.GetSubstrateTypeForUILoadPortIndex(item.Key);
                 // 2024.09.03. jhlim [END]
+            }
+        }
+        // 2026.07.09. [ADD] 캐리어 존재 시 라벨에 Carrier ID 표시(없으면 빈칸)
+        private void DisplayCarrierNames()
+        {
+            if (CarrierLabels == null)
+                return;
+
+            foreach (var item in CarrierLabels)
+            {
+                int portId = _loadPortManager.GetLoadPortPortId(item.Key);
+                string text = _carrierServer.HasCarrier(portId) ? _carrierServer.GetCarrierId(portId) : string.Empty;
+                if (false == item.Value.Text.Equals(text))
+                    item.Value.Text = text;
             }
         }
         private void DisableHighlight(int index)
